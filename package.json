@@ -1,0 +1,26 @@
+{
+  "name": "bluebird",
+  "version": "0.1.0",
+  "description": "AI music composition platform",
+  "license": "MIT",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "test:integration": "pnpm -r run test:integration",
+    "test:e2e": "pnpm -F web run test:e2e",
+    "lint": "pnpm -r run lint",
+    "format": "pnpm -r run format",
+    "typecheck": "pnpm -r run typecheck",
+    "db:migrate": "pnpm -F api run db:migrate",
+    "db:studio": "pnpm -F api run db:studio",
+    "cli": "pnpm -F api run cli"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0"
+  }
+}

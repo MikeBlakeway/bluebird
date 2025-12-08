@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@bluebird/types": ["packages/types/src"],
+      "@bluebird/types/*": ["packages/types/src/*"],
+      "@bluebird/ui": ["packages/ui/src"],
+      "@bluebird/ui/*": ["packages/ui/src/*"],
+      "@bluebird/config": ["packages/config"],
+      "@bluebird/config/*": ["packages/config/*"],
+      "@bluebird/telemetry": ["packages/telemetry/src"],
+      "@bluebird/telemetry/*": ["packages/telemetry/src/*"],
+      "@bluebird/client": ["packages/client/src"],
+      "@bluebird/client/*": ["packages/client/src/*"],
+      "@bluebird/test-helpers": ["packages/test-helpers/src"],
+      "@bluebird/test-helpers/*": ["packages/test-helpers/src/*"]
+    }
+  },
+  "include": ["apps", "packages"],
+  "exclude": ["node_modules", "dist", "build", ".next"]
+}
