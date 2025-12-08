@@ -1,0 +1,17 @@
+{
+  "name": "@bluebird/config",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./tsconfig": "./tsconfig.base.json",
+    "./eslint": "./eslint.config.js",
+    "./prettier": "./prettier.config.js"
+  },
+  "scripts": {
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.1.0",
+    "eslint": "^8.56.0"
+  }
+}
