@@ -60,6 +60,36 @@ export const VocalScoreSchema = z.object({
 export type VocalScore = z.infer<typeof VocalScoreSchema>;
 
 // ============================================================================
+// Analyzer (Lyrics Parsing)
+// ============================================================================
+
+export const AnalysisResultSchema = z.object({
+  projectId: ProjectIdSchema,
+  lyrics: z.string(),
+  lines: z.array(
+    z.object({
+      index: z.number().int().min(0),
+      text: z.string(),
+      syllables: z.array(z.string()),
+      estimatedDuration: z.number(), // milliseconds
+    })
+  ),
+  totalSyllables: z.number().int(),
+  rhymeScheme: z.array(z.string()).optional(), // ["A", "A", "B", "B", etc.]
+  rhymingWords: z.record(z.array(z.string())).optional(), // {"A": ["day", "way"], "B": [...]}
+  estimatedTempo: z.number().optional(), // BPM guess
+  seedPhrase: z.string().optional(), // Main hook/theme
+  analyzedAt: z.string().datetime(),
+});
+export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
+
+export const AnalyzeRequestSchema = z.object({
+  projectId: ProjectIdSchema,
+  lyrics: z.string().min(10).max(5000),
+});
+export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>;
+
+// ============================================================================
 // Remix & Reference
 // ============================================================================
 

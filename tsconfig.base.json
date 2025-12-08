@@ -30,21 +30,19 @@
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
-      "@bluebird/types": ["packages/types/src"],
-      "@bluebird/types/*": ["packages/types/src/*"],
-      "@bluebird/ui": ["packages/ui/src"],
-      "@bluebird/ui/*": ["packages/ui/src/*"],
-      "@bluebird/config": ["packages/config"],
-      "@bluebird/config/*": ["packages/config/*"],
-      "@bluebird/telemetry": ["packages/telemetry/src"],
-      "@bluebird/telemetry/*": ["packages/telemetry/src/*"],
-      "@bluebird/client": ["packages/client/src"],
-      "@bluebird/client/*": ["packages/client/src/*"],
-      "@bluebird/test-helpers": ["packages/test-helpers/src"],
-      "@bluebird/test-helpers/*": ["packages/test-helpers/src/*"]
+      "@bluebird/types": ["./packages/types/src"],
+      "@bluebird/types/*": ["./packages/types/src/*"],
+      "@bluebird/ui": ["./packages/ui/src"],
+      "@bluebird/ui/*": ["./packages/ui/src/*"],
+      "@bluebird/config": ["./packages/config"],
+      "@bluebird/config/*": ["./packages/config/*"],
+      "@bluebird/telemetry": ["./packages/telemetry/src"],
+      "@bluebird/telemetry/*": ["./packages/telemetry/src/*"],
+      "@bluebird/client": ["./packages/client/src"],
+      "@bluebird/client/*": ["./packages/client/src/*"],
+      "@bluebird/test-helpers": ["./packages/test-helpers/src"],
+      "@bluebird/test-helpers/*": ["./packages/test-helpers/src/*"]
     }
   },
   "ts-node": {
