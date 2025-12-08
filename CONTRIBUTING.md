@@ -20,7 +20,7 @@
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -29,6 +29,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only
@@ -40,17 +41,20 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 **Scope examples:** `api`, `web`, `worker`, `similarity`, `sse`, `types`
 
 **Subject:**
+
 - Imperative mood: "add" not "adds" or "added"
 - No period at end
 - Max 50 characters
 
 **Body:**
+
 - Explain *what* and *why*, not *how*
 - Wrap at 72 characters
 - Reference issues: "Fixes #123" or "Related to F-MVP-GEN-01"
 
 **Example:**
-```
+
+```text
 feat(api): add idempotency-key validation to /render/section
 
 Validates Idempotency-Key header on all POST endpoints to prevent
@@ -109,6 +113,7 @@ After completing a feature or sprint:
    - Record gotchas for future reference
 
 **Example entry:**
+
 ```markdown
 ## Sprint 1: Preview Path (Dec 12–23)
 - Integrated SSE for realtime job progress; heartbeat every 15s with exp backoff
@@ -191,6 +196,7 @@ pnpm typecheck
 ### TypeScript Strict Mode
 
 All code must be strict TypeScript:
+
 - No `any`
 - No implicit `any`
 - All function params/returns typed
@@ -199,16 +205,18 @@ All code must be strict TypeScript:
 ### Documentation
 
 - **Inline comments:** Explain *why*, not *what*
+
   ```ts
   // GOOD: Explains non-obvious behavior
   // NOTE: Must extract features BEFORE melody generation; order matters for cost budget
-  
+
   // BAD: States the obvious
   // increment counter
   counter++
   ```
 
 - **Public APIs:** JSDoc with examples
+
   ```ts
   /**
    * Compute similarity between two melodies.
@@ -230,6 +238,7 @@ All code must be strict TypeScript:
 2. **Changelog:** Add entry to `docs/CHANGELOG.md` before release
 
 3. **Tag & Release:**
+
    ```bash
    git tag -a v0.2.0 -m "Sprint 1 complete: Preview path with WebAudio"
    git push origin v0.2.0
