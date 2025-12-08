@@ -1,17 +1,25 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
     "target": "ES2020",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx",
-    "strict": true,
-    "skipLibCheck": true,
+    "module": "ES2020",
     "moduleResolution": "bundler",
-    "module": "ESNext",
-    "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": true
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "noEmit": true,
+    "declaration": false,
+    "isolatedModules": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./.next/.tsbuildinfo"
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", ".next"]
+  "include": ["src/**/*", "next-env.d.ts"],
+  "exclude": ["node_modules", ".next", "out", "dist"],
+  "references": [
+    { "path": "../../packages/types" },
+    { "path": "../../packages/ui" },
+    { "path": "../../packages/client" },
+    { "path": "../../packages/telemetry" }
+  ]
 }
