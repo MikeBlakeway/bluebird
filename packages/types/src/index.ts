@@ -10,7 +10,8 @@ export type Id = z.infer<typeof IdSchema>;
 export const ProjectIdSchema = z.string().cuid();
 export type ProjectId = z.infer<typeof ProjectIdSchema>;
 
-export const JobIdSchema = z.string().cuid();
+// JobId can be custom format like "project:timestamp:seed", not just CUID
+export const JobIdSchema = z.string().min(1);
 export type JobId = z.infer<typeof JobIdSchema>;
 
 export const TakeIdSchema = z.string().cuid();
@@ -226,6 +227,14 @@ export const AuthResponseSchema = z.object({
   token: z.string(),
 });
 export type AuthResponse = z.infer<typeof AuthResponseSchema>;
+
+export const JWTPayloadSchema = z.object({
+  userId: IdSchema,
+  email: z.string().email(),
+  iat: z.number().optional(),
+  exp: z.number().optional(),
+});
+export type JWTPayload = z.infer<typeof JWTPayloadSchema>;
 
 // ============================================================================
 // Project

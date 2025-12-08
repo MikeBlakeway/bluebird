@@ -3,6 +3,8 @@ import fastifyCookie from '@fastify/cookie';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerProjectRoutes } from './routes/projects.js';
 import { registerAnalyzerRoutes } from './routes/analyzer.js';
+import { registerPlannerRoutes } from './routes/planner.js';
+import { registerOrchestratorRoutes } from './routes/orchestrator.js';
 import { authMiddleware } from './lib/middleware.js';
 
 const PORT = parseInt(process.env.BLUEBIRD_PORT || '4000', 10);
@@ -29,6 +31,8 @@ export async function createServer() {
   registerAuthRoutes(fastify);
   registerProjectRoutes(fastify);
   registerAnalyzerRoutes(fastify);
+  registerPlannerRoutes(fastify);
+  registerOrchestratorRoutes(fastify);
 
   // Start server
   await fastify.listen({ port: PORT, host: HOST });

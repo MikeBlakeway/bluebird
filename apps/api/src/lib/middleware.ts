@@ -1,6 +1,13 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { verifyToken, type JWTPayload } from './jwt.js';
 
+// Augment Fastify types for our auth
+declare module 'fastify' {
+  interface FastifyRequest {
+    user?: JWTPayload;
+  }
+}
+
 export interface AuthenticatedRequest extends FastifyRequest {
   user?: JWTPayload;
 }
@@ -9,9 +16,8 @@ export interface AuthenticatedRequest extends FastifyRequest {
  * Extract JWT from cookies or Authorization header.
  */
 function extractToken(request: FastifyRequest): string | null {
-  // Try cookie first (cast to access cookies via @fastify/cookie)
-  const cookies = (request as unknown as Record<string, unknown>).cookies as Record<string, string> | undefined;
-  const cookieToken = cookies?.auth_token;
+  // Try cookie first
+  const cookieToken = request.cookies.auth_token;
   if (cookieToken) return cookieToken;
 
   // Try Authorization header

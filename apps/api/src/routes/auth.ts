@@ -1,9 +1,9 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import {
-    MagicLinkRequestSchema,
-    VerifyMagicLinkRequestSchema,
-    type AuthResponse,
-    type MagicLinkResponse,
+  MagicLinkRequestSchema,
+  VerifyMagicLinkRequestSchema,
+  type AuthResponse,
+  type MagicLinkResponse,
 } from '@bluebird/types';
 import { generateMagicLink, verifyMagicLink } from '../lib/auth.js';
 import { generateToken } from '../lib/jwt.js';
@@ -58,19 +58,14 @@ export async function verifyMagicLinkHandler(
       email: user.email,
     });
 
-    // Set httpOnly cookie (cast reply to use setCookie method)
-    const fastifyReply = reply as unknown as Record<string, unknown>;
-    (fastifyReply.setCookie as (name: string, value: string, options: Record<string, unknown>) => void)(
-      'auth_token',
-      jwtToken,
-      {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax' as const,
-        maxAge: 7 * 24 * 60 * 60, // 7 days
-        path: '/',
-      }
-    );
+    // Set httpOnly cookie
+    reply.setCookie('auth_token', jwtToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/',
+    });
 
     return reply.code(200).send({
       user: {
@@ -98,19 +93,13 @@ export async function verifyMagicLinkHandler(
  */
 export async function getCurrentUserHandler(request: FastifyRequest, reply: FastifyReply) {
   // Auth middleware will populate request.user
-  const user = (request as unknown as Record<string, unknown>).user as
-    | { userId: string; email: string; createdAt: string; updatedAt: string; name: string | null }
-    | undefined;
-  if (!user) {
+  if (!request.user) {
     return reply.code(401).send({ message: 'Unauthorized' });
   }
 
   return reply.code(200).send({
-    id: user.userId,
-    email: user.email,
-    name: user.name,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
+    id: request.user.userId,
+    email: request.user.email,
   });
 }
 
@@ -119,8 +108,7 @@ export async function getCurrentUserHandler(request: FastifyRequest, reply: Fast
  * Clear auth cookie
  */
 export async function logoutHandler(_request: FastifyRequest, reply: FastifyReply) {
-  const fastifyReply = reply as unknown as Record<string, unknown>;
-  (fastifyReply.clearCookie as (name: string, options: Record<string, unknown>) => void)('auth_token', { path: '/' });
+  reply.clearCookie('auth_token', { path: '/' });
   return reply.code(200).send({ success: true, message: 'Logged out' });
 }
 
