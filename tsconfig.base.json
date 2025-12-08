@@ -31,6 +31,7 @@
     "declaration": true,
     "declarationMap": true,
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@bluebird/types": ["packages/types/src"],
       "@bluebird/types/*": ["packages/types/src/*"],
@@ -44,8 +45,7 @@
       "@bluebird/client/*": ["packages/client/src/*"],
       "@bluebird/test-helpers": ["packages/test-helpers/src"],
       "@bluebird/test-helpers/*": ["packages/test-helpers/src/*"]
-    },
-    "ignoreDeprecations": "6.0"
+    }
   },
   "ts-node": {
     "compilerOptions": {
@@ -56,7 +56,7 @@
   "watchOptions": {
     "watchFile": "useFsEvents",
     "watchDirectory": "useFsEvents",
-    "fallbackPolling": "dynamicPriorityPolling",
+    "fallbackPolling": "dynamicpriority",
     "synchronousWatchDirectory": false,
     "excludeDirectories": ["**/node_modules", ".git", "dist", "build", ".next", "coverage", ".tsbuildinfo"]
   }

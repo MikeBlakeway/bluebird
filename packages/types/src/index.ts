@@ -163,6 +163,70 @@ export const JobEventSchema = z.object({
 export type JobEvent = z.infer<typeof JobEventSchema>;
 
 // ============================================================================
+// Authentication & User
+// ============================================================================
+
+export const UserSchema = z.object({
+  id: IdSchema,
+  email: z.string().email(),
+  name: z.string().nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+export type User = z.infer<typeof UserSchema>;
+
+export const MagicLinkRequestSchema = z.object({
+  email: z.string().email(),
+});
+export type MagicLinkRequest = z.infer<typeof MagicLinkRequestSchema>;
+
+export const MagicLinkResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+});
+export type MagicLinkResponse = z.infer<typeof MagicLinkResponseSchema>;
+
+export const VerifyMagicLinkRequestSchema = z.object({
+  token: z.string(),
+});
+export type VerifyMagicLinkRequest = z.infer<typeof VerifyMagicLinkRequestSchema>;
+
+export const AuthResponseSchema = z.object({
+  user: UserSchema,
+  token: z.string(),
+});
+export type AuthResponse = z.infer<typeof AuthResponseSchema>;
+
+// ============================================================================
+// Project
+// ============================================================================
+
+export const ProjectSchema = z.object({
+  id: ProjectIdSchema,
+  userId: IdSchema,
+  name: z.string().min(1).max(255),
+  lyrics: z.string().min(10).max(5000),
+  genre: z.string().min(1).max(100),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+export type Project = z.infer<typeof ProjectSchema>;
+
+export const CreateProjectRequestSchema = z.object({
+  name: z.string().min(1).max(255),
+  lyrics: z.string().min(10).max(5000),
+  genre: z.string().min(1).max(100),
+});
+export type CreateProjectRequest = z.infer<typeof CreateProjectRequestSchema>;
+
+export const UpdateProjectRequestSchema = z.object({
+  name: z.string().min(1).max(255).optional(),
+  lyrics: z.string().min(10).max(5000).optional(),
+  genre: z.string().min(1).max(100).optional(),
+});
+export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>;
+
+// ============================================================================
 // API Request/Response
 // ============================================================================
 
