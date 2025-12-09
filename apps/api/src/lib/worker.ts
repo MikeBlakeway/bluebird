@@ -5,10 +5,12 @@
 
 import { Worker, Job } from 'bullmq'
 import IORedis from 'ioredis'
+import { JobStage } from '@bluebird/types'
 import { QUEUE_NAMES, type PlanJobData, type AnalyzeJobData } from './queue.js'
 import { analyzeLyrics, detectRhymeScheme, estimateTempo, extractSeedPhrase } from './analyzer.js'
 import { planArrangement } from './planner.js'
 import { prisma } from './db.js'
+import { publishJobEvent } from './events.js'
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
 
@@ -17,6 +19,18 @@ const redisConnection = new IORedis(REDIS_URL, {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 })
+
+const now = () => new Date().toISOString()
+
+async function sendEvent(jobId: string, stage: JobStage, progress: number, message?: string) {
+  await publishJobEvent({
+    jobId,
+    stage,
+    progress,
+    message,
+    timestamp: now(),
+  })
+}
 
 /**
  * Process a plan job: analyze lyrics → generate arrangement → persist to DB.
@@ -29,6 +43,7 @@ async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
 
   // Update progress: analyzing (0-30%)
   await job.updateProgress(10)
+  await sendEvent(jobId, 'analyzing', 0.1, 'Analyzing lyrics')
 
   // Analyze lyrics
   const lines = analyzeLyrics(lyrics)
@@ -49,11 +64,14 @@ async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
   }
 
   await job.updateProgress(30)
+  await sendEvent(jobId, 'analyzing', 0.3, 'Analysis complete')
 
   // Generate arrangement plan (30-70%)
   await job.updateProgress(50)
+  await sendEvent(jobId, 'planning', 0.5, 'Planning arrangement')
   const arrangement = planArrangement(analysisResult, jobId, seed)
   await job.updateProgress(70)
+  await sendEvent(jobId, 'planning', 0.7, 'Arrangement ready')
 
   // Persist to database (70-90%)
   await prisma.take.upsert({
@@ -74,11 +92,13 @@ async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
   })
 
   await job.updateProgress(90)
+  await sendEvent(jobId, 'planning', 0.9, 'Persisted plan')
 
   // TODO (D9): Emit SSE event for 'completed'
   // TODO (Sprint 1): Enqueue music/vocal synthesis jobs
 
   await job.updateProgress(100)
+  await sendEvent(jobId, 'completed', 1)
   // eslint-disable-next-line no-console
   console.log(`[WORKER] Completed plan job ${jobId}`)
 }
@@ -118,6 +138,7 @@ export const analyzeWorker = new Worker<AnalyzeJobData>(QUEUE_NAMES.ANALYZE, pro
 planWorker.on('failed', (job, err) => {
   if (job) {
     console.error(`[WORKER] Plan job ${job.id} failed:`, err)
+    void sendEvent(job.id as string, 'failed', job.progress as number, err.message)
   }
 })
 

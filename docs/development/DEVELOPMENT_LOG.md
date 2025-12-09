@@ -19,7 +19,7 @@
 - [x] Planner pod stub (structure/BPM/key heuristics v0)
 - [x] Orchestrator endpoints (`/plan/song`, `/plan/arrangement`, `/plan/vocals`)
 - [x] BullMQ queues (plan, analyze queues; priority lanes; DLQ) — **D8 completed**
-- [ ] SSE server (`/jobs/:id/events`; heartbeat; reconnect)
+- [x] SSE server (`/jobs/:id/events`; heartbeat; reconnect) — **D9 completed**
 - [ ] CLI `bluebird plan` command
 
 **Architectural Decisions:**
@@ -50,7 +50,7 @@
 - Redis round-trip: <1ms average (with local Redis on same Docker network)
 - TTFP baseline: ~2s (plan + SSE handshake); real TTFP measured in Sprint 1
 
-**D8: BullMQ Queue Implementation (Dec 9, 2025)**
+### D8: BullMQ Queue Implementation (Dec 9, 2025)
 
 Files created:
 
@@ -107,10 +107,75 @@ Integration tests:
 - ❌ Avoided: Shared database for job state + artifacts; separate concerns (PG for metadata, S3 for media)
 - ❌ Avoided: No seed tracking; added seed to every job for reproducibility
 
+### D9: SSE Job Events Streaming (Dec 9, 2025)
+
+Files created:
+
+- `apps/api/src/lib/events.ts` (56 lines): Redis pub/sub event bus for job events
+- `apps/api/src/routes/jobs.ts` (75 lines): SSE endpoint `GET /jobs/:jobId/events`
+- `apps/api/src/lib/events.test.ts` (110 lines): Event bus unit tests
+- `apps/api/src/routes/jobs.test.ts` (68 lines): SSE endpoint integration tests
+
+Key implementation details:
+
+- **Redis pub/sub:** Job-specific channels (`job-events:{jobId}`) for targeted event delivery
+- **SSE endpoint:** `GET /jobs/:jobId/events` streams real-time job updates with proper headers
+- **Heartbeat:** 15-second interval with `: heartbeat\n\n` keep-alive messages
+- **Initial state:** Fetches current job status from BullMQ on connection for immediate feedback
+- **Event schema:** JobEvent (jobId, stage, progress, message, timestamp, error) validated via Zod
+- **Stage mapping:** BullMQ job states (waiting/active/completed/failed) mapped to JobStage enum
+- **Reconnect support:** Client can reconnect anytime; receives current state snapshot on connect
+- **Worker integration:** Workers emit events at each stage (analyzing, planning, completed, failed)
+- **Orchestrator integration:** Emits initial "queued" event when job is enqueued
+
+Worker event emission:
+
+- 10% progress: "Analyzing lyrics" (stage: analyzing)
+- 30% progress: "Analysis complete" (stage: analyzing)
+- 50% progress: "Planning arrangement" (stage: planning)
+- 70% progress: "Arrangement ready" (stage: planning)
+- 90% progress: "Persisted plan" (stage: planning)
+- 100% progress: Job completed (stage: completed)
+- On failure: Emits "failed" stage with error message
+
+Client connection handling:
+
+- Automatic cleanup on client disconnect (closes Redis subscriber)
+- Graceful unsubscribe via request.raw 'close' event
+- No memory leaks from orphaned subscriptions
+
+Testing coverage:
+
+- Event bus publish/subscribe verification
+- Multiple subscribers for same job (broadcast)
+- Job isolation (subscribers only receive events for their jobId)
+- SSE response headers and format validation
+- Heartbeat message presence
+- Invalid jobId handling (400 error)
+
+**Lessons Learned:**
+
+- **Redis pub/sub isolation:** Each jobId gets dedicated channel; prevents cross-job event leakage
+- **SSE headers critical:** Must set `Content-Type: text/event-stream`, `Cache-Control: no-cache`, `Connection: keep-alive`
+- **Initial state fetch:** Clients expect immediate feedback; fetching BullMQ job state on connect prevents "waiting for first event" UX
+- **Heartbeat prevents timeouts:** Without heartbeat, proxies/load balancers close "idle" SSE connections; 15s interval is sweet spot
+- **Stage mapping complexity:** BullMQ state (waiting/active/completed) doesn't map 1:1 to domain stages; needs translation layer
+- **Cleanup is critical:** Must unsubscribe Redis listener on client disconnect; memory leaks accumulate fast with long-running SSE
+- **TypeScript optional chaining:** Tests must use `events[0]?.field` due to strict undefined checks
+
+**Anti-Patterns Avoided:**
+
+- ❌ Avoided: Global event channel for all jobs; per-job channels enable efficient filtering
+- ❌ Avoided: Polling job status; SSE provides real-time updates without API hammering
+- ❌ Avoided: No heartbeat; connections die silently without keep-alive
+- ❌ Avoided: Skipping initial state; clients would see blank UI until first worker event
+
 **Outstanding Questions:**
 
 - Prisma scaling: When does generated query complexity become a bottleneck? Plan cache strategy?
 - SSE tail latency: P95 with slow network clients? Implement streaming response gzip?
+- Event retention: Should we persist events to DB for audit trail or rely on ephemeral Redis pub/sub?
+- Rate limiting: How to prevent SSE connection spam (e.g., malicious reconnect loops)?
 
 ---
 

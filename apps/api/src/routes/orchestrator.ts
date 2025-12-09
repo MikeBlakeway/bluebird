@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { PlanSongRequestSchema, type PlanSongResponse } from '@bluebird/types'
 import { enqueuePlanJob } from '../lib/queue.js'
+import { publishJobEvent } from '../lib/events.js'
 
 interface AuthenticatedRequest extends FastifyRequest {
   user?: {
@@ -46,6 +47,14 @@ export async function planSongHandler(
       genre,
       seed,
       isPro: false, // TODO: Check user tier from request.user
+    })
+
+    await publishJobEvent({
+      jobId,
+      stage: 'queued',
+      progress: 0,
+      timestamp: new Date().toISOString(),
+      message: 'Job enqueued',
     })
 
     // Build response
