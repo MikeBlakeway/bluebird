@@ -1,21 +1,21 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 // ============================================================================
 // Primitive Types
 // ============================================================================
 
-export const IdSchema = z.string().cuid();
-export type Id = z.infer<typeof IdSchema>;
+export const IdSchema = z.string().cuid()
+export type Id = z.infer<typeof IdSchema>
 
-export const ProjectIdSchema = z.string().cuid();
-export type ProjectId = z.infer<typeof ProjectIdSchema>;
+export const ProjectIdSchema = z.string().cuid()
+export type ProjectId = z.infer<typeof ProjectIdSchema>
 
 // JobId can be custom format like "project:timestamp:seed", not just CUID
-export const JobIdSchema = z.string().min(1);
-export type JobId = z.infer<typeof JobIdSchema>;
+export const JobIdSchema = z.string().min(1)
+export type JobId = z.infer<typeof JobIdSchema>
 
-export const TakeIdSchema = z.string().cuid();
-export type TakeId = z.infer<typeof TakeIdSchema>;
+export const TakeIdSchema = z.string().cuid()
+export type TakeId = z.infer<typeof TakeIdSchema>
 
 // ============================================================================
 // Planning & Arrangement
@@ -26,8 +26,8 @@ export const SectionSchema = z.object({
   type: z.enum(['intro', 'verse', 'chorus', 'bridge', 'outro']),
   bars: z.number().int().min(4).max(32),
   energyLevel: z.number().min(0).max(1),
-});
-export type Section = z.infer<typeof SectionSchema>;
+})
+export type Section = z.infer<typeof SectionSchema>
 
 export const ArrangementSpecSchema = z.object({
   projectId: ProjectIdSchema,
@@ -40,8 +40,8 @@ export const ArrangementSpecSchema = z.object({
   instrumentation: z.array(z.string()),
   energyCurve: z.array(z.number().min(0).max(1)),
   seed: z.number().int().optional(),
-});
-export type ArrangementSpec = z.infer<typeof ArrangementSpecSchema>;
+})
+export type ArrangementSpec = z.infer<typeof ArrangementSpecSchema>
 
 export const VocalLineSchema = z.object({
   lineNumber: z.number().int().min(0),
@@ -49,16 +49,16 @@ export const VocalLineSchema = z.object({
   syllables: z.array(z.string()),
   artistId: z.string().optional(),
   styleNotes: z.string().optional(),
-});
-export type VocalLine = z.infer<typeof VocalLineSchema>;
+})
+export type VocalLine = z.infer<typeof VocalLineSchema>
 
 export const VocalScoreSchema = z.object({
   projectId: ProjectIdSchema,
   jobId: JobIdSchema,
   lines: z.array(VocalLineSchema),
   overallStyle: z.string().optional(),
-});
-export type VocalScore = z.infer<typeof VocalScoreSchema>;
+})
+export type VocalScore = z.infer<typeof VocalScoreSchema>
 
 // ============================================================================
 // Analyzer (Lyrics Parsing)
@@ -81,14 +81,14 @@ export const AnalysisResultSchema = z.object({
   estimatedTempo: z.number().optional(), // BPM guess
   seedPhrase: z.string().optional(), // Main hook/theme
   analyzedAt: z.string().datetime(),
-});
-export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
+})
+export type AnalysisResult = z.infer<typeof AnalysisResultSchema>
 
 export const AnalyzeRequestSchema = z.object({
   projectId: ProjectIdSchema,
   lyrics: z.string().min(10).max(5000),
-});
-export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>;
+})
+export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>
 
 // ============================================================================
 // Remix & Reference
@@ -102,8 +102,8 @@ export const RemixFeaturesSchema = z.object({
   rhythmPattern: z.array(z.number()).optional(),
   intervalNgrams: z.record(z.number()).optional(),
   energyProfile: z.array(z.number()).optional(),
-});
-export type RemixFeatures = z.infer<typeof RemixFeaturesSchema>;
+})
+export type RemixFeatures = z.infer<typeof RemixFeaturesSchema>
 
 // ============================================================================
 // Similarity Checking
@@ -113,11 +113,11 @@ export const SimilarityScoreSchema = z.object({
   melody: z.number().min(0).max(1),
   rhythm: z.number().min(0).max(1),
   combined: z.number().min(0).max(1),
-});
-export type SimilarityScore = z.infer<typeof SimilarityScoreSchema>;
+})
+export type SimilarityScore = z.infer<typeof SimilarityScoreSchema>
 
-export const SimilarityVerdictSchema = z.enum(['pass', 'borderline', 'block']);
-export type SimilarityVerdict = z.infer<typeof SimilarityVerdictSchema>;
+export const SimilarityVerdictSchema = z.enum(['pass', 'borderline', 'block'])
+export type SimilarityVerdict = z.infer<typeof SimilarityVerdictSchema>
 
 export const SimilarityReportSchema = z.object({
   jobId: JobIdSchema,
@@ -127,15 +127,15 @@ export const SimilarityReportSchema = z.object({
   reason: z.string(),
   recommendations: z.array(z.string()).optional(),
   checkedAt: z.string().datetime(),
-});
-export type SimilarityReport = z.infer<typeof SimilarityReportSchema>;
+})
+export type SimilarityReport = z.infer<typeof SimilarityReportSchema>
 
 // ============================================================================
 // Export & Delivery
 // ============================================================================
 
-export const ExportFormatSchema = z.enum(['wav', 'mp3', 'flac']);
-export type ExportFormat = z.infer<typeof ExportFormatSchema>;
+export const ExportFormatSchema = z.enum(['wav', 'mp3', 'flac'])
+export type ExportFormat = z.infer<typeof ExportFormatSchema>
 
 export const ExportBundleSchema = z.object({
   jobId: JobIdSchema,
@@ -160,8 +160,8 @@ export const ExportBundleSchema = z.object({
   }),
   similarityReport: SimilarityReportSchema.optional(),
   createdAt: z.string().datetime(),
-});
-export type ExportBundle = z.infer<typeof ExportBundleSchema>;
+})
+export type ExportBundle = z.infer<typeof ExportBundleSchema>
 
 // ============================================================================
 // Job Events (SSE)
@@ -179,8 +179,8 @@ export const JobStageSchema = z.enum([
   'exporting',
   'completed',
   'failed',
-]);
-export type JobStage = z.infer<typeof JobStageSchema>;
+])
+export type JobStage = z.infer<typeof JobStageSchema>
 
 export const JobEventSchema = z.object({
   jobId: JobIdSchema,
@@ -190,8 +190,8 @@ export const JobEventSchema = z.object({
   timestamp: z.string().datetime(),
   duration: z.number().optional(), // milliseconds
   error: z.string().optional(),
-});
-export type JobEvent = z.infer<typeof JobEventSchema>;
+})
+export type JobEvent = z.infer<typeof JobEventSchema>
 
 // ============================================================================
 // Authentication & User
@@ -203,38 +203,38 @@ export const UserSchema = z.object({
   name: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-});
-export type User = z.infer<typeof UserSchema>;
+})
+export type User = z.infer<typeof UserSchema>
 
 export const MagicLinkRequestSchema = z.object({
   email: z.string().email(),
-});
-export type MagicLinkRequest = z.infer<typeof MagicLinkRequestSchema>;
+})
+export type MagicLinkRequest = z.infer<typeof MagicLinkRequestSchema>
 
 export const MagicLinkResponseSchema = z.object({
   success: z.boolean(),
   message: z.string(),
-});
-export type MagicLinkResponse = z.infer<typeof MagicLinkResponseSchema>;
+})
+export type MagicLinkResponse = z.infer<typeof MagicLinkResponseSchema>
 
 export const VerifyMagicLinkRequestSchema = z.object({
   token: z.string(),
-});
-export type VerifyMagicLinkRequest = z.infer<typeof VerifyMagicLinkRequestSchema>;
+})
+export type VerifyMagicLinkRequest = z.infer<typeof VerifyMagicLinkRequestSchema>
 
 export const AuthResponseSchema = z.object({
   user: UserSchema,
   token: z.string(),
-});
-export type AuthResponse = z.infer<typeof AuthResponseSchema>;
+})
+export type AuthResponse = z.infer<typeof AuthResponseSchema>
 
 export const JWTPayloadSchema = z.object({
   userId: IdSchema,
   email: z.string().email(),
   iat: z.number().optional(),
   exp: z.number().optional(),
-});
-export type JWTPayload = z.infer<typeof JWTPayloadSchema>;
+})
+export type JWTPayload = z.infer<typeof JWTPayloadSchema>
 
 // ============================================================================
 // Project
@@ -248,22 +248,22 @@ export const ProjectSchema = z.object({
   genre: z.string().min(1).max(100),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-});
-export type Project = z.infer<typeof ProjectSchema>;
+})
+export type Project = z.infer<typeof ProjectSchema>
 
 export const CreateProjectRequestSchema = z.object({
   name: z.string().min(1).max(255),
   lyrics: z.string().min(10).max(5000),
   genre: z.string().min(1).max(100),
-});
-export type CreateProjectRequest = z.infer<typeof CreateProjectRequestSchema>;
+})
+export type CreateProjectRequest = z.infer<typeof CreateProjectRequestSchema>
 
 export const UpdateProjectRequestSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   lyrics: z.string().min(10).max(5000).optional(),
   genre: z.string().min(1).max(100).optional(),
-});
-export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>;
+})
+export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>
 
 // ============================================================================
 // API Request/Response
@@ -275,8 +275,8 @@ export const PlanSongRequestSchema = z.object({
   genre: z.string().min(1),
   referenceKey: z.string().optional(), // S3 path to reference audio features
   seed: z.number().int().optional(),
-});
-export type PlanSongRequest = z.infer<typeof PlanSongRequestSchema>;
+})
+export type PlanSongRequest = z.infer<typeof PlanSongRequestSchema>
 
 export const PlanSongResponseSchema = z.object({
   jobId: JobIdSchema,
@@ -284,24 +284,24 @@ export const PlanSongResponseSchema = z.object({
   status: z.string(),
   plan: ArrangementSpecSchema.optional(),
   vocalization: VocalScoreSchema.optional(),
-});
-export type PlanSongResponse = z.infer<typeof PlanSongResponseSchema>;
+})
+export type PlanSongResponse = z.infer<typeof PlanSongResponseSchema>
 
 export const RenderPreviewRequestSchema = z.object({
   jobId: JobIdSchema,
   arrangement: ArrangementSpecSchema,
   vocals: VocalScoreSchema,
   seed: z.number().int().optional(),
-});
-export type RenderPreviewRequest = z.infer<typeof RenderPreviewRequestSchema>;
+})
+export type RenderPreviewRequest = z.infer<typeof RenderPreviewRequestSchema>
 
 export const CheckSimilarityRequestSchema = z.object({
   jobId: JobIdSchema,
   referenceKey: z.string(),
   melody: z.array(z.number()),
   rhythm: z.array(z.number()),
-});
-export type CheckSimilarityRequest = z.infer<typeof CheckSimilarityRequestSchema>;
+})
+export type CheckSimilarityRequest = z.infer<typeof CheckSimilarityRequestSchema>
 
 export const ExportRequestSchema = z.object({
   jobId: JobIdSchema,
@@ -309,5 +309,5 @@ export const ExportRequestSchema = z.object({
   includeStemsTar: z.boolean().default(false),
   sampleRate: z.number().int().default(48000),
   bitDepth: z.number().int().default(24),
-});
-export type ExportRequest = z.infer<typeof ExportRequestSchema>;
+})
+export type ExportRequest = z.infer<typeof ExportRequestSchema>

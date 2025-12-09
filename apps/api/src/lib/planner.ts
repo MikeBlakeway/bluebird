@@ -3,7 +3,7 @@
  * This is a v0 stub using heuristics; real version would use ML models.
  */
 
-import type { AnalysisResult, ArrangementSpec, Section, JobId } from '@bluebird/types';
+import type { AnalysisResult, ArrangementSpec, Section, JobId } from '@bluebird/types'
 
 /**
  * Guess song key from lyrics/genre context and tempo.
@@ -11,10 +11,10 @@ import type { AnalysisResult, ArrangementSpec, Section, JobId } from '@bluebird/
  * For now: return common keys in rotation.
  */
 export function guessKey(analysisResult: AnalysisResult, seed: number = 0): string {
-  const commonKeys = ['C', 'G', 'D', 'A', 'E', 'Am', 'Em', 'Dm'];
-  const index = (seed + analysisResult.projectId.charCodeAt(0)) % commonKeys.length;
-  const key = commonKeys[index];
-  return key ?? 'C';
+  const commonKeys = ['C', 'G', 'D', 'A', 'E', 'Am', 'Em', 'Dm']
+  const index = (seed + analysisResult.projectId.charCodeAt(0)) % commonKeys.length
+  const key = commonKeys[index]
+  return key ?? 'C'
 }
 
 /**
@@ -25,14 +25,14 @@ export function guessScale(
   seedPhrase: string | undefined,
   _analysisResult: AnalysisResult
 ): 'major' | 'minor' | 'pentatonic' {
-  if (!seedPhrase) return 'major';
+  if (!seedPhrase) return 'major'
 
-  const sad = ['sad', 'blue', 'break', 'cry', 'lost', 'alone', 'dark'];
-  const isSad = sad.some((w) => seedPhrase.toLowerCase().includes(w));
+  const sad = ['sad', 'blue', 'break', 'cry', 'lost', 'alone', 'dark']
+  const isSad = sad.some((w) => seedPhrase.toLowerCase().includes(w))
 
-  if (isSad) return 'minor';
-  if (seedPhrase.length > 20) return 'pentatonic';
-  return 'major';
+  if (isSad) return 'minor'
+  if (seedPhrase.length > 20) return 'pentatonic'
+  return 'major'
 }
 
 /**
@@ -40,19 +40,20 @@ export function guessScale(
  * Takes analyzer's estimate and applies adjustments.
  */
 export function refineTempo(analysisResult: AnalysisResult): number {
-  const estimatedTempo = analysisResult.estimatedTempo ?? 100;
-  const avgSyllablesPerLine = analysisResult.totalSyllables / Math.max(analysisResult.lines.length, 1);
+  const estimatedTempo = analysisResult.estimatedTempo ?? 100
+  const avgSyllablesPerLine =
+    analysisResult.totalSyllables / Math.max(analysisResult.lines.length, 1)
 
   // Fine-tune: rapid delivery → faster tempo, slow delivery → slower
   if (avgSyllablesPerLine > 8) {
     // Lots of syllables/line suggests fast delivery
-    return Math.min(estimatedTempo + 10, 160);
+    return Math.min(estimatedTempo + 10, 160)
   } else if (avgSyllablesPerLine < 3) {
     // Few syllables suggests sparse/slow
-    return Math.max(estimatedTempo - 10, 70);
+    return Math.max(estimatedTempo - 10, 70)
   }
 
-  return estimatedTempo;
+  return estimatedTempo
 }
 
 /**
@@ -60,12 +61,12 @@ export function refineTempo(analysisResult: AnalysisResult): number {
  * Common pop structure: Intro → Verse → Chorus → Verse → Chorus → Bridge → Chorus → Outro
  */
 export function inferStructure(analysisResult: AnalysisResult): Section[] {
-  const lineCount = analysisResult.lines.length;
+  const lineCount = analysisResult.lines.length
 
   // Heuristic: 4-8 lines per section; chorus often 4-6 lines repeating
   // (Can use findRepeatingPattern for future chorus detection refinements)
 
-  const sections: Section[] = [];
+  const sections: Section[] = []
 
   // Intro
   sections.push({
@@ -73,20 +74,20 @@ export function inferStructure(analysisResult: AnalysisResult): Section[] {
     type: 'intro',
     bars: 8,
     energyLevel: 0.3,
-  });
+  })
 
   // Verse(s) - estimate based on line count
-  const verseLinesPerSection = 8;
-  const verseCount = Math.max(1, Math.floor((lineCount * 0.6) / verseLinesPerSection));
+  const verseLinesPerSection = 8
+  const verseCount = Math.max(1, Math.floor((lineCount * 0.6) / verseLinesPerSection))
 
-  let sectionIndex = 1;
+  let sectionIndex = 1
   for (let i = 0; i < verseCount; i++) {
     sections.push({
       index: sectionIndex++,
       type: 'verse',
       bars: 16,
       energyLevel: 0.4 + i * 0.1,
-    });
+    })
   }
 
   // Chorus - inferred from repeating pattern
@@ -95,7 +96,7 @@ export function inferStructure(analysisResult: AnalysisResult): Section[] {
     type: 'chorus',
     bars: 8,
     energyLevel: 0.8,
-  });
+  })
 
   // Bridge - if song is long enough
   if (lineCount > 20) {
@@ -104,7 +105,7 @@ export function inferStructure(analysisResult: AnalysisResult): Section[] {
       type: 'bridge',
       bars: 8,
       energyLevel: 0.6,
-    });
+    })
   }
 
   // Final chorus
@@ -113,7 +114,7 @@ export function inferStructure(analysisResult: AnalysisResult): Section[] {
     type: 'chorus',
     bars: 8,
     energyLevel: 0.9,
-  });
+  })
 
   // Outro
   sections.push({
@@ -121,9 +122,9 @@ export function inferStructure(analysisResult: AnalysisResult): Section[] {
     type: 'outro',
     bars: 8,
     energyLevel: 0.2,
-  });
+  })
 
-  return sections;
+  return sections
 }
 
 /**
@@ -131,16 +132,16 @@ export function inferStructure(analysisResult: AnalysisResult): Section[] {
  * Curves from intro through verses, builds to chorus, dips for bridge, climbs to final chorus.
  */
 export function generateEnergyCurve(sections: Section[]): number[] {
-  const curve: number[] = [];
+  const curve: number[] = []
 
   sections.forEach((section) => {
-    const samplesPerSection = Math.ceil(section.bars / 4); // ~1 sample per 4 bars
+    const samplesPerSection = Math.ceil(section.bars / 4) // ~1 sample per 4 bars
     for (let i = 0; i < samplesPerSection; i++) {
-      curve.push(section.energyLevel);
+      curve.push(section.energyLevel)
     }
-  });
+  })
 
-  return curve;
+  return curve
 }
 
 /**
@@ -149,19 +150,19 @@ export function generateEnergyCurve(sections: Section[]): number[] {
  */
 export function guessInstrumentation(analysisResult: AnalysisResult): string[] {
   // Base instruments
-  const instruments = ['kick', 'snare', 'hihat', 'bass', 'guitar', 'pad'];
+  const instruments = ['kick', 'snare', 'hihat', 'bass', 'guitar', 'pad']
 
   // Add richness based on syllable density
   if (analysisResult.totalSyllables > 100) {
-    instruments.push('strings');
+    instruments.push('strings')
   }
 
   // Add melodic interest if rhyme scheme is sophisticated
   if (analysisResult.rhymeScheme && analysisResult.rhymeScheme.length > 8) {
-    instruments.push('synth', 'vocal-harmonies');
+    instruments.push('synth', 'vocal-harmonies')
   }
 
-  return instruments;
+  return instruments
 }
 
 /**
@@ -173,12 +174,12 @@ export function planArrangement(
   jobId: JobId,
   seed: number = 0
 ): ArrangementSpec {
-  const bpm = refineTempo(analysisResult);
-  const key = guessKey(analysisResult, seed);
-  const scale = guessScale(analysisResult.seedPhrase, analysisResult);
-  const sections = inferStructure(analysisResult);
-  const energyCurve = generateEnergyCurve(sections);
-  const instrumentation = guessInstrumentation(analysisResult);
+  const bpm = refineTempo(analysisResult)
+  const key = guessKey(analysisResult, seed)
+  const scale = guessScale(analysisResult.seedPhrase, analysisResult)
+  const sections = inferStructure(analysisResult)
+  const energyCurve = generateEnergyCurve(sections)
+  const instrumentation = guessInstrumentation(analysisResult)
 
   return {
     projectId: analysisResult.projectId,
@@ -191,5 +192,5 @@ export function planArrangement(
     instrumentation,
     energyCurve,
     seed: seed || undefined,
-  };
+  }
 }

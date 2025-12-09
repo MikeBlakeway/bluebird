@@ -1,13 +1,12 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { PlanSongRequestSchema, type PlanSongResponse } from '@bluebird/types';
-import { planArrangement } from '../lib/planner.js';
-import { analyzeLyrics, detectRhymeScheme, estimateTempo, extractSeedPhrase } from '../lib/analyzer.js';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import { PlanSongRequestSchema, type PlanSongResponse } from '@bluebird/types'
+import { enqueuePlanJob } from '../lib/queue.js'
 
 interface AuthenticatedRequest extends FastifyRequest {
   user?: {
-    userId: string;
-    email: string;
-  };
+    userId: string
+    email: string
+  }
 }
 
 /**
@@ -22,66 +21,51 @@ export async function planSongHandler(
 ): Promise<void> {
   // Require auth
   if (!request.user) {
-    return reply.code(401).send({ error: 'Unauthorized' });
+    return reply.code(401).send({ error: 'Unauthorized' })
   }
 
   // Parse request
-  const parsed = PlanSongRequestSchema.safeParse(request.body);
+  const parsed = PlanSongRequestSchema.safeParse(request.body)
   if (!parsed.success) {
-    return reply.code(400).send({ error: 'Invalid request', details: parsed.error });
+    return reply.code(400).send({ error: 'Invalid request', details: parsed.error })
   }
 
-  const { projectId, lyrics, seed } = parsed.data;
-  // TODO: Use idempotency key for caching (D8/D9 persistence)
-  // const idempotencyKey = request.headers['idempotency-key'] as string | undefined;
+  const { projectId, lyrics, genre, seed } = parsed.data
+  const idempotencyKey = request.headers['idempotency-key'] as string | undefined
 
   try {
     // Generate jobId (format: project:timestamp:seed)
-    const jobId = `${projectId}:${Date.now()}:${seed || 0}`;
+    // Use idempotency key as jobId if provided, otherwise generate
+    const jobId = idempotencyKey || `${projectId}:${Date.now()}:${seed || 0}`
 
-    // Analyze lyrics
-    const lines = analyzeLyrics(lyrics);
-    const rhymeScheme = detectRhymeScheme(lines);
-    const estimatedTempo = estimateTempo(lines);
-    const seedPhrase = extractSeedPhrase(lyrics);
-
-    // Build analysis result
-    const analysisResult = {
+    // Enqueue plan job (worker will process asynchronously)
+    await enqueuePlanJob({
       projectId,
+      jobId,
       lyrics,
-      lines,
-      totalSyllables: lines.reduce((sum, line) => sum + line.syllables.length, 0),
-      rhymeScheme: rhymeScheme.rhymeScheme,
-      rhymingWords: rhymeScheme.rhymingWords,
-      estimatedTempo,
-      seedPhrase,
-      analyzedAt: new Date().toISOString(),
-    };
-
-    // Generate arrangement
-    const arrangement = planArrangement(analysisResult, jobId, seed);
+      genre,
+      seed,
+      isPro: false, // TODO: Check user tier from request.user
+    })
 
     // Build response
     const response: PlanSongResponse = {
       jobId,
       projectId,
-      status: 'planned',
-      plan: arrangement,
-    };
+      status: 'queued',
+      // plan will be available after worker processes the job
+    }
 
-    // TODO: Cache response with idempotency key (D8/D9)
-    // TODO: Queue job for synthesis (D8)
-
-    return reply.code(200).send(response);
+    return reply.code(202).send(response)
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('[PLAN SONG ERROR]', error);
+    console.error('[PLAN SONG ERROR]', error)
     return reply.code(400).send({
       message: error instanceof Error ? error.message : 'Failed to plan song',
-    });
+    })
   }
 }
 
 export function registerOrchestratorRoutes(fastify: FastifyInstance) {
-  fastify.post('/plan/song', planSongHandler);
+  fastify.post('/plan/song', planSongHandler)
 }

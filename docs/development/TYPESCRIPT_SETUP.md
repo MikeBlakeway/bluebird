@@ -99,7 +99,7 @@ pnpm -F @bluebird/types run typecheck
   - noImplicitAny, strictNullChecks, noImplicitThis, etc.
 - **Unused detection**: noUnusedLocals, noUnusedParameters
 - **Best practices**: exactOptionalPropertyTypes, useUnknownInCatchVariables
-- **Path aliases**: @bluebird/* for seamless imports
+- **Path aliases**: @bluebird/\* for seamless imports
 - **Watch options**: Optimized for monorepo (useFsEvents, excludes)
 - **Module system**: ES2020 modules + bundler resolution
 - **Declaration maps**: Source-map support for IDE "Go to Definition"

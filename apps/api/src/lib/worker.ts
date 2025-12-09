@@ -1,0 +1,163 @@
+/**
+ * BullMQ worker skeleton.
+ * Processes jobs from queues and updates job status.
+ */
+
+import { Worker, Job } from 'bullmq'
+import IORedis from 'ioredis'
+import { QUEUE_NAMES, type PlanJobData, type AnalyzeJobData } from './queue.js'
+import { analyzeLyrics, detectRhymeScheme, estimateTempo, extractSeedPhrase } from './analyzer.js'
+import { planArrangement } from './planner.js'
+import { prisma } from './db.js'
+
+const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
+
+// Shared Redis connection for workers
+const redisConnection = new IORedis(REDIS_URL, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+})
+
+/**
+ * Process a plan job: analyze lyrics → generate arrangement → persist to DB.
+ */
+async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
+  const { projectId, jobId, lyrics, seed } = job.data
+
+  // eslint-disable-next-line no-console
+  console.log(`[WORKER] Processing plan job ${jobId}`)
+
+  // Update progress: analyzing (0-30%)
+  await job.updateProgress(10)
+
+  // Analyze lyrics
+  const lines = analyzeLyrics(lyrics)
+  const rhymeScheme = detectRhymeScheme(lines)
+  const estimatedTempo = estimateTempo(lines)
+  const seedPhrase = extractSeedPhrase(lyrics)
+
+  const analysisResult = {
+    projectId,
+    lyrics,
+    lines,
+    totalSyllables: lines.reduce((sum, line) => sum + line.syllables.length, 0),
+    rhymeScheme: rhymeScheme.rhymeScheme,
+    rhymingWords: rhymeScheme.rhymingWords,
+    estimatedTempo,
+    seedPhrase,
+    analyzedAt: new Date().toISOString(),
+  }
+
+  await job.updateProgress(30)
+
+  // Generate arrangement plan (30-70%)
+  await job.updateProgress(50)
+  const arrangement = planArrangement(analysisResult, jobId, seed)
+  await job.updateProgress(70)
+
+  // Persist to database (70-90%)
+  await prisma.take.upsert({
+    where: { jobId },
+    create: {
+      jobId,
+      projectId,
+      status: 'planned',
+      plan: arrangement as unknown as Record<string, unknown>, // Prisma JSON type
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    update: {
+      status: 'planned',
+      plan: arrangement as unknown as Record<string, unknown>,
+      updatedAt: new Date(),
+    },
+  })
+
+  await job.updateProgress(90)
+
+  // TODO (D9): Emit SSE event for 'completed'
+  // TODO (Sprint 1): Enqueue music/vocal synthesis jobs
+
+  await job.updateProgress(100)
+  // eslint-disable-next-line no-console
+  console.log(`[WORKER] Completed plan job ${jobId}`)
+}
+
+/**
+ * Process an analyze job: parse lyrics → extract features.
+ * Currently a stub - will be expanded when needed.
+ */
+async function processAnalyzeJob(job: Job<AnalyzeJobData>): Promise<void> {
+  const { jobId } = job.data
+
+  // eslint-disable-next-line no-console
+  console.log(`[WORKER] Processing analyze job ${jobId}`)
+
+  await job.updateProgress(50)
+
+  // TODO: Implement standalone analysis when needed
+  // For now, analysis is done inline in plan jobs
+
+  await job.updateProgress(100)
+  // eslint-disable-next-line no-console
+  console.log(`[WORKER] Completed analyze job ${jobId}`)
+}
+
+// Initialize workers
+export const planWorker = new Worker<PlanJobData>(QUEUE_NAMES.PLAN, processPlanJob, {
+  connection: redisConnection,
+  concurrency: 5, // Process up to 5 jobs concurrently
+})
+
+export const analyzeWorker = new Worker<AnalyzeJobData>(QUEUE_NAMES.ANALYZE, processAnalyzeJob, {
+  connection: redisConnection,
+  concurrency: 10, // Faster jobs, more concurrency
+})
+
+// Error handling
+planWorker.on('failed', (job, err) => {
+  if (job) {
+    console.error(`[WORKER] Plan job ${job.id} failed:`, err)
+  }
+})
+
+analyzeWorker.on('failed', (job, err) => {
+  if (job) {
+    console.error(`[WORKER] Analyze job ${job.id} failed:`, err)
+  }
+})
+
+// Success logging
+planWorker.on('completed', (job) => {
+  // eslint-disable-next-line no-console
+  console.log(`[WORKER] Plan job ${job.id} completed`)
+})
+
+analyzeWorker.on('completed', (job) => {
+  // eslint-disable-next-line no-console
+  console.log(`[WORKER] Analyze job ${job.id} completed`)
+})
+
+/**
+ * Graceful shutdown.
+ */
+export async function closeWorkers(): Promise<void> {
+  await Promise.all([planWorker.close(), analyzeWorker.close(), redisConnection.quit()])
+  // eslint-disable-next-line no-console
+  console.log('[WORKER] All workers closed')
+}
+
+// Handle process termination
+process.on('SIGTERM', async () => {
+  // eslint-disable-next-line no-console
+  console.log('[WORKER] SIGTERM received, closing workers...')
+  await closeWorkers()
+  process.exit(0)
+})
+
+process.on('SIGINT', async () => {
+  // eslint-disable-next-line no-console
+  console.log('[WORKER] SIGINT received, closing workers...')
+  await closeWorkers()
+  process.exit(0)
+})

@@ -1,15 +1,15 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { verifyToken, type JWTPayload } from './jwt.js';
+import { FastifyRequest, FastifyReply } from 'fastify'
+import { verifyToken, type JWTPayload } from './jwt.js'
 
 // Augment Fastify types for our auth
 declare module 'fastify' {
   interface FastifyRequest {
-    user?: JWTPayload;
+    user?: JWTPayload
   }
 }
 
 export interface AuthenticatedRequest extends FastifyRequest {
-  user?: JWTPayload;
+  user?: JWTPayload
 }
 
 /**
@@ -17,16 +17,16 @@ export interface AuthenticatedRequest extends FastifyRequest {
  */
 function extractToken(request: FastifyRequest): string | null {
   // Try cookie first
-  const cookieToken = request.cookies.auth_token;
-  if (cookieToken) return cookieToken;
+  const cookieToken = request.cookies.auth_token
+  if (cookieToken) return cookieToken
 
   // Try Authorization header
-  const authHeader = request.headers.authorization;
+  const authHeader = request.headers.authorization
   if (authHeader?.startsWith('Bearer ')) {
-    return authHeader.slice(7);
+    return authHeader.slice(7)
   }
 
-  return null;
+  return null
 }
 
 /**
@@ -34,22 +34,22 @@ function extractToken(request: FastifyRequest): string | null {
  * Optional: if no token, continue; let route handlers check auth if needed.
  */
 export async function authMiddleware(request: AuthenticatedRequest, _reply: FastifyReply) {
-  const token = extractToken(request);
+  const token = extractToken(request)
 
   if (!token) {
     // No token; let route handlers decide if auth is required
-    return;
+    return
   }
 
   try {
-    const payload = await verifyToken(token);
+    const payload = await verifyToken(token)
     // Attach user to request
-    request.user = payload;
+    request.user = payload
   } catch (error) {
     // Invalid token; let route handlers decide
     // (could also return 401 here if you prefer strict auth)
     // eslint-disable-next-line no-console
-    console.warn('[AUTH MIDDLEWARE] Invalid token:', error);
+    console.warn('[AUTH MIDDLEWARE] Invalid token:', error)
   }
 }
 
@@ -62,6 +62,6 @@ export async function requireAuth(request: AuthenticatedRequest, reply: FastifyR
     return reply.code(401).send({
       message: 'Unauthorized',
       code: 'UNAUTHORIZED',
-    });
+    })
   }
 }

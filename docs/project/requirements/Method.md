@@ -78,20 +78,20 @@ All Pods --> PG : status, artifacts
 
 ### Rationale
 
-* **Separation of concerns**: Orchestrator coordinates; pods are stateless functional stages; Redis queue enables back‑pressure.
-* **Reproducibility**: Every stage writes artifacts, seeds, and reports to S3 and rows to PG; jobs are resumable.
-* **Scalability**: Horizontal autoscaling per‑pod based on queue depth and GPU/CPU minutes.
+- **Separation of concerns**: Orchestrator coordinates; pods are stateless functional stages; Redis queue enables back‑pressure.
+- **Reproducibility**: Every stage writes artifacts, seeds, and reports to S3 and rows to PG; jobs are resumable.
+- **Scalability**: Horizontal autoscaling per‑pod based on queue depth and GPU/CPU minutes.
 
 ### Key Services & Responsibilities
 
-* **Orchestrator API (Node+TS)**: Auth, input validation, plan/build job DAGs, issue signed URLs, expose `/plan/*`, `/render/*`, `/remix/*`, `/check/similarity`, `/mix/final`, `/export`.
-* **Analyzer (Python)**: Lyrics parse (syllables, rhyme hints), optional reference analysis (BPM/key/sections), melody/rhythm extraction for similarity engine.
-* **Planner**: Builds arrangement/structure from lyrics + genre preset (BPM/key/instrumentation per section) and seeds the generation plan.
-* **Music Synth (GPU)**: Generates backing tracks by section with fixed seed; emits stems.
-* **Voice Synth (GPU)**: Renders lead vocal (selected AI artist) + optional harmonies; aligns to section timing.
-* **Similarity Checker (CPU/GPU)**: Computes melodic/rhythmic similarity against private reference; produces a report and a pass/borderline/block verdict.
-* **Mix & Master**: Sum stems; apply era preset; constrain loudness; export master.
-* **Exporter**: Packages BWF markers, embeds BPM/key, aligns stems; blocks export if similarity verdict=block.
+- **Orchestrator API (Node+TS)**: Auth, input validation, plan/build job DAGs, issue signed URLs, expose `/plan/*`, `/render/*`, `/remix/*`, `/check/similarity`, `/mix/final`, `/export`.
+- **Analyzer (Python)**: Lyrics parse (syllables, rhyme hints), optional reference analysis (BPM/key/sections), melody/rhythm extraction for similarity engine.
+- **Planner**: Builds arrangement/structure from lyrics + genre preset (BPM/key/instrumentation per section) and seeds the generation plan.
+- **Music Synth (GPU)**: Generates backing tracks by section with fixed seed; emits stems.
+- **Voice Synth (GPU)**: Renders lead vocal (selected AI artist) + optional harmonies; aligns to section timing.
+- **Similarity Checker (CPU/GPU)**: Computes melodic/rhythmic similarity against private reference; produces a report and a pass/borderline/block verdict.
+- **Mix & Master**: Sum stems; apply era preset; constrain loudness; export master.
+- **Exporter**: Packages BWF markers, embeds BPM/key, aligns stems; blocks export if similarity verdict=block.
 
 ### API Surface (selected endpoints & contracts)
 
@@ -103,9 +103,9 @@ All Pods --> PG : status, artifacts
   "genrePreset": "pop_2010s|trap|folk|indie_rock|...",
   "bpm": null,
   "key": null,
-  "structure": ["intro","verse","chorus","verse","chorus","bridge","chorus","outro"],
+  "structure": ["intro", "verse", "chorus", "verse", "chorus", "bridge", "chorus", "outro"],
   "artist": "id",
-  "options": {"harmonies": true, "duet": false}
+  "options": { "harmonies": true, "duet": false }
 }
 ```
 
@@ -144,7 +144,7 @@ All Pods --> PG : status, artifacts
   "verdict": "pass|borderline|block",
   "melodyScore": 0.31,
   "rhythmScore": 0.22,
-  "excerpts": [ {"start": 12.3, "end": 16.7, "why": "interval-5gram overlap 0.61"} ],
+  "excerpts": [{ "start": 12.3, "end": 16.7, "why": "interval-5gram overlap 0.61" }],
   "recommendations": ["shift key +1", "change BPM -3", "regen chorus topline"]
 }
 ```
@@ -152,7 +152,7 @@ All Pods --> PG : status, artifacts
 `POST /export`
 
 ```json
-{ "planId": "uuid", "includeStems": true, "format": ["wav24","mp3_320"], "includeMarkers": true }
+{ "planId": "uuid", "includeStems": true, "format": ["wav24", "mp3_320"], "includeMarkers": true }
 ```
 
 **Response**: presigned download URLs or 409 with similarity report if blocked.
@@ -160,7 +160,7 @@ All Pods --> PG : status, artifacts
 `GET /jobs/:jobId/events`
 
 ```json
-{"jobId":"uuid","stage":"MIX","progress":0.73,"etaSec":22,"runId":"..."}
+{ "jobId": "uuid", "stage": "MIX", "progress": 0.73, "etaSec": 22, "runId": "..." }
 ```
 
 `POST /plan/song (alias for clarity)`
@@ -278,13 +278,13 @@ created_at timestamptz
 
 **Note**:
 
-* References table remains for optional raw audio if user opts in; policy defaults to storing only reference_features.
-* Add indexes: reference_features(take_id), reference_features(created_at).
+- References table remains for optional raw audio if user opts in; policy defaults to storing only reference_features.
+- Add indexes: reference_features(take_id), reference_features(created_at).
 
 ### Indexes & Retention
 
-* `jobs(take_id, state)`; `artifacts(job_id)`; `sections(take_id, idx)`; `similarity_reports(take_id, created_at desc)`.
-* Retain raw intermediates 30 days (configurable); keep plans/reports indefinitely unless user deletes project.
+- `jobs(take_id, state)`; `artifacts(job_id)`; `sections(take_id, idx)`; `similarity_reports(take_id, created_at desc)`.
+- Retain raw intermediates 30 days (configurable); keep plans/reports indefinitely unless user deletes project.
 
 ### Object Storage Layout (S3)
 
@@ -302,7 +302,7 @@ projects/{projectId}/takes/{takeId}/
 
 ### Similarity Check (export gate)
 
-**Purpose**: Encourage originality; allow *vibe* without cloning. Operates on **melody** and **rhythm** only (no timbre).
+**Purpose**: Encourage originality; allow _vibe_ without cloning. Operates on **melody** and **rhythm** only (no timbre).
 **Similarity Budget (Pro)**: target combined score threshold (e.g., 0.35 default; tighter for Free). UI shows remaining budget.
 
 #### Pipeline
@@ -312,56 +312,56 @@ projects/{projectId}/takes/{takeId}/
 3. **Melodic signature**: build **interval n‑grams** (n=3..5) from semitone deltas; quantize to ±0.5 semitone.
 4. **Rhythmic signature**: compute inter‑onset intervals (IOI) from onset detection; quantize to a 16th‑note grid aligned to detected BPM; also compute duration ratios per note.
 5. **Scores**:
+   - Melody: `Jaccard(ngrams_ref, ngrams_cand)` + **Longest Common Subsequence** (interval stream) normalized.
+   - Rhythm: **DTW** on IOI sequences with Sakoe‑Chiba band ±12.5% tempo; penalty for long constant runs.
 
-   * Melody: `Jaccard(ngrams_ref, ngrams_cand)` + **Longest Common Subsequence** (interval stream) normalized.
-   * Rhythm: **DTW** on IOI sequences with Sakoe‑Chiba band ±12.5% tempo; penalty for long constant runs.
 6. **Combine**: `score = 0.6 * melody + 0.4 * rhythm`.
 7. **Verdict**: `pass < 0.35`, `borderline 0.35–0.48`, `block ≥ 0.48`.
 8. **Report**: top overlapping excerpts with timestamps + suggested mitigations (transpose, BPM shift, regen affected sections).
 
 #### Hard Rules
 
-* Reference limited to ≤30s; stored private; never used to train.
-* Block if any contiguous 8‑bar segment hits melody LCS ≥ 0.7 and rhythm DTW ≤ 0.15 (high alignment) even if combined < threshold.
+- Reference limited to ≤30s; stored private; never used to train.
+- Block if any contiguous 8‑bar segment hits melody LCS ≥ 0.7 and rhythm DTW ≤ 0.15 (high alignment) even if combined < threshold.
 
 ### Audio & Mastering
 
-* **Sample formats**: 44.1kHz/24‑bit WAV, 320kbps MP3; stems aligned; BWF cues for sections.
-* **Loudness**: target ‑14 LUFS integrated; true‑peak ceiling ‑1.0 dBTP; per‑track headroom −6 dBFS before sum; simple bus comp + limiter per preset.
+- **Sample formats**: 44.1kHz/24‑bit WAV, 320kbps MP3; stems aligned; BWF cues for sections.
+- **Loudness**: target ‑14 LUFS integrated; true‑peak ceiling ‑1.0 dBTP; per‑track headroom −6 dBFS before sum; simple bus comp + limiter per preset.
 
 ### Performance & Scaling Plan
 
-* **Preview path**: Analyzer→Planner→(Music/Voice limited to first 30s)→Mix; pods min=1 warm, scale to 5; target ≤45s P50.
-* **Section regen**: spawn only affected Music/Voice tasks; cached stems unchanged; ≤20s P50.
-* **Full render**: pipeline per section, parallel where possible; cap concurrency per project to avoid OOM.
+- **Preview path**: Analyzer→Planner→(Music/Voice limited to first 30s)→Mix; pods min=1 warm, scale to 5; target ≤45s P50.
+- **Section regen**: spawn only affected Music/Voice tasks; cached stems unchanged; ≤20s P50.
+- **Full render**: pipeline per section, parallel where possible; cap concurrency per project to avoid OOM.
 
 ### Security & Compliance
 
-* Private S3 buckets; time‑boxed presigned URLs.
-* Redis + TLS; disable dangerous commands; Redis users/ACLs with least privilege.
-* Limit uploads to 30s; hash references; audit logs for uploads/exports; simple profanity filter on lyrics & titles.
-* Export gate enforced server‑side only.
+- Private S3 buckets; time‑boxed presigned URLs.
+- Redis + TLS; disable dangerous commands; Redis users/ACLs with least privilege.
+- Limit uploads to 30s; hash references; audit logs for uploads/exports; simple profanity filter on lyrics & titles.
+- Export gate enforced server‑side only.
 
 ### Local Dev & IDE/Agent Workflow
 
-* **CLI** (`bluebird`): `bluebird plan`, `bluebird preview`, `bluebird render --section 3`, `bluebird check`, `bluebird export`.
-* **VS Code extension**: commands mirror CLI; surface job timeline; open artifacts; one‑click bug report with run‑IDs and seeds.
-* **Agent hooks**: curated system prompts for ChatGPT/Claude “Render Planner” and “Similarity Analyst”; write‑protected to keep outputs deterministic.
+- **CLI** (`bluebird`): `bluebird plan`, `bluebird preview`, `bluebird render --section 3`, `bluebird check`, `bluebird export`.
+- **VS Code extension**: commands mirror CLI; surface job timeline; open artifacts; one‑click bug report with run‑IDs and seeds.
+- **Agent hooks**: curated system prompts for ChatGPT/Claude “Render Planner” and “Similarity Analyst”; write‑protected to keep outputs deterministic.
 
 ### Technology Selections (implementation-ready)
 
-* **Frontend**: Next.js (App Router), React 19, TypeScript (strict), Tailwind.
-* **Backend**: Node.js LTS, Fastify (JSON schema validation), Zod for DTOs, tRPC or REST + OpenAPI.
-* **Jobs**: BullMQ + Redis; rate limits per user; dead‑letter queue.
-* **Data**: PostgreSQL; Prisma ORM; drizzle for lightweight SQL (optional) if preferred.
-* **Inference**: Python 3.x, PyTorch + torchaudio; FFmpeg for encoding/muxing.
-* **Observability**: OpenTelemetry (traces, metrics), Prometheus, Grafana; Sentry for errors.
-* **Infra**: Serverless GPU/CPU pods; object storage (S3 or compatible); IaC with Terraform.
+- **Frontend**: Next.js (App Router), React 19, TypeScript (strict), Tailwind.
+- **Backend**: Node.js LTS, Fastify (JSON schema validation), Zod for DTOs, tRPC or REST + OpenAPI.
+- **Jobs**: BullMQ + Redis; rate limits per user; dead‑letter queue.
+- **Data**: PostgreSQL; Prisma ORM; drizzle for lightweight SQL (optional) if preferred.
+- **Inference**: Python 3.x, PyTorch + torchaudio; FFmpeg for encoding/muxing.
+- **Observability**: OpenTelemetry (traces, metrics), Prometheus, Grafana; Sentry for errors.
+- **Infra**: Serverless GPU/CPU pods; object storage (S3 or compatible); IaC with Terraform.
 
 #### Implementation Notes (affected areas)
 
-* **Frontend**: add SSE client + Local WebAudio mixer; A/B compare; budget slider (Pro).
-* **Orchestrator**: implement SSE, idempotency keys, queue naming, priority scheduling.
-* **New pod**: Melody Generator with guide outputs (features + optional midi/pitch track).
-* **Data**: migrate to reference_features table; add backfill job for existing takes.
-* **DevOps**: add CDN distribution; update IaC; add SSE scaling rules.
+- **Frontend**: add SSE client + Local WebAudio mixer; A/B compare; budget slider (Pro).
+- **Orchestrator**: implement SSE, idempotency keys, queue naming, priority scheduling.
+- **New pod**: Melody Generator with guide outputs (features + optional midi/pitch track).
+- **Data**: migrate to reference_features table; add backfill job for existing takes.
+- **DevOps**: add CDN distribution; update IaC; add SSE scaling rules.

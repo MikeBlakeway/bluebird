@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config';
-import path from 'path';
+import { defineConfig } from 'vitest/config'
+import path from 'path'
 
 export default defineConfig({
   test: {
@@ -16,4 +16,4 @@ export default defineConfig({
       '@bluebird/test-helpers': path.resolve(__dirname, '../../packages/test-helpers/src'),
     },
   },
-});
+})

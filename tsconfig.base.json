@@ -56,6 +56,14 @@
     "watchDirectory": "useFsEvents",
     "fallbackPolling": "dynamicpriority",
     "synchronousWatchDirectory": false,
-    "excludeDirectories": ["**/node_modules", ".git", "dist", "build", ".next", "coverage", ".tsbuildinfo"]
+    "excludeDirectories": [
+      "**/node_modules",
+      ".git",
+      "dist",
+      "build",
+      ".next",
+      "coverage",
+      ".tsbuildinfo"
+    ]
   }
 }

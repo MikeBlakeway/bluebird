@@ -8,11 +8,11 @@ This plan translates the patched **Requirements** and **Method** into deliverabl
 
 - **Cadence:** 2‑week sprints (adjustable). Target **Sprints 0–6** for MVP.
 - **Key Vertical Slices:**
-  1) **Preview Path** (lyrics→30s preview via Analyzer→Planner→Music/Voice stubs→Mix→SSE).
-  2) **Section Regen** (lock/regen single section).
-  3) **Remix + Similarity Gate** (≤30s reference, features, report, export blocking).
-  4) **Pro Export + CDN** (stereo + stems with BWF markers, 48 kHz default, 44.1 optional).
-  5) **WebAudio Local Preview + A/B** (perceived speed & cost reduction).
+  1. **Preview Path** (lyrics→30s preview via Analyzer→Planner→Music/Voice stubs→Mix→SSE).
+  2. **Section Regen** (lock/regen single section).
+  3. **Remix + Similarity Gate** (≤30s reference, features, report, export blocking).
+  4. **Pro Export + CDN** (stereo + stems with BWF markers, 48 kHz default, 44.1 optional).
+  5. **WebAudio Local Preview + A/B** (perceived speed & cost reduction).
 
 ---
 

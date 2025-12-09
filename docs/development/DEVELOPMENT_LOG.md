@@ -10,15 +10,15 @@
 
 **Completed Work:**
 
-- [ ] Monorepo scaffold (pnpm workspaces: apps/web, apps/api, packages/*)
-- [ ] Docker Compose stack (Postgres, Redis, MinIO, Grafana, Prometheus)
-- [ ] Prisma schema & migrations (users, projects, jobs, takes, sections, artifacts)
-- [ ] CI/CD setup (ESLint, TypeScript strict, contract tests, unit tests)
-- [ ] Magic-link auth (SMTP local console for dev; JWT httpOnly cookie)
-- [ ] Analyzer pod stub (lyrics parse, reference analysis placeholder)
-- [ ] Planner pod stub (structure/BPM/key heuristics v0)
-- [ ] Orchestrator endpoints (`/plan/song`, `/plan/arrangement`, `/plan/vocals`)
-- [ ] BullMQ queues (plan, analyze queues; priority lanes; DLQ)
+- [x] Monorepo scaffold (pnpm workspaces: apps/web, apps/api, packages/\*)
+- [x] Docker Compose stack (Postgres, Redis, MinIO, Grafana, Prometheus)
+- [x] Prisma schema & migrations (users, projects, jobs, takes, sections, artifacts)
+- [x] CI/CD setup (ESLint, TypeScript strict, contract tests, unit tests)
+- [x] Magic-link auth (SMTP local console for dev; JWT httpOnly cookie)
+- [x] Analyzer pod stub (lyrics parse, reference analysis placeholder)
+- [x] Planner pod stub (structure/BPM/key heuristics v0)
+- [x] Orchestrator endpoints (`/plan/song`, `/plan/arrangement`, `/plan/vocals`)
+- [x] BullMQ queues (plan, analyze queues; priority lanes; DLQ) — **D8 completed**
 - [ ] SSE server (`/jobs/:id/events`; heartbeat; reconnect)
 - [ ] CLI `bluebird plan` command
 
@@ -50,8 +50,52 @@
 - Redis round-trip: <1ms average (with local Redis on same Docker network)
 - TTFP baseline: ~2s (plan + SSE handshake); real TTFP measured in Sprint 1
 
+**D8: BullMQ Queue Implementation (Dec 9, 2025)**
+
+Files created:
+
+- `apps/api/src/lib/queue.ts` (128 lines): Queue config, enqueue functions, job status lookup
+- `apps/api/src/lib/worker.ts` (185 lines): Worker processes with plan/analyze handlers
+- `apps/api/src/worker-entry.ts` (23 lines): Standalone worker process entry point
+- `apps/api/src/lib/queue.integration.test.ts` (96 lines): Queue integration tests
+
+Key implementation details:
+
+- **Queue names:** plan, analyze, melody, synth, vocal, mix, check, export (aligned with pod responsibilities)
+- **Priority levels:** PRO=10, STANDARD=1 (BullMQ native priority queue)
+- **Idempotency:** jobId used as BullMQ jobId for automatic deduplication
+- **DLQ:** Failed jobs kept in Redis (removeOnFail=false) with 3 retry attempts + exponential backoff (5s → 25s → 125s)
+- **Completed job retention:** 24 hours or 1000 jobs, whichever comes first
+- **Worker concurrency:** plan=5, analyze=10 (analyze is faster, CPU-bound)
+- **Redis connection:** Shared IORedis instance across queues/workers (maxRetriesPerRequest=null for BullMQ compatibility)
+
+Orchestrator changes:
+
+- POST /plan/song now returns HTTP 202 Accepted (was 200 OK)
+- Response status changed from 'planned' to 'queued'
+- Response no longer includes immediate plan (will be fetched via GET /jobs/:id or SSE in D9)
+- Idempotency-Key header now used as jobId if provided
+
+Worker architecture:
+
+- Separate process: `pnpm -F @bluebird/api worker`
+- Graceful shutdown on SIGTERM/SIGINT
+- Progress updates: 10% → 30% → 50% → 70% → 90% → 100% (mapped to job stages)
+- Job persistence: upserts to Take model with plan JSON field
+
+Integration tests:
+
+- Queue/worker communication verified
+- Priority ordering confirmed (PRO > STANDARD)
+- Idempotency deduplication tested
+- Tests run with 15s timeout (worker processing + Redis latency)
+
 **Lessons Learned:**
 
+- **IORedis import:** Must use default export `import IORedis from 'ioredis'` not named export
+- **BullMQ jobId:** Using jobId as idempotency key prevents duplicate jobs automatically (BullMQ rejects duplicates)
+- **Worker separation:** Running workers in separate process prevents API server blocking; can scale independently
+- **Progress granularity:** 10% increments sufficient for progress bars; finer updates add Redis overhead without UX benefit
 - **Must commit:** Idempotency keys are non-negotiable for cost control; prevents duplicate GPU charges
 - **S3 artifacts:** Store JSON reports (plan.json, features.json) + WAV stems; presign URLs short TTL (15 min)
 - **Queue naming:** Include scope (projectId) in jobId to enable per-project isolation + dead-letter analysis
