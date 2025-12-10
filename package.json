@@ -21,7 +21,8 @@
     "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck",
     "db:migrate": "pnpm -F api run db:migrate",
     "db:studio": "pnpm -F api run db:studio",
-    "cli": "pnpm -F api run cli"
+    "cli": "pnpm -F api run cli",
+    "demo": "node --loader tsx ./scripts/demo.ts"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

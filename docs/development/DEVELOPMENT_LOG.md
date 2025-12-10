@@ -20,7 +20,9 @@
 - [x] Orchestrator endpoints (`/plan/song`, `/plan/arrangement`, `/plan/vocals`)
 - [x] BullMQ queues (plan, analyze queues; priority lanes; DLQ) — **D8 completed**
 - [x] SSE server (`/jobs/:id/events`; heartbeat; reconnect) — **D9 completed**
-- [ ] CLI `bluebird plan` command
+- [x] CLI `bluebird plan` command (Commander.js; watch mode; progress bars) — **D10 completed**
+- [x] Demo script (end-to-end flow with sample lyrics + SSE streaming)
+- [x] Burn-in tests (10 concurrent jobs, 5 parallel SSE streams, idempotency, edge cases)
 
 **Architectural Decisions:**
 
@@ -170,12 +172,99 @@ Testing coverage:
 - ❌ Avoided: No heartbeat; connections die silently without keep-alive
 - ❌ Avoided: Skipping initial state; clients would see blank UI until first worker event
 
+### D10: CLI, Demo Script, and Burn-in Tests (Dec 9, 2025)
+
+Files created:
+
+- `apps/api/src/cli.ts` (125 lines): Commander.js CLI with `bluebird plan` command
+- `scripts/demo.ts` (123 lines): End-to-end demonstration script with SSE streaming
+- `apps/api/src/server.burnin.test.ts` (161 lines): Load/stress tests for production validation
+- `apps/api/prisma/README.md` (72 lines): Migration workflow documentation
+- `apps/api/prisma/migrations/` (directory): Prisma migrations storage
+
+Key implementation details:
+
+**CLI Tool (`bluebird plan`):**
+
+- **Framework:** Commander.js 11.1.0 (industry standard, TypeScript-friendly)
+- **Required options:** `--lyrics <text>` (10-5000 characters validated)
+- **Optional flags:** `--genre`, `--project`, `--seed`, `--pro`, `--watch`
+- **Watch mode:** Live SSE progress bars with █/░ characters (20-character width)
+- **Output:** Returns jobId, SSE URL, project ID, plan endpoint
+- **Progress display:** Updates on each job stage (analyzing → planning → completed)
+- **Error handling:** Validates lyrics length, shows helpful error messages
+
+**Demo Script:**
+
+- **Sample lyrics:** 14-line song ("Lost in the city lights tonight...")
+- **Flow:** Display lyrics → Enqueue job → Subscribe SSE → Show progress → Summary
+- **Progress visualization:** Real-time timestamps, stage names, progress bars
+- **Completion message:** Celebrates Sprint 0 completion with checklist (D1-D10)
+- **Summary stats:** Lines analyzed, sections planned, total execution time
+- **Run command:** `pnpm demo` (added to root package.json)
+
+**Burn-in Tests (5 comprehensive tests):**
+
+1. **Concurrent jobs** (30s timeout): Enqueues 10 jobs simultaneously, alternates PRO/STANDARD priority
+2. **Parallel SSE streams** (60s timeout): 5 jobs with simultaneous SSE subscriptions, verifies all receive events
+3. **Idempotency test**: Enqueues same jobId twice, verifies deduplication
+4. **Edge case - short lyrics**: 10-character minimum (barely valid)
+5. **Edge case - long lyrics**: 5000-character maximum (280-line repetition test)
+
+**Prisma Migration Infrastructure:**
+
+- **Migrations directory:** Created `apps/api/prisma/migrations/` for version-controlled schema changes
+- **README documentation:** Workflow guide with dev vs production commands
+- **Scripts updated:**
+  - `db:migrate` → `prisma migrate dev` (interactive, generates migration files)
+  - `db:migrate:deploy` → `prisma migrate deploy` (non-interactive, for CI/production)
+  - `db:push` → `prisma db push` (prototyping, skips migration files)
+  - `db:generate` → `prisma generate` (regenerates Prisma Client)
+
+**Configuration Updates:**
+
+- **ESLint override:** Added `no-console: "off"` for CLI/scripts files (user-facing output requires console)
+- **Package dependencies:** Added `commander": "^11.1.0"` to apps/api
+- **Demo script hook:** Root package.json now includes `"demo": "node --loader tsx ./scripts/demo.ts"`
+
+**Lessons Learned:**
+
+- **CLI framework choice:** Commander.js preferred over yargs/minimist for TypeScript support + chaining API
+- **Progress bar UX:** 20-character width (█/░) is sweet spot for readability; 5% increments (5 chars each)
+- **Burn-in test timeouts:** Must be generous (30s-60s) to account for worker processing + Redis latency
+- **Demo script value:** Provides immediate visual validation for stakeholders; shows complete Sprint 0 flow
+- **Prisma migration naming:** Use descriptive names (`init`, `add_artifacts`, `add_similarity`) not timestamps alone
+- **Watch mode importance:** Real-time feedback critical for CLI UX; SSE makes this trivial to implement
+- **Long lyrics edge case:** 5000 characters = ~280 lines = ~50 sections = tests planner boundary conditions
+
+**Anti-Patterns Avoided:**
+
+- ❌ Avoided: Custom CLI parser; Commander.js handles validation/help/errors
+- ❌ Avoided: Polling in demo script; SSE provides instant updates
+- ❌ Avoided: Skipping burn-in tests; load scenarios reveal race conditions unit tests miss
+- ❌ Avoided: CLI without watch mode; users would need to manually poll SSE endpoint
+
+**Sprint 0 Completion Status:**
+
+✅ **D1-D2:** Monorepo + Docker + Prisma schema
+✅ **D3:** CI + Types + Zod DTOs
+✅ **D4:** Magic-link auth + JWT + Project CRUD
+✅ **D5:** Analyzer library (10 tests passing)
+✅ **D6:** Planner v0 (12 tests passing)
+✅ **D7:** Orchestrator endpoints (POST /plan/song)
+✅ **D8:** BullMQ queues + workers + DLQ (3 integration tests)
+✅ **D9:** SSE streaming + Redis pub/sub (2 integration tests)
+✅ **D10:** CLI + Demo + Burn-in tests + Migrations (5 load tests)
+
+**Total Test Coverage:** 34 tests (10 analyzer + 12 planner + 3 queue + 2 events + 2 jobs + 5 burn-in)
+
 **Outstanding Questions:**
 
 - Prisma scaling: When does generated query complexity become a bottleneck? Plan cache strategy?
 - SSE tail latency: P95 with slow network clients? Implement streaming response gzip?
 - Event retention: Should we persist events to DB for audit trail or rely on ephemeral Redis pub/sub?
 - Rate limiting: How to prevent SSE connection spam (e.g., malicious reconnect loops)?
+- TypeScript upgrade: Move to 5.6/5.7 before Sprint 1 or defer until stable?
 
 ---
 
