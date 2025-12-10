@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "tsBuildInfoFile": ".tsbuildinfo"
+  },
+  "references": [
+    { "path": "./packages/config" },
+    { "path": "./packages/types" },
+    { "path": "./packages/telemetry" },
+    { "path": "./packages/ui" },
+    { "path": "./packages/client" },
+    { "path": "./packages/test-helpers" },
+    { "path": "./apps/api" },
+    { "path": "./apps/web" }
+  ],
+  "files": []
+}

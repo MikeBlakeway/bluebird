@@ -12,9 +12,9 @@
 
 - **main**: Release-ready code. Protected branch—requires PR review.
 - **develop**: Integration branch. All feature branches merge here first.
-- **feature/***: Feature branches for new features (e.g., `feature/F-MVP-GEN-01-arrangement-planner`)
-- **bugfix/***: Bugfix branches (e.g., `bugfix/sse-reconnect-timeout`)
-- **chore/***: Maintenance, docs, tooling (e.g., `chore/upgrade-prettier`)
+- **feature/\***: Feature branches for new features (e.g., `feature/F-MVP-GEN-01-arrangement-planner`)
+- **bugfix/\***: Bugfix branches (e.g., `bugfix/sse-reconnect-timeout`)
+- **chore/\***: Maintenance, docs, tooling (e.g., `chore/upgrade-prettier`)
 
 ### Commit Message Convention
 
@@ -48,7 +48,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 **Body:**
 
-- Explain *what* and *why*, not *how*
+- Explain _what_ and _why_, not _how_
 - Wrap at 72 characters
 - Reference issues: "Fixes #123" or "Related to F-MVP-GEN-01"
 
@@ -116,6 +116,7 @@ After completing a feature or sprint:
 
 ```markdown
 ## Sprint 1: Preview Path (Dec 12–23)
+
 - Integrated SSE for realtime job progress; heartbeat every 15s with exp backoff
 - WebAudio transport synced to buffer position; pre-roll 512 samples to avoid clicks
 - Music/Voice synth stubs emit click patterns + sine tones aligned to syllables
@@ -164,7 +165,7 @@ git push origin feature/F-MVP-GEN-01-arrangement-planner
 
 ## Testing Standards
 
-### Node (apps/api, apps/web, packages/*)
+### Node (apps/api, apps/web, packages/\*)
 
 - **Unit:** Vitest + React Testing Library (≥80% coverage for critical paths)
 - **Contract:** OpenAPI snapshot tests (must pass diff check in CI)
@@ -204,7 +205,7 @@ All code must be strict TypeScript:
 
 ### Documentation
 
-- **Inline comments:** Explain *why*, not *what*
+- **Inline comments:** Explain _why_, not _what_
 
   ```ts
   // GOOD: Explains non-obvious behavior

@@ -1,0 +1,117 @@
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import {
+  MagicLinkRequestSchema,
+  VerifyMagicLinkRequestSchema,
+  type AuthResponse,
+  type MagicLinkResponse,
+} from '@bluebird/types'
+import { generateMagicLink, verifyMagicLink } from '../lib/auth.js'
+import { generateToken } from '../lib/jwt.js'
+
+/**
+ * POST /auth/magic-link
+ * Request a magic link to sign in
+ */
+export async function magicLinkHandler(_request: FastifyRequest, reply: FastifyReply) {
+  const body = MagicLinkRequestSchema.parse(_request.body)
+
+  try {
+    const { token } = await generateMagicLink(body.email)
+
+    // In development, log the token for console access
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.log(`[MAGIC LINK] ${body.email}: http://localhost:3000/auth/verify?token=${token}`)
+    }
+
+    // TODO: In production, send email with magic link
+    // await sendMagicLinkEmail(body.email, token, expiresAt);
+
+    return reply.code(200).send({
+      success: true,
+      message: `Magic link sent to ${body.email}`,
+    } as MagicLinkResponse)
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[MAGIC LINK ERROR]', error)
+    return reply.code(400).send({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to generate magic link',
+    })
+  }
+}
+
+/**
+ * POST /auth/verify
+ * Verify a magic link token and return JWT
+ */
+export async function verifyMagicLinkHandler(request: FastifyRequest, reply: FastifyReply) {
+  const body = VerifyMagicLinkRequestSchema.parse(request.body)
+
+  try {
+    const user = await verifyMagicLink(body.token)
+    const jwtToken = await generateToken({
+      userId: user.id,
+      email: user.email,
+    })
+
+    // Set httpOnly cookie
+    reply.setCookie('auth_token', jwtToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/',
+    })
+
+    return reply.code(200).send({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      },
+      token: jwtToken,
+    } as AuthResponse)
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[VERIFY ERROR]', error)
+    return reply.code(400).send({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to verify magic link',
+    })
+  }
+}
+
+/**
+ * GET /auth/me
+ * Get current user info (requires auth)
+ */
+export async function getCurrentUserHandler(request: FastifyRequest, reply: FastifyReply) {
+  // Auth middleware will populate request.user
+  if (!request.user) {
+    return reply.code(401).send({ message: 'Unauthorized' })
+  }
+
+  return reply.code(200).send({
+    id: request.user.userId,
+    email: request.user.email,
+  })
+}
+
+/**
+ * POST /auth/logout
+ * Clear auth cookie
+ */
+export async function logoutHandler(_request: FastifyRequest, reply: FastifyReply) {
+  reply.clearCookie('auth_token', { path: '/' })
+  return reply.code(200).send({ success: true, message: 'Logged out' })
+}
+
+export function registerAuthRoutes(fastify: FastifyInstance) {
+  fastify.post('/auth/magic-link', magicLinkHandler)
+  fastify.post('/auth/verify', verifyMagicLinkHandler)
+  fastify.get('/auth/me', getCurrentUserHandler)
+  fastify.post('/auth/logout', logoutHandler)
+}

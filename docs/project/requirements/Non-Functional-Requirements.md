@@ -36,4 +36,4 @@ A4: Budget target: ≤$0.40 GPU cost per 30‑sec preview; ≤$2.50 per 3‑min 
 
 A5: IDE integration via CLI and VS Code extension; agent prompts supplied as system templates.
 
-Please review this Requirements section. If approved, I’ll proceed to the Method (system architecture, data contracts, algorithms, and PlantUML diagrams).*
+Please review this Requirements section. If approved, I’ll proceed to the Method (system architecture, data contracts, algorithms, and PlantUML diagrams).\*

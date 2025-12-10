@@ -61,39 +61,39 @@ git push origin feature/F-MVP-GEN-01-arrangement-planner
 ### Zod DTO Validation (API route)
 
 ```ts
-import { z } from 'zod';
-import { PlanSongRequest } from '@bluebird/types';
+import { z } from 'zod'
+import { PlanSongRequest } from '@bluebird/types'
 
 export const planSongSchema = z.object({
   lyrics: z.string().min(10),
   genrePreset: z.enum(['pop_2010s', 'trap', 'folk']),
-}) satisfies z.ZodType<PlanSongRequest>;
+}) satisfies z.ZodType<PlanSongRequest>
 
 // In Fastify route:
-const req = planSongSchema.parse(request.body);
+const req = planSongSchema.parse(request.body)
 ```
 
 ### SSE Client (Next.js)
 
 ```ts
-const es = new EventSource(`${api}/jobs/${id}/events`);
+const es = new EventSource(`${api}/jobs/${id}/events`)
 es.onmessage = (e) => {
-  const evt = JSON.parse(e.data) as JobEvent;
-  setTimeline(prev => [...prev, evt]);
-};
+  const evt = JSON.parse(e.data) as JobEvent
+  setTimeline((prev) => [...prev, evt])
+}
 es.onerror = () => {
-  es.close();
-  setTimeout(() => reconnect(id), Math.min(backoff, 8000));
-};
+  es.close()
+  setTimeout(() => reconnect(id), Math.min(backoff, 8000))
+}
 ```
 
 ### BullMQ Worker
 
 ```ts
-const queue = new Queue('vocal', { connection: redis });
+const queue = new Queue('vocal', { connection: redis })
 
 queue.process(async (job) => {
-  const { projectId, sectionId, seed } = job.data;
+  const { projectId, sectionId, seed } = job.data
 
   // Call pod
   const response = await fetch('http://voice-pod:8000/run', {
@@ -104,10 +104,10 @@ queue.process(async (job) => {
       outputS3: `projects/${projectId}/jobs/${job.id}`,
       params: { seed },
     }),
-  });
+  })
 
-  return response.json();
-});
+  return response.json()
+})
 ```
 
 ### Idempotent POST (Frontend)
@@ -120,21 +120,21 @@ const response = await fetch(`${api}/render/section`, {
     'Idempotency-Key': crypto.randomUUID(),
   },
   body: JSON.stringify({ planId, sectionId }),
-});
+})
 ```
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `.github/copilot-instructions.md` | AI agent guidance (patterns, contracts, conventions) |
-| `AGENTS.MD` | Mirror of copilot instructions |
-| `CONTRIBUTING.md` | Git workflow, commit conventions, testing standards |
-| `README.md` | Project overview, setup, SLOs |
-| `docs/project/FEATURES.MD` | Feature list with F-IDs and acceptance criteria |
-| `docs/project/requirements/Method.md` | API contracts, architecture, algorithms |
-| `docs/development/DEVELOPMENT_LOG.md` | Sprint-by-sprint record of decisions & lessons |
-| `packages/types/` | Zod DTOs (source of truth) |
+| File                                  | Purpose                                              |
+| ------------------------------------- | ---------------------------------------------------- |
+| `.github/copilot-instructions.md`     | AI agent guidance (patterns, contracts, conventions) |
+| `AGENTS.MD`                           | Mirror of copilot instructions                       |
+| `CONTRIBUTING.md`                     | Git workflow, commit conventions, testing standards  |
+| `README.md`                           | Project overview, setup, SLOs                        |
+| `docs/project/FEATURES.MD`            | Feature list with F-IDs and acceptance criteria      |
+| `docs/project/requirements/Method.md` | API contracts, architecture, algorithms              |
+| `docs/development/DEVELOPMENT_LOG.md` | Sprint-by-sprint record of decisions & lessons       |
+| `packages/types/`                     | Zod DTOs (source of truth)                           |
 
 ## Troubleshooting
 

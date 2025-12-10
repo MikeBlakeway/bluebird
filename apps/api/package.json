@@ -1,0 +1,50 @@
+{
+  "name": "@bluebird/api",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --import tsx ./src/server.ts",
+    "worker": "node --import tsx ./src/worker-entry.ts",
+    "build": "tsc",
+    "start": "node ./dist/server.js",
+    "start:worker": "node ./dist/worker-entry.js",
+    "test": "vitest",
+    "test:integration": "vitest --run src/**/*.integration.test.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "format": "prettier --write src",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:generate": "prisma generate",
+    "cli": "node --import tsx ./src/cli.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.500.0",
+    "@fastify/cookie": "^9.2.0",
+    "@opentelemetry/api": "^1.7.0",
+    "@opentelemetry/sdk-node": "^0.45.0",
+    "@paralleldrive/cuid2": "^3.0.4",
+    "@prisma/client": "^5.8.0",
+    "bullmq": "^5.2.0",
+    "commander": "^12.1.0",
+    "fastify": "^4.25.0",
+    "ioredis": "^5.8.2",
+    "jose": "^5.2.0",
+    "redis": "^4.6.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/ioredis": "^5.0.0",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.0",
+    "prisma": "^5.8.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  }
+}

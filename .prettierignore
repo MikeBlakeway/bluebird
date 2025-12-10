@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+
+# Production builds
+dist
+build
+.next
+out
+
+# Test coverage
+coverage
+
+# Cache
+.turbo
+.cache
+
+# Prisma generated
+**/node_modules/.prisma
+**/node_modules/@prisma
+
+# Lock files
+pnpm-lock.yaml

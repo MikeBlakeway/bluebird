@@ -8,10 +8,10 @@ Bluebird turns any set of lyrics into a fully‑original, studio‑quality song 
 
 ## The Problem
 
-* Creation bottlenecks: Lyrics without melody/arrangement stall.
-* Access & cost: Hiring vocalists, players, and engineers is slow and expensive.
-* Tool gap: Prompt-only music tools feel random; DAWs are heavy.
-* Legal risk: Straight remixes, cloned voices, or copied melodies are fragile.
+- Creation bottlenecks: Lyrics without melody/arrangement stall.
+- Access & cost: Hiring vocalists, players, and engineers is slow and expensive.
+- Tool gap: Prompt-only music tools feel random; DAWs are heavy.
+- Legal risk: Straight remixes, cloned voices, or copied melodies are fragile.
 
 ## The Solution
 
@@ -27,16 +27,16 @@ Bluebird turns any set of lyrics into a fully‑original, studio‑quality song 
 
 ## Key Features (MVP)
 
-* **Lyrics Editor:** Paste lyrics, tag sections, word/line counts.
-* **Genre & Structure:** Presets per genre; manual structure editor (intro/verse/chorus/bridge/outro).
-* **AI Artist Roster:** 3–5 curated voices with audition previews.
-* **Arrangement Planner:** Lyrics + structure + genre → BPM/key/instrumentation via schema-driven planning.
-* **Per-Section Generation:** Music stems (drums, bass, keys) + lead vocals; regenerate individual sections fast (<20s).
-* **Mixer:** Per-track gain/mute/pan; 3–4 era presets (50s tape, modern pop, lo-fi); loudness normalization (-14 LUFS).
-* **Remix Reference (≤30s):** Attach reference to guide contour/rhythm; export gated by similarity checks.
-* **Similarity Checker:** Melody (interval n-grams) + rhythm (DTW) scoring; pass/borderline/block verdict with actionable recommendations.
-* **Export:** Master (WAV 48kHz/24-bit or MP3 320kbps) + aligned stems with BWF markers.
-* **Job Timeline:** Realtime progress via SSE (Server-Sent Events); download artifacts/reports.
+- **Lyrics Editor:** Paste lyrics, tag sections, word/line counts.
+- **Genre & Structure:** Presets per genre; manual structure editor (intro/verse/chorus/bridge/outro).
+- **AI Artist Roster:** 3–5 curated voices with audition previews.
+- **Arrangement Planner:** Lyrics + structure + genre → BPM/key/instrumentation via schema-driven planning.
+- **Per-Section Generation:** Music stems (drums, bass, keys) + lead vocals; regenerate individual sections fast (<20s).
+- **Mixer:** Per-track gain/mute/pan; 3–4 era presets (50s tape, modern pop, lo-fi); loudness normalization (-14 LUFS).
+- **Remix Reference (≤30s):** Attach reference to guide contour/rhythm; export gated by similarity checks.
+- **Similarity Checker:** Melody (interval n-grams) + rhythm (DTW) scoring; pass/borderline/block verdict with actionable recommendations.
+- **Export:** Master (WAV 48kHz/24-bit or MP3 320kbps) + aligned stems with BWF markers.
+- **Job Timeline:** Realtime progress via SSE (Server-Sent Events); download artifacts/reports.
 
 ## Architecture
 
@@ -50,24 +50,24 @@ Next.js Frontend  →  Fastify API (Orchestrator)  →  Redis/BullMQ Queues  →
 
 #### Frontend
 
-* Next.js (App Router), React 19, TypeScript (strict), Tailwind CSS, shadcn components
+- Next.js (App Router), React 19, TypeScript (strict), Tailwind CSS, shadcn components
 
 #### Backend
 
-* Node.js LTS, Fastify, Zod DTOs, Prisma ORM
-* BullMQ + Redis (named queues with priority lanes: pro > standard)
-* PostgreSQL for metadata; S3-compatible storage for artifacts
+- Node.js LTS, Fastify, Zod DTOs, Prisma ORM
+- BullMQ + Redis (named queues with priority lanes: pro > standard)
+- PostgreSQL for metadata; S3-compatible storage for artifacts
 
 #### Inference
 
-* Separate Python monorepo (`bluebird-infer`) with Poetry workspaces
-* FastAPI pods: Analyzer, Planner, Melody, Music, Voice, Similarity, Mix, Exporter
-* Python libraries: librosa (audio), scipy (signal processing), Hypothesis (testing)
+- Separate Python monorepo (`bluebird-infer`) with Poetry workspaces
+- FastAPI pods: Analyzer, Planner, Melody, Music, Voice, Similarity, Mix, Exporter
+- Python libraries: librosa (audio), scipy (signal processing), Hypothesis (testing)
 
 #### Observability
 
-* OpenTelemetry traces (API/workers/pods); Prometheus metrics; structured logging
-* Grafana dashboard for TTFP, GPU usage, cache hits, similarity verdicts
+- OpenTelemetry traces (API/workers/pods); Prometheus metrics; structured logging
+- Grafana dashboard for TTFP, GPU usage, cache hits, similarity verdicts
 
 ## Project Structure
 
@@ -113,10 +113,10 @@ bluebird-infer/                     # (separate Python monorepo)
 
 ### Prerequisites
 
-* Node.js 18+ (LTS)
-* Python 3.10+ (for pods)
-* Docker & Docker Compose
-* pnpm (or npm)
+- Node.js 18+ (LTS)
+- Python 3.10+ (for pods)
+- Docker & Docker Compose
+- pnpm (or npm)
 
 ### Local Development Setup
 
@@ -145,13 +145,13 @@ pnpm -w dev
 
 ### Local URLs
 
-* **Web**: <http://localhost:3000>
-* **API**: <http://localhost:4000>
-* **SSE**: <http://localhost:4000/jobs/:id/events>
-* **Postgres**: localhost:5432
-* **Redis**: localhost:6379
-* **MinIO S3**: <http://localhost:9000> (Console: <http://localhost:9001>)
-* **Grafana**: <http://localhost:3001> (Prometheus: <http://localhost:9090>)
+- **Web**: <http://localhost:3000>
+- **API**: <http://localhost:4000>
+- **SSE**: <http://localhost:4000/jobs/:id/events>
+- **Postgres**: localhost:5432
+- **Redis**: localhost:6379
+- **MinIO S3**: <http://localhost:9000> (Console: <http://localhost:9001>)
+- **Grafana**: <http://localhost:3001> (Prometheus: <http://localhost:9090>)
 
 ## Development Commands
 
@@ -199,11 +199,11 @@ poetry run pytest
 
 All type definitions live in `packages/types` (Zod schemas):
 
-* **ArrangementSpec**: BPM, key, sections, instrumentation, energy curve
-* **VocalScore**: Line-to-artist mapping + style notes
-* **RemixFeatures**: Contour/rhythm/key extracted from reference
-* **SimilarityReport**: Melody + rhythm scores; pass/borderline/block verdict
-* **ExportBundle**: Master + stems + BWF markers; sample rates (default 48kHz/24-bit)
+- **ArrangementSpec**: BPM, key, sections, instrumentation, energy curve
+- **VocalScore**: Line-to-artist mapping + style notes
+- **RemixFeatures**: Contour/rhythm/key extracted from reference
+- **SimilarityReport**: Melody + rhythm scores; pass/borderline/block verdict
+- **ExportBundle**: Master + stems + BWF markers; sample rates (default 48kHz/24-bit)
 
 ## Core API Endpoints
 
@@ -220,22 +220,22 @@ GET  /jobs/:jobId/events           # Server-Sent Events job progress stream
 
 ## Performance Targets (SLOs)
 
-* **First 30s preview**: ≤45s P50 (P95 ≤2×)
-* **Per-section regen**: ≤20s P50
-* **Full 3-min song**: ≤8 min P50
-* **GPU cost**: ≤$0.40 per 30s preview, ≤$2.50 per 3-min render
-* **Concurrency**: 50 jobs at launch; target 200 with scaling
+- **First 30s preview**: ≤45s P50 (P95 ≤2×)
+- **Per-section regen**: ≤20s P50
+- **Full 3-min song**: ≤8 min P50
+- **GPU cost**: ≤$0.40 per 30s preview, ≤$2.50 per 3-min render
+- **Concurrency**: 50 jobs at launch; target 200 with scaling
 
 ## Safety & Compliance
 
-* **Original composition only:** No master reuse; all generated melodies are new.
-* **No celebrity cloning:** Only in-house licensed AI artists.
-* **Similarity-guarded Remix:** Interval n-grams + rhythmic DTW checks prevent near-copy exports.
-* **Export gating:** Similarity verdicts block unsafe exports; actionable recommendations shown.
-* **Reference privacy:** Feature vectors stored by default; raw audio only if user opts in.
-* **Idempotency:** All POSTs require `Idempotency-Key` header for exactly-once semantics.
-* **Content policy:** Profanity filter; disallow hateful/illegal content; rate-limit abuse.
-* **Data retention:** Default 30 days; user-deletable; no training on user media.
+- **Original composition only:** No master reuse; all generated melodies are new.
+- **No celebrity cloning:** Only in-house licensed AI artists.
+- **Similarity-guarded Remix:** Interval n-grams + rhythmic DTW checks prevent near-copy exports.
+- **Export gating:** Similarity verdicts block unsafe exports; actionable recommendations shown.
+- **Reference privacy:** Feature vectors stored by default; raw audio only if user opts in.
+- **Idempotency:** All POSTs require `Idempotency-Key` header for exactly-once semantics.
+- **Content policy:** Profanity filter; disallow hateful/illegal content; rate-limit abuse.
+- **Data retention:** Default 30 days; user-deletable; no training on user media.
 
 ## Development Philosophy
 
@@ -249,15 +249,15 @@ GET  /jobs/:jobId/events           # Server-Sent Events job progress stream
 
 ## Agent & Developer Guidance
 
-* **AI Agent Instructions:** See `.github/copilot-instructions.md` and `AGENTS.MD`
-* **Development Memory:** After each sprint, update this README and `docs/development/DEVELOPMENT_LOG.md` with completed work, architectural decisions, and lessons learned.
-* **When Stuck:** Consult `docs/project/requirements/Method.md` (API contracts), `FEATURES.MD` (scope), or `Non-Functional-Requirements.md` (SLOs/cost).
+- **AI Agent Instructions:** See `.github/copilot-instructions.md` and `AGENTS.MD`
+- **Development Memory:** After each sprint, update this README and `docs/development/DEVELOPMENT_LOG.md` with completed work, architectural decisions, and lessons learned.
+- **When Stuck:** Consult `docs/project/requirements/Method.md` (API contracts), `FEATURES.MD` (scope), or `Non-Functional-Requirements.md` (SLOs/cost).
 
 ## Sprint Plan
 
-* **Sprint 0** (Foundation): Monorepo, auth, planning endpoints, SSE, queue setup. *Deliverable:* `bluebird plan` CLI returns planId.
-* **Sprint 1** (Preview): Music/Voice stubs, Next.js workspace UI, WebAudio mixer, export. *Deliverable:* TTFP ≤45s; user → lyrics → preview.
-* **Sprint 2–6** (Vertical slices): Section regen, Remix + similarity gate, stems/export, CDN, observability, CLI/extension.
+- **Sprint 0** (Foundation): Monorepo, auth, planning endpoints, SSE, queue setup. _Deliverable:_ `bluebird plan` CLI returns planId.
+- **Sprint 1** (Preview): Music/Voice stubs, Next.js workspace UI, WebAudio mixer, export. _Deliverable:_ TTFP ≤45s; user → lyrics → preview.
+- **Sprint 2–6** (Vertical slices): Section regen, Remix + similarity gate, stems/export, CDN, observability, CLI/extension.
 
 See `docs/project/sprints/sprint_plan_s_0_s_1.md` for detailed breakdown.
 
@@ -265,9 +265,9 @@ See `docs/project/sprints/sprint_plan_s_0_s_1.md` for detailed breakdown.
 
 **Pre-implementation.** Specs and requirements finalized; Sprint 0 planning complete. Ready to scaffold monorepo and local stack.
 
-* Owner: Mike Blakeway
-* Version: 0.2 (Aligned)
-* Last Updated: 8 Dec 2025
+- Owner: Mike Blakeway
+- Version: 0.2 (Aligned)
+- Last Updated: 8 Dec 2025
 
 ## Contributing
 
