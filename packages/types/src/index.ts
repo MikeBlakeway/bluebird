@@ -4,17 +4,17 @@ import { z } from 'zod'
 // Primitive Types
 // ============================================================================
 
-export const IdSchema = z.string().cuid()
+export const IdSchema = z.string().cuid2()
 export type Id = z.infer<typeof IdSchema>
 
-export const ProjectIdSchema = z.string().cuid()
+export const ProjectIdSchema = z.string().cuid2()
 export type ProjectId = z.infer<typeof ProjectIdSchema>
 
 // JobId can be custom format like "project:timestamp:seed", not just CUID
 export const JobIdSchema = z.string().min(1)
 export type JobId = z.infer<typeof JobIdSchema>
 
-export const TakeIdSchema = z.string().cuid()
+export const TakeIdSchema = z.string().cuid2()
 export type TakeId = z.infer<typeof TakeIdSchema>
 
 // ============================================================================

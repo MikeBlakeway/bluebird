@@ -4,6 +4,7 @@
  * Demonstrates end-to-end flow: enqueue → SSE streaming → result
  */
 
+import { createId } from '@paralleldrive/cuid2'
 import { enqueuePlanJob } from '../apps/api/src/lib/queue.js'
 import { createJobEventSubscriber } from '../apps/api/src/lib/events.js'
 
@@ -28,7 +29,7 @@ async function demo() {
   console.log('')
 
   // Step 1: Create project and job
-  const projectId = `demo-project-${Date.now()}`
+  const projectId = createId()
   const jobId = `${projectId}:demo:42`
   const seed = 42
 
