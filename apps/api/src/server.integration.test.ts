@@ -6,6 +6,8 @@ let server: FastifyInstance
 
 beforeAll(async () => {
   server = await createServer()
+  // Use random available port for tests to avoid conflicts
+  await server.listen({ port: 0, host: '127.0.0.1' })
 })
 
 afterAll(async () => {

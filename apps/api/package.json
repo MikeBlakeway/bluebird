@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "node --loader tsx ./src/server.ts",
-    "worker": "node --loader tsx ./src/worker-entry.ts",
+    "dev": "node --import tsx ./src/server.ts",
+    "worker": "node --import tsx ./src/worker-entry.ts",
     "build": "tsc",
     "start": "node ./dist/server.js",
     "start:worker": "node ./dist/worker-entry.js",
@@ -18,13 +18,14 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
-    "cli": "node --loader tsx ./src/cli.ts"
+    "cli": "node --import tsx ./src/cli.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.500.0",
     "@fastify/cookie": "^9.2.0",
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/sdk-node": "^0.45.0",
+    "@paralleldrive/cuid2": "^3.0.4",
     "@prisma/client": "^5.8.0",
     "bullmq": "^5.2.0",
     "commander": "^12.1.0",

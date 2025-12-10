@@ -36,7 +36,7 @@ async function sendEvent(jobId: string, stage: JobStage, progress: number, messa
  * Process a plan job: analyze lyrics → generate arrangement → persist to DB.
  */
 async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
-  const { projectId, jobId, lyrics, seed } = job.data
+  const { projectId, jobId, lyrics, genre, seed } = job.data
 
   // eslint-disable-next-line no-console
   console.log(`[WORKER] Processing plan job ${jobId}`)
@@ -74,22 +74,65 @@ async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
   await sendEvent(jobId, 'planning', 0.7, 'Arrangement ready')
 
   // Persist to database (70-90%)
-  await prisma.take.upsert({
-    where: { jobId },
-    create: {
-      jobId,
-      projectId,
-      status: 'planned',
-      plan: arrangement as unknown as Record<string, unknown>, // Prisma JSON type
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    update: {
-      status: 'planned',
-      plan: arrangement as unknown as Record<string, unknown>,
-      updatedAt: new Date(),
-    },
-  })
+  try {
+    // Ensure CLI user exists (for demo/CLI usage)
+    await prisma.user.upsert({
+      where: { email: 'cli@bluebird.local' },
+      create: {
+        email: 'cli@bluebird.local',
+        name: 'CLI User',
+      },
+      update: {},
+    })
+
+    const cliUser = await prisma.user.findUnique({
+      where: { email: 'cli@bluebird.local' },
+    })
+
+    if (!cliUser) {
+      throw new Error('Failed to create CLI user')
+    }
+
+    // Ensure project exists (for demo/CLI usage)
+    // First check if project exists to avoid unique constraint violation
+    const existingProject = await prisma.project.findUnique({
+      where: { id: projectId },
+    })
+
+    if (!existingProject) {
+      await prisma.project.create({
+        data: {
+          id: projectId,
+          userId: cliUser.id,
+          name: `Project ${projectId.substring(0, 8)}`,
+          lyrics,
+          genre,
+        },
+      })
+    }
+
+    // Create or update take
+    await prisma.take.upsert({
+      where: { jobId },
+      create: {
+        jobId,
+        projectId,
+        status: 'planned',
+        plan: arrangement as unknown as Record<string, unknown>, // Prisma JSON type
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      update: {
+        status: 'planned',
+        plan: arrangement as unknown as Record<string, unknown>,
+        updatedAt: new Date(),
+      },
+    })
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[WORKER] Database error:', error)
+    throw error
+  }
 
   await job.updateProgress(90)
   await sendEvent(jobId, 'planning', 0.9, 'Persisted plan')

@@ -36,6 +36,12 @@ export async function createServer() {
   registerOrchestratorRoutes(fastify)
   registerJobRoutes(fastify)
 
+  return fastify
+}
+
+export async function startServer() {
+  const fastify = await createServer()
+
   // Start server
   await fastify.listen({ port: PORT, host: HOST })
   // eslint-disable-next-line no-console
@@ -45,5 +51,5 @@ export async function createServer() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  createServer().catch(console.error)
+  startServer().catch(console.error)
 }

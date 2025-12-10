@@ -79,7 +79,7 @@ describe('Burn-in Tests', () => {
     // Verify each stream received events
     for (const stream of streams) {
       expect(stream.events.length).toBeGreaterThan(0)
-      expect(stream.events).toContain('analyzing')
+      // Plan jobs emit: queued → planning → completed/failed
       expect(stream.events).toContain('planning')
       expect(['completed', 'failed']).toContain(stream.events[stream.events.length - 1])
     }
@@ -118,16 +118,25 @@ describe('Burn-in Tests', () => {
     const projectId = 'burnin-test-edge-short'
     const jobId = `${projectId}:${Date.now()}:short`
 
-    await expect(
-      enqueuePlanJob({
-        projectId,
-        jobId,
-        lyrics: 'Short song', // Minimum 10 chars
-        genre: 'folk',
-        seed: 1,
-        isPro: false,
+    // Enqueue job
+    await enqueuePlanJob({
+      projectId,
+      jobId,
+      lyrics: 'Short song', // Minimum 10 chars
+      genre: 'folk',
+      seed: 1,
+      isPro: false,
+    })
+
+    // Wait for completion via SSE
+    const subscriber = createJobEventSubscriber(jobId)
+    await new Promise<void>((resolve) => {
+      subscriber.subscribe((event) => {
+        if (event.stage === 'completed' || event.stage === 'failed') {
+          resolve()
+        }
       })
-    ).resolves.not.toThrow()
+    })
   }, 15000)
 
   it('should handle jobs with edge-case lyrics (very long)', async () => {
@@ -137,15 +146,24 @@ describe('Burn-in Tests', () => {
     // Generate 5000 character lyrics (max allowed)
     const longLyrics = 'Long song lyrics\n'.repeat(280) // ~4800 chars
 
-    await expect(
-      enqueuePlanJob({
-        projectId,
-        jobId,
-        lyrics: longLyrics,
-        genre: 'trap',
-        seed: 999,
-        isPro: true,
+    // Enqueue job
+    await enqueuePlanJob({
+      projectId,
+      jobId,
+      lyrics: longLyrics,
+      genre: 'trap',
+      seed: 999,
+      isPro: true,
+    })
+
+    // Wait for completion via SSE
+    const subscriber = createJobEventSubscriber(jobId)
+    await new Promise<void>((resolve) => {
+      subscriber.subscribe((event) => {
+        if (event.stage === 'completed' || event.stage === 'failed') {
+          resolve()
+        }
       })
-    ).resolves.not.toThrow()
+    })
   }, 30000)
 })

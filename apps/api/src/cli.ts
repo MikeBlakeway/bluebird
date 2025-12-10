@@ -4,6 +4,7 @@
  * Command-line interface for testing and development.
  */
 
+import { createId } from '@paralleldrive/cuid2'
 import { Command } from 'commander'
 import { PlanSongRequestSchema } from '@bluebird/types'
 import { enqueuePlanJob } from './lib/queue.js'
@@ -18,7 +19,7 @@ program
   .description('Create a song plan from lyrics')
   .requiredOption('-l, --lyrics <text>', 'Song lyrics (10-5000 characters)')
   .option('-g, --genre <genre>', 'Genre preset', 'pop_2010s')
-  .option('-p, --project <id>', 'Project ID', `test-project-${Date.now()}`)
+  .option('-p, --project <id>', 'Project ID (CUID)')
   .option('-s, --seed <number>', 'Random seed for reproducibility', (val: string) =>
     parseInt(val, 10)
   )
@@ -34,9 +35,12 @@ program
       watch?: boolean
     }) => {
       try {
+        // Generate project ID if not provided
+        const projectId = options.project || createId()
+
         // Validate lyrics
         const parsed = PlanSongRequestSchema.safeParse({
-          projectId: options.project,
+          projectId,
           lyrics: options.lyrics,
           genre: options.genre,
           seed: options.seed,
@@ -44,10 +48,11 @@ program
 
         if (!parsed.success) {
           console.error('❌ Invalid input:', parsed.error.errors[0]?.message ?? 'Validation failed')
+          console.error('Full error:', JSON.stringify(parsed.error.errors, null, 2))
           process.exit(1)
         }
 
-        const { projectId, lyrics, genre, seed } = parsed.data
+        const { lyrics, genre, seed } = parsed.data
 
         // Generate jobId
         const jobId = `${projectId}:${Date.now()}:${seed || 0}`
