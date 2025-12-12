@@ -81,6 +81,54 @@ GET  /jobs/:jobId/events  # SSE
 
 ## 5) Patterns Copilot Should Prefer
 
+### 5.0 Type Safety (Critical)
+
+**Avoid type casts (`as Type`) in production code except where absolutely necessary.** Tests are exempt from this rule.
+
+**Required patterns:**
+
+- **External data (DB, API, files)**: Always validate with Zod schemas
+- **Database JSON fields**: Never cast `Json?` types directly; use `safeParse()`
+- **Route parameters**: Use Fastify type inference or validate with Zod; avoid `as { param: string }`
+- **Queue job data**: Validate with Zod schemas before processing
+- **Unknown types**: Use type guards or Zod validation; avoid asserting types
+
+**Example (workers loading DB data):**
+
+```typescript
+// ❌ WRONG: Unsafe cast bypasses validation
+const arrangement = take.plan as ArrangementSpec
+
+// ✅ CORRECT: Runtime validation with descriptive errors
+const parseResult = ArrangementSpecSchema.safeParse(take.plan)
+if (!parseResult.success) {
+  throw new Error(`Invalid arrangement plan: ${parseResult.error.message}`)
+}
+const arrangement = parseResult.data // Type-safe + validated
+```
+
+**Example (route parameters):**
+
+```typescript
+// ❌ WRONG: Assumes structure without validation
+const params = request.params as { jobId: string }
+
+// ✅ CORRECT: Honest about uncertainty, validate with Zod
+const params = request.params as { jobId?: unknown }
+const parsed = JobIdSchema.safeParse(params.jobId)
+if (!parsed.success) {
+  return reply.code(400).send({ error: 'Invalid job ID' })
+}
+const jobId = parsed.data
+```
+
+**When casts are acceptable:**
+
+- `as const` for literal types (safe, no runtime risk)
+- Test files (mocking, fixtures, test data)
+- Type narrowing after explicit runtime checks
+- Documented exceptions with clear safety justification
+
 ### 5.1 Fastify route template (with idempotency + zod)
 
 - Include `Idempotency-Key` header check on **all POSTs**.
@@ -345,16 +393,17 @@ When picking up work:
 
 ### Critical Rules (MUST FOLLOW)
 
-1. **PLAIN TEXT ONLY** - Never use Markdown formatting (##, ###, **, *, etc.)
+1. **PLAIN TEXT ONLY** - Never use Markdown formatting (##, ###, \*_, _, etc.)
 2. **Conventional Commits** - Use format: `type(scope): subject`
 3. **Line length limits** - Subject: 50 chars; body: 72 chars per line
 4. **Imperative mood** - "Add feature" not "Added feature" or "Adds feature"
 
 ### Why Plain Text?
 
-Git commit messages are displayed in `git log`, GitHub, and other tools as **plain text**. Markdown formatting (##, ###, **bold**, *italic*) is not rendered and appears as literal text, making commits harder to read.
+Git commit messages are displayed in `git log`, GitHub, and other tools as **plain text**. Markdown formatting (##, ###, **bold**, _italic_) is not rendered and appears as literal text, making commits harder to read.
 
 **WRONG (Markdown):**
+
 ```
 ## Music Worker Implementation
 ### Architecture
@@ -362,6 +411,7 @@ Git commit messages are displayed in `git log`, GitHub, and other tools as **pla
 ```
 
 **Displays in git log as:**
+
 ```
 ## Music Worker Implementation
 ### Architecture
@@ -369,6 +419,7 @@ Git commit messages are displayed in `git log`, GitHub, and other tools as **pla
 ```
 
 **CORRECT (Plain Text):**
+
 ```
 MUSIC WORKER IMPLEMENTATION
 
@@ -422,6 +473,7 @@ Brief note about what comes next (optional).
 ### Example Commit Messages
 
 **Example 1: Feature Implementation**
+
 ```
 feat(api): implement music synthesis worker (Sprint 1 Task 1.1)
 
@@ -468,6 +520,7 @@ Quality Metrics
 ```
 
 **Example 2: Bug Fix**
+
 ```
 fix(api): resolve Redis quit() type mismatch in queue cleanup
 
@@ -494,6 +547,7 @@ FILES CHANGED
 ```
 
 **Example 3: Documentation**
+
 ```
 docs: add commit message standards to copilot-instructions
 
@@ -524,7 +578,7 @@ LOCATION
 - [ ] Subject line is ≤50 characters
 - [ ] Subject line uses imperative mood ("Add" not "Added")
 - [ ] Body lines are ≤72 characters (wrap long lines)
-- [ ] **NO MARKDOWN FORMATTING** (no ##, ###, **, *, etc.)
+- [ ] **NO MARKDOWN FORMATTING** (no ##, ###, \*_, _, etc.)
 - [ ] Use plain text with spacing and indentation for structure
 - [ ] Sections use ALL CAPS titles (not markdown headers)
 - [ ] Lists use dashes (-) or numbers, indented with 2 spaces

@@ -386,3 +386,94 @@ export function encodeWAV(buffer: AudioBuffer): Buffer {
 
   return wav
 }
+
+/**
+ * Decode a WAV file buffer into an AudioBuffer
+ * Supports 16-bit PCM stereo/mono WAV files
+ */
+export function decodeWAV(wavBuffer: Buffer): AudioBuffer {
+  // Validate RIFF header
+  if (wavBuffer.toString('utf8', 0, 4) !== 'RIFF') {
+    throw new Error('Invalid WAV file: missing RIFF header')
+  }
+
+  if (wavBuffer.toString('utf8', 8, 12) !== 'WAVE') {
+    throw new Error('Invalid WAV file: missing WAVE identifier')
+  }
+
+  // Find fmt chunk
+  let offset = 12
+  let fmtChunkFound = false
+  let dataChunkFound = false
+
+  let channels = 0
+  let sampleRate = 0
+  let bitsPerSample = 0
+  let dataOffset = 0
+  let dataSize = 0
+
+  while (offset < wavBuffer.length) {
+    const chunkId = wavBuffer.toString('utf8', offset, offset + 4)
+    const chunkSize = wavBuffer.readUInt32LE(offset + 4)
+
+    if (chunkId === 'fmt ') {
+      // Parse fmt chunk
+      fmtChunkFound = true
+      const audioFormat = wavBuffer.readUInt16LE(offset + 8)
+      if (audioFormat !== 1) {
+        throw new Error(`Unsupported audio format: ${audioFormat} (only PCM supported)`)
+      }
+
+      channels = wavBuffer.readUInt16LE(offset + 10)
+      sampleRate = wavBuffer.readUInt32LE(offset + 12)
+      bitsPerSample = wavBuffer.readUInt16LE(offset + 22)
+
+      if (bitsPerSample !== 16) {
+        throw new Error(`Unsupported bits per sample: ${bitsPerSample} (only 16-bit supported)`)
+      }
+    } else if (chunkId === 'data') {
+      // Found data chunk
+      dataChunkFound = true
+      dataOffset = offset + 8
+      dataSize = chunkSize
+      break
+    }
+
+    offset += 8 + chunkSize
+  }
+
+  if (!fmtChunkFound) {
+    throw new Error('Invalid WAV file: fmt chunk not found')
+  }
+
+  if (!dataChunkFound) {
+    throw new Error('Invalid WAV file: data chunk not found')
+  }
+
+  // Decode PCM data
+  const length = Math.floor(dataSize / (channels * 2)) // 2 bytes per sample (16-bit)
+  const data: Float32Array[] = []
+
+  for (let ch = 0; ch < channels; ch++) {
+    data.push(new Float32Array(length))
+  }
+
+  let sampleOffset = dataOffset
+  for (let i = 0; i < length; i++) {
+    for (let ch = 0; ch < channels; ch++) {
+      const pcm = wavBuffer.readInt16LE(sampleOffset)
+      sampleOffset += 2
+      const channelData = data[ch]
+      if (channelData) {
+        channelData[i] = pcm / 32768 // Convert to -1.0 to 1.0 range
+      }
+    }
+  }
+
+  return {
+    sampleRate,
+    channels,
+    length,
+    data,
+  }
+}

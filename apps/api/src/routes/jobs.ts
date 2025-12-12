@@ -1,13 +1,9 @@
 import { FastifyInstance, FastifyReply } from 'fastify'
-import { JobEvent, JobId, JobIdSchema, JobStage } from '@bluebird/types'
+import { JobEvent, JobIdSchema, JobStage } from '@bluebird/types'
 import { createJobEventSubscriber } from '../lib/events.js'
 import { getJobStatus } from '../lib/queue.js'
 import { prisma } from '../lib/db.js'
 import type { AuthenticatedRequest } from '../lib/middleware.js'
-
-interface Params {
-  jobId: JobId
-}
 
 const stateToStage = (state: string | null): JobStage => {
   if (!state) return 'queued'
@@ -40,13 +36,14 @@ export async function jobEventsHandler(
   request: AuthenticatedRequest,
   reply: FastifyReply
 ): Promise<void> {
-  const params = request.params as Params
   // Require authentication for SSE streams
   if (!request.user) {
     reply.code(401).send({ error: 'Authentication required' })
     return
   }
 
+  // Type-safe params access using Fastify's typing
+  const params = request.params as { jobId?: unknown }
   const parsed = JobIdSchema.safeParse(params.jobId)
   if (!parsed.success) {
     reply.code(400).send({ error: 'Invalid jobId' })

@@ -16,7 +16,7 @@ import { synthesizeMusic, encodeWAV } from '../music-synth.js'
 import { uploadToS3, getS3Paths } from '../s3.js'
 import { publishJobEvent } from '../events.js'
 import { prisma } from '../db.js'
-import type { ArrangementSpec, JobStage } from '@bluebird/types'
+import { ArrangementSpecSchema, type JobStage } from '@bluebird/types'
 import { getQueueConnection } from '../redis.js'
 
 // Get shared Redis connection
@@ -62,7 +62,12 @@ async function processMusicJob(job: Job<MusicJobData>): Promise<void> {
     throw new Error(`No plan found for take: ${take.id}`)
   }
 
-  const arrangement = take.plan as ArrangementSpec
+  // Validate arrangement plan with Zod for type safety
+  const parseResult = ArrangementSpecSchema.safeParse(take.plan)
+  if (!parseResult.success) {
+    throw new Error(`Invalid arrangement plan: ${parseResult.error.message}`)
+  }
+  const arrangement = parseResult.data
 
   await job.updateProgress(15)
   await sendEvent(jobId, 'music-render', 0.15, `Loaded arrangement plan`)
