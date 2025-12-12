@@ -118,13 +118,13 @@ async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
         jobId,
         projectId,
         status: 'planned',
-        plan: arrangement as unknown as Record<string, unknown>, // Prisma JSON type
+        plan: arrangement,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       update: {
         status: 'planned',
-        plan: arrangement as unknown as Record<string, unknown>,
+        plan: arrangement,
         updatedAt: new Date(),
       },
     })
@@ -206,7 +206,14 @@ analyzeWorker.on('completed', (job) => {
  * Graceful shutdown.
  */
 export async function closeWorkers(): Promise<void> {
-  await Promise.all([planWorker.close(), analyzeWorker.close(), redisConnection.quit()])
+  const closePromises = [planWorker.close(), analyzeWorker.close()]
+
+  // Only quit Redis if connection is still active
+  if (redisConnection.status === 'ready' || redisConnection.status === 'connecting') {
+    closePromises.push(redisConnection.quit())
+  }
+
+  await Promise.all(closePromises)
   // eslint-disable-next-line no-console
   console.log('[WORKER] All workers closed')
 }

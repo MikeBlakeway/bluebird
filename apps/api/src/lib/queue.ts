@@ -43,6 +43,42 @@ export interface AnalyzeJobData {
   lyrics: string
 }
 
+export interface MusicJobData {
+  projectId: ProjectId
+  jobId: JobId
+  sectionIndex: number
+  instrument: string
+  seed: number
+  isPro?: boolean
+}
+
+export interface VoiceJobData {
+  projectId: ProjectId
+  jobId: JobId
+  sectionIndex: number
+  lyrics: string
+  seed: number
+  isPro?: boolean
+}
+
+export interface MixJobData {
+  projectId: ProjectId
+  jobId: JobId
+  takeId: string
+  targetLUFS: number
+  truePeakLimit: number
+  isPro?: boolean
+}
+
+export interface ExportJobData {
+  projectId: ProjectId
+  jobId: JobId
+  takeId: string
+  format: 'wav' | 'mp3'
+  includeStems: boolean
+  isPro?: boolean
+}
+
 // Create Redis connection (shared across queues)
 const redisConnection = new IORedis(REDIS_URL, {
   maxRetriesPerRequest: null, // Required for BullMQ
@@ -69,6 +105,10 @@ const defaultQueueOptions: QueueOptions = {
 // Initialize queues
 export const planQueue = new Queue<PlanJobData>(QUEUE_NAMES.PLAN, defaultQueueOptions)
 export const analyzeQueue = new Queue<AnalyzeJobData>(QUEUE_NAMES.ANALYZE, defaultQueueOptions)
+export const musicQueue = new Queue<MusicJobData>(QUEUE_NAMES.SYNTH, defaultQueueOptions)
+export const voiceQueue = new Queue<VoiceJobData>(QUEUE_NAMES.VOCAL, defaultQueueOptions)
+export const mixQueue = new Queue<MixJobData>(QUEUE_NAMES.MIX, defaultQueueOptions)
+export const exportQueue = new Queue<ExportJobData>(QUEUE_NAMES.EXPORT, defaultQueueOptions)
 
 /**
  * Enqueue a song planning job.
@@ -92,6 +132,46 @@ export async function enqueueAnalyzeJob(data: AnalyzeJobData): Promise<void> {
 }
 
 /**
+ * Enqueue a music stem rendering job.
+ */
+export async function enqueueMusicJob(data: MusicJobData): Promise<void> {
+  await musicQueue.add('render-music', data, {
+    jobId: data.jobId,
+    priority: data.isPro ? PRIORITY.PRO : PRIORITY.STANDARD,
+  })
+}
+
+/**
+ * Enqueue a vocal rendering job.
+ */
+export async function enqueueVoiceJob(data: VoiceJobData): Promise<void> {
+  await voiceQueue.add('render-voice', data, {
+    jobId: data.jobId,
+    priority: data.isPro ? PRIORITY.PRO : PRIORITY.STANDARD,
+  })
+}
+
+/**
+ * Enqueue a mix job.
+ */
+export async function enqueueMixJob(data: MixJobData): Promise<void> {
+  await mixQueue.add('mix-stems', data, {
+    jobId: data.jobId,
+    priority: data.isPro ? PRIORITY.PRO : PRIORITY.STANDARD,
+  })
+}
+
+/**
+ * Enqueue an export job.
+ */
+export async function enqueueExportJob(data: ExportJobData): Promise<void> {
+  await exportQueue.add('export-preview', data, {
+    jobId: data.jobId,
+    priority: data.isPro ? PRIORITY.PRO : PRIORITY.STANDARD,
+  })
+}
+
+/**
  * Get job status by ID.
  */
 export async function getJobStatus(jobId: JobId): Promise<{
@@ -101,7 +181,7 @@ export async function getJobStatus(jobId: JobId): Promise<{
   failedReason?: string
 } | null> {
   // Try all queues to find the job
-  const queues = [planQueue, analyzeQueue]
+  const queues = [planQueue, analyzeQueue, musicQueue, voiceQueue, mixQueue, exportQueue]
 
   for (const queue of queues) {
     const job = await queue.getJob(jobId)
@@ -123,5 +203,19 @@ export async function getJobStatus(jobId: JobId): Promise<{
  * Close all queue connections gracefully.
  */
 export async function closeQueues(): Promise<void> {
-  await Promise.all([planQueue.close(), analyzeQueue.close(), redisConnection.quit()])
+  const closePromises = [
+    planQueue.close(),
+    analyzeQueue.close(),
+    musicQueue.close(),
+    voiceQueue.close(),
+    mixQueue.close(),
+    exportQueue.close(),
+  ]
+
+  // Only quit Redis if connection is still active
+  if (redisConnection.status === 'ready' || redisConnection.status === 'connecting') {
+    closePromises.push(redisConnection.quit())
+  }
+
+  await Promise.all(closePromises)
 }

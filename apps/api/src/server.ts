@@ -6,6 +6,9 @@ import { registerAnalyzerRoutes } from './routes/analyzer.js'
 import { registerPlannerRoutes } from './routes/planner.js'
 import { registerOrchestratorRoutes } from './routes/orchestrator.js'
 import { registerJobRoutes } from './routes/jobs.js'
+import { registerRenderRoutes } from './routes/render.js'
+import { registerMixRoutes } from './routes/mix.js'
+import { registerExportRoutes } from './routes/export.js'
 import { authMiddleware } from './lib/middleware.js'
 
 const PORT = parseInt(process.env.BLUEBIRD_PORT || '4000', 10)
@@ -35,6 +38,9 @@ export async function createServer() {
   registerPlannerRoutes(fastify)
   registerOrchestratorRoutes(fastify)
   registerJobRoutes(fastify)
+  registerRenderRoutes(fastify)
+  registerMixRoutes(fastify)
+  registerExportRoutes(fastify)
 
   return fastify
 }

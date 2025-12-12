@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { createServer } from '../server.js'
+import { createServer } from '../../server.js'
 import { FastifyInstance } from 'fastify'
 
 describe('SSE Job Events', () => {
