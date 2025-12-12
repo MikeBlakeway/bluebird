@@ -1,5 +1,5 @@
 import { JobEvent, JobEventSchema, JobId } from '@bluebird/types'
-import { getPublisherConnection, createSubscriberConnection } from './redis.js'
+import { getPublisherConnection, createSubscriberConnection } from './redis'
 
 const channelForJob = (jobId: JobId) => `job-events:${jobId}`
 

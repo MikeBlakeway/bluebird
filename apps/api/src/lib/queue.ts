@@ -5,7 +5,7 @@
 
 import { Queue, QueueOptions } from 'bullmq'
 import type { ProjectId, JobId } from '@bluebird/types'
-import { getQueueConnection } from './redis.js'
+import { getQueueConnection } from './redis'
 
 // Queue names (aligned with pod responsibilities)
 export const QUEUE_NAMES = {

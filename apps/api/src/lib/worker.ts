@@ -5,12 +5,12 @@
 
 import { Worker, Job } from 'bullmq'
 import { JobStage } from '@bluebird/types'
-import { QUEUE_NAMES, type PlanJobData, type AnalyzeJobData } from './queue.js'
-import { analyzeLyrics, detectRhymeScheme, estimateTempo, extractSeedPhrase } from './analyzer.js'
-import { planArrangement } from './planner.js'
-import { prisma } from './db.js'
-import { publishJobEvent } from './events.js'
-import { getQueueConnection } from './redis.js'
+import { QUEUE_NAMES, type PlanJobData, type AnalyzeJobData } from './queue'
+import { analyzeLyrics, detectRhymeScheme, estimateTempo, extractSeedPhrase } from './analyzer'
+import { planArrangement } from './planner'
+import { prisma } from './db'
+import { publishJobEvent } from './events'
+import { getQueueConnection } from './redis'
 
 // Get shared Redis connection
 const redisConnection = getQueueConnection()
