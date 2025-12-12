@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
-import { prisma } from './db.js'
+import { prisma } from '../db.js'
 
 // Import worker internals for testing
 // Note: These would need to be exported or we'd test via the queue interface
@@ -144,11 +144,11 @@ describe('Worker - Plan Job Processing', () => {
         jobId,
         projectId,
         status: 'planned',
-        plan: mockPlan as unknown as Record<string, unknown>,
+        plan: mockPlan,
       },
       update: {
         status: 'planned',
-        plan: mockPlan as unknown as Record<string, unknown>,
+        plan: mockPlan,
       },
     })
 
@@ -199,11 +199,11 @@ describe('Worker - Plan Job Processing', () => {
         jobId,
         projectId,
         status: 'pending',
-        plan: plan1 as unknown as Record<string, unknown>,
+        plan: plan1,
       },
       update: {
         status: 'pending',
-        plan: plan1 as unknown as Record<string, unknown>,
+        plan: plan1,
       },
     })
 
@@ -217,11 +217,11 @@ describe('Worker - Plan Job Processing', () => {
         jobId,
         projectId,
         status: 'planned',
-        plan: plan2 as unknown as Record<string, unknown>,
+        plan: plan2,
       },
       update: {
         status: 'planned',
-        plan: plan2 as unknown as Record<string, unknown>,
+        plan: plan2,
       },
     })
 
@@ -303,10 +303,10 @@ describe('Worker - Plan Job Processing', () => {
   })
 
   it('should maintain referential integrity between user, project, and take', async () => {
-    // Create user
+    // Create user with unique email
     const user = await prisma.user.create({
       data: {
-        email: 'integrity@test.local',
+        email: `integrity-${Date.now()}@test.local`,
         name: 'Integrity Test',
       },
     })
@@ -344,7 +344,7 @@ describe('Worker - Plan Job Processing', () => {
     })
 
     expect(fullTake?.project.userId).toBe(user.id)
-    expect(fullTake?.project.user.email).toBe('integrity@test.local')
+    expect(fullTake?.project.user.email).toBe(user.email)
 
     // Cleanup
     await prisma.take.delete({ where: { id: take.id } })

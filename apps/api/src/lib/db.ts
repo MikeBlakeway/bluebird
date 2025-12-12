@@ -15,4 +15,8 @@ if (process.env.NODE_ENV !== 'production') {
   global.prisma = prisma
 }
 
+export async function disconnectDb(): Promise<void> {
+  await prisma.$disconnect()
+}
+
 export default prisma

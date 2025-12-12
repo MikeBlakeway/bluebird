@@ -1,5 +1,5 @@
 import { describe, it, expect, afterAll } from 'vitest'
-import { publishJobEvent, createJobEventSubscriber, closeEventBus } from './events.js'
+import { publishJobEvent, createJobEventSubscriber, closeEventBus } from '../events.js'
 import { JobEvent } from '@bluebird/types'
 
 describe('Event Bus', () => {

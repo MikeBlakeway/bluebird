@@ -7,8 +7,8 @@ import {
   generateEnergyCurve,
   guessInstrumentation,
   planArrangement,
-} from './planner.js'
-import { analyzeLyrics, detectRhymeScheme, estimateTempo, extractSeedPhrase } from './analyzer.js'
+} from '../planner.js'
+import { analyzeLyrics, detectRhymeScheme, estimateTempo, extractSeedPhrase } from '../analyzer.js'
 import { ProjectIdSchema, JobIdSchema } from '@bluebird/types'
 import type { AnalysisResult } from '@bluebird/types'
 

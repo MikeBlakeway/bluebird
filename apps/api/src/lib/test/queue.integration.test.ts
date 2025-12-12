@@ -1,6 +1,6 @@
 import { test, describe, expect, beforeAll, afterAll } from 'vitest'
-import { enqueuePlanJob, getJobStatus, planQueue, closeQueues } from './queue.js'
-import { closeWorkers } from './worker.js'
+import { enqueuePlanJob, getJobStatus, planQueue, closeQueues } from '../queue.js'
+import { closeWorkers } from '../worker.js'
 import { ProjectIdSchema, JobIdSchema } from '@bluebird/types'
 
 describe('Queue Integration', () => {

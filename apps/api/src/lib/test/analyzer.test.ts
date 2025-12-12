@@ -5,7 +5,7 @@ import {
   detectRhymeScheme,
   estimateTempo,
   extractSeedPhrase,
-} from './analyzer.js'
+} from '../analyzer.js'
 
 describe('Analyzer', () => {
   describe('estimateSyllables', () => {

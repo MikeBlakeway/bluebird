@@ -4,10 +4,10 @@
  */
 
 import { describe, it, expect, afterAll } from 'vitest'
-import { enqueuePlanJob } from './lib/queue.js'
-import { createJobEventSubscriber, closeEventBus } from './lib/events.js'
-import { closeQueues } from './lib/queue.js'
-import { closeWorkers } from './lib/worker.js'
+import { enqueuePlanJob } from '../lib/queue.js'
+import { createJobEventSubscriber, closeEventBus } from '../lib/events.js'
+import { closeQueues } from '../lib/queue.js'
+import { closeWorkers } from '../lib/worker.js'
 
 describe('Burn-in Tests', () => {
   afterAll(async () => {

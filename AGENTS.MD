@@ -6,9 +6,9 @@
 
 ## 0) Ground Truth & Boundaries
 
-* **Original music only.** No celebrity voice cloning; do not propose timbre transfer from real artists.
-* **Remix is vibe, not copy.** Always route reference audio (≤30s) through features (key/BPM/contour/rhythm) and enforce export gating.
-* **Never invent endpoints or DTOs.** Use the types in `@bluebird/types` and the endpoint list in §3. If unsure, ask for the schema or create a failing TODO.
+- **Original music only.** No celebrity voice cloning; do not propose timbre transfer from real artists.
+- **Remix is vibe, not copy.** Always route reference audio (≤30s) through features (key/BPM/contour/rhythm) and enforce export gating.
+- **Never invent endpoints or DTOs.** Use the types in `@bluebird/types` and the endpoint list in §3. If unsure, ask for the schema or create a failing TODO.
 
 ---
 
@@ -37,11 +37,11 @@ bluebird-infer/       # Separate Python monorepo (Poetry)
 
 ## 2) Runtime, URLs, and ENV
 
-* Web: `http://localhost:3000`
-* API: `http://localhost:4000`
-* SSE: `http://localhost:4000/jobs/:id/events`
-* PG: `localhost:5432`; Redis: `localhost:6379`; MinIO: `http://localhost:9000`
-* CDN stub: `http://localhost:8080`
+- Web: `http://localhost:3000`
+- API: `http://localhost:4000`
+- SSE: `http://localhost:4000/jobs/:id/events`
+- PG: `localhost:5432`; Redis: `localhost:6379`; MinIO: `http://localhost:9000`
+- CDN stub: `http://localhost:8080`
 
 **API env (.env):** `BLUEBIRD_PORT`, `BLUEBIRD_ENV`, `DATABASE_URL`, `REDIS_URL`, `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET`, `CDN_BASE`, `JWT_SECRET`, `EMAIL_FROM`, `SMTP_URL`, `OTEL_EXPORTER_OTLP_ENDPOINT`
 
@@ -69,11 +69,11 @@ GET  /jobs/:jobId/events  # SSE
 
 ## 4) Core DTOs (from @bluebird/types)
 
-* `ArrangementSpec`: BPM, key, sections, instrumentation, energy curve
-* `VocalScore`: line→artist mapping + style notes
-* `RemixFeatures`: key, BPM, interval/contour + rhythm features
-* `SimilarityReport`: melody/rhythm scores + verdict (pass/borderline/block)
-* `ExportBundle`: master + aligned stems + cue sheet (BWF markers); sample rate default 48 kHz/24‑bit, 44.1 kHz optional
+- `ArrangementSpec`: BPM, key, sections, instrumentation, energy curve
+- `VocalScore`: line→artist mapping + style notes
+- `RemixFeatures`: key, BPM, interval/contour + rhythm features
+- `SimilarityReport`: melody/rhythm scores + verdict (pass/borderline/block)
+- `ExportBundle`: master + aligned stems + cue sheet (BWF markers); sample rate default 48 kHz/24‑bit, 44.1 kHz optional
 
 **Agent rule:** always import these from `@bluebird/types`, not hand‑rolled.
 
@@ -81,21 +81,69 @@ GET  /jobs/:jobId/events  # SSE
 
 ## 5) Patterns Agents Should Prefer
 
+### 5.0 Type Safety (Critical)
+
+**Avoid type casts (`as Type`) in production code except where absolutely necessary.** Tests are exempt from this rule.
+
+**Required patterns:**
+
+- **External data (DB, API, files)**: Always validate with Zod schemas
+- **Database JSON fields**: Never cast `Json?` types directly; use `safeParse()`
+- **Route parameters**: Use Fastify type inference or validate with Zod; avoid `as { param: string }`
+- **Queue job data**: Validate with Zod schemas before processing
+- **Unknown types**: Use type guards or Zod validation; avoid asserting types
+
+**Example (workers loading DB data):**
+
+```typescript
+// ❌ WRONG: Unsafe cast bypasses validation
+const arrangement = take.plan as ArrangementSpec
+
+// ✅ CORRECT: Runtime validation with descriptive errors
+const parseResult = ArrangementSpecSchema.safeParse(take.plan)
+if (!parseResult.success) {
+  throw new Error(`Invalid arrangement plan: ${parseResult.error.message}`)
+}
+const arrangement = parseResult.data // Type-safe + validated
+```
+
+**Example (route parameters):**
+
+```typescript
+// ❌ WRONG: Assumes structure without validation
+const params = request.params as { jobId: string }
+
+// ✅ CORRECT: Honest about uncertainty, validate with Zod
+const params = request.params as { jobId?: unknown }
+const parsed = JobIdSchema.safeParse(params.jobId)
+if (!parsed.success) {
+  return reply.code(400).send({ error: 'Invalid job ID' })
+}
+const jobId = parsed.data
+```
+
+**When casts are acceptable:**
+
+- `as const` for literal types (safe, no runtime risk)
+- Test files (mocking, fixtures, test data)
+- Type narrowing after explicit runtime checks
+- Documented exceptions with clear safety justification
+
 ### 5.1 Fastify route template (with idempotency + zod)
 
-* Include `Idempotency-Key` header check on **all POSTs**.
-* Validate request/response using zod from `@bluebird/types`.
-* Emit OpenTelemetry attributes: `runId`, `planId`, `sectionId`, `seed`.
+- Include `Idempotency-Key` header check on **all POSTs**.
+- Validate request/response using zod from `@bluebird/types`.
+- Emit OpenTelemetry attributes: `runId`, `planId`, `sectionId`, `seed`.
 
 ### 5.2 SSE client template
 
-* Use `EventSource` with heartbeat handling and exponential backoff.
-* Update UI via a centralized job timeline store.
+- Use `EventSource` with heartbeat handling and exponential backoff.
+- Update UI via a centralized job timeline store.
 
 ### 5.3 BullMQ queues naming & priority
 
-* Queues: `plan`, `analyze`, `melody`, `synth`, `vocal`, `mix`, `check`, `export`.
-* Priorities: `pro` > `standard`. Include DLQ and idempotency key in job opts.
+- Queues: `plan`, `analyze`, `melody`, `synth`, `vocal`, `mix`, `check`, `export`.
+- Priorities: `pro` > `standard`. Include DLQ and idempotency key in job opts.
 
 ### 5.4 S3 layout and presign
 
@@ -113,12 +161,12 @@ projects/{projectId}/takes/{takeId}/
 
 ### 5.5 Similarity pipeline hooks
 
-* Always compute **interval n‑grams** (n=3..5) and **rhythmic IOI grid**.
-* Verdict thresholds: pass < 0.35; borderline 0.35–0.48; block ≥ 0.48; apply hard rule on 8‑bar clones.
+- Always compute **interval n‑grams** (n=3..5) and **rhythmic IOI grid**.
+- Verdict thresholds: pass < 0.35; borderline 0.35–0.48; block ≥ 0.48; apply hard rule on 8‑bar clones.
 
 ### 5.6 WebAudio local preview
 
-* Build a graph with per‑track gain/mute; maintain a central transport; A/B compare without new GPU jobs.
+- Build a graph with per‑track gain/mute; maintain a central transport; A/B compare without new GPU jobs.
 
 ---
 
@@ -127,12 +175,15 @@ projects/{projectId}/takes/{takeId}/
 **SSE client (web):**
 
 ```ts
-const es = new EventSource(`${api}/jobs/${id}/events`);
+const es = new EventSource(`${api}/jobs/${id}/events`)
 es.onmessage = (e) => {
-  const evt = JSON.parse(e.data) as JobEvent; // from @bluebird/types
-  timeline.update(evt);
-};
-es.onerror = () => { es.close(); setTimeout(connect, backoff()); };
+  const evt = JSON.parse(e.data) as JobEvent // from @bluebird/types
+  timeline.update(evt)
+}
+es.onerror = () => {
+  es.close()
+  setTimeout(connect, backoff())
+}
 ```
 
 **Idempotent POST (client):**
@@ -140,9 +191,9 @@ es.onerror = () => { es.close(); setTimeout(connect, backoff()); };
 ```ts
 await fetch(`${api}/render/section`, {
   method: 'POST',
-  headers: { 'Content-Type':'application/json', 'Idempotency-Key': crypto.randomUUID() },
+  headers: { 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID() },
   body: JSON.stringify(payload),
-});
+})
 ```
 
 **BullMQ enqueue (priority + dedupe):**
@@ -152,20 +203,21 @@ queue.add('vocal', payload, {
   jobId: `${projectId}:${sectionId}:vocal:${seed}`,
   priority: isPro ? 10 : 1,
   removeOnComplete: true,
-  attempts: 3, backoff: { type: 'exponential', delay: 5000 },
-});
+  attempts: 3,
+  backoff: { type: 'exponential', delay: 5000 },
+})
 ```
 
 ---
 
 ## 7) Testing Patterns
 
-* **Unit (Node)**: Vitest; DTO schema tests; utility pure functions.
-* **Contract**: OpenAPI snapshot in `packages/types`; CI fails on diff.
-* **Integration**: Testcontainers (PG/Redis/MinIO) to run plan→preview slice and SSE.
-* **E2E**: Playwright path: signup→lyrics→preview→regen→remix→export.
-* **Audio**: Golden WAV fixtures; feature consistency (same seed → same features); ABX numeric thresholds for SRC/dither.
-* **Python**: PyTest + Hypothesis for interval n‑grams and DTW; pytest‑benchmark on feature extraction.
+- **Unit (Node)**: Vitest; DTO schema tests; utility pure functions.
+- **Contract**: OpenAPI snapshot in `packages/types`; CI fails on diff.
+- **Integration**: Testcontainers (PG/Redis/MinIO) to run plan→preview slice and SSE.
+- **E2E**: Playwright path: signup→lyrics→preview→regen→remix→export.
+- **Audio**: Golden WAV fixtures; feature consistency (same seed → same features); ABX numeric thresholds for SRC/dither.
+- **Python**: PyTest + Hypothesis for interval n‑grams and DTW; pytest‑benchmark on feature extraction.
 
 ---
 
@@ -173,37 +225,37 @@ queue.add('vocal', payload, {
 
 ### Do
 
-* Use DTO imports from `@bluebird/types`.
-* Emit OTEL spans with run IDs.
-* Enforce idempotency.
-* Respect queue names + priorities.
-* Use presigned S3 URLs.
+- Use DTO imports from `@bluebird/types`.
+- Emit OTEL spans with run IDs.
+- Enforce idempotency.
+- Respect queue names + priorities.
+- Use presigned S3 URLs.
 
 ### Don't
 
-* Don't store raw reference audio by default; write `features/remix.json` instead.
-* Don't suggest celebrity voices or timbre transfer.
-* Don't block the UI during renders; subscribe to SSE instead.
-* Don't generate endpoints or env names not listed here.
+- Don't store raw reference audio by default; write `features/remix.json` instead.
+- Don't suggest celebrity voices or timbre transfer.
+- Don't block the UI during renders; subscribe to SSE instead.
+- Don't generate endpoints or env names not listed here.
 
 ---
 
 ## 9) Glossary (quick)
 
-* **AI Artist**: Licensed synthetic singing voice.
-* **ArrangementSpec**: JSON plan for tempo/sections/instrumentation.
-* **VocalScore**: Map of lyric lines to performers + style notes.
-* **RemixFeatures**: key/BPM/contour/rhythm from ≤30s reference.
-* **SimilarityReport**: export‑gating report with melody/rhythm scores.
+- **AI Artist**: Licensed synthetic singing voice.
+- **ArrangementSpec**: JSON plan for tempo/sections/instrumentation.
+- **VocalScore**: Map of lyric lines to performers + style notes.
+- **RemixFeatures**: key/BPM/contour/rhythm from ≤30s reference.
+- **SimilarityReport**: export‑gating report with melody/rhythm scores.
 
 ---
 
 ## 10) Copy/Paste Tasks for Agent Chat
 
-* "Generate a Fastify route for `POST /render/section` with zod validation and idempotency."
-* "Write a BullMQ worker for the `vocal` queue with seed propagation and DLQ."
-* "Create a WebAudio graph with per‑track gain and A/B compare."
-* "Produce a PyTest for interval n‑gram Jaccard similarity and DTW rhythm score with golden fixtures."
+- "Generate a Fastify route for `POST /render/section` with zod validation and idempotency."
+- "Write a BullMQ worker for the `vocal` queue with seed propagation and DLQ."
+- "Create a WebAudio graph with per‑track gain and A/B compare."
+- "Produce a PyTest for interval n‑gram Jaccard similarity and DTW rhythm score with golden fixtures."
 
 ---
 
@@ -219,34 +271,34 @@ queue.add('vocal', payload, {
 
 **Why original-only?**
 
-* Brand + legal safety: no master reuse, no near-copy melodies
-* Similarity Budget guardrail: interval n-gram Jaccard + rhythmic DTW checks block exports if melody too close to reference
-* Trust with users: "Remix the vibe, not the melody"
+- Brand + legal safety: no master reuse, no near-copy melodies
+- Similarity Budget guardrail: interval n-gram Jaccard + rhythmic DTW checks block exports if melody too close to reference
+- Trust with users: "Remix the vibe, not the melody"
 
 **Why separate Python repo?**
 
-* CUDA/PyTorch version pinning isolated from Node toolchain
-* Faster CI (no Node dependency on inference logic)
-* Cleaner scaling: pods deployed as Docker services independent of Node API
-* Each pod is a stateless FastAPI service; workers communicate via S3 keys + HTTP (no large audio payloads in-process)
+- CUDA/PyTorch version pinning isolated from Node toolchain
+- Faster CI (no Node dependency on inference logic)
+- Cleaner scaling: pods deployed as Docker services independent of Node API
+- Each pod is a stateless FastAPI service; workers communicate via S3 keys + HTTP (no large audio payloads in-process)
 
 **Why Remix matters for MVP:**
 
-* Differentiator from prompt-only tools (which feel random)
-* User intent captured in feature vectors (not raw audio): contour, rhythm, key, BPM
-* Auto-generates new melody constrained by budget slider (Pro tier control; Free has safe defaults)
+- Differentiator from prompt-only tools (which feel random)
+- User intent captured in feature vectors (not raw audio): contour, rhythm, key, BPM
+- Auto-generates new melody constrained by budget slider (Pro tier control; Free has safe defaults)
 
 **Performance targets are hard gates:**
 
-* TTFP ≤45s P50 determines perceived quality (faster=better UX)
-* Per-section regen ≤20s enables iterative workflows
-* GPU cost budget ≤$0.40 per 30s preview drives profitability
+- TTFP ≤45s P50 determines perceived quality (faster=better UX)
+- Per-section regen ≤20s enables iterative workflows
+- GPU cost budget ≤$0.40 per 30s preview drives profitability
 
 **Export gating is trust:**
 
-* Similarity report shows exactly why block/pass/borderline
-* Recommendations are actionable (shift key +1, regen chorus topline)
-* Users never accidentally export a copyright-risky composition
+- Similarity report shows exactly why block/pass/borderline
+- Recommendations are actionable (shift key +1, regen chorus topline)
+- Users never accidentally export a copyright-risky composition
 
 ### Common Implementation Pitfalls
 
@@ -258,11 +310,11 @@ queue.add('vocal', payload, {
 
 ### When You're Stuck
 
-* **DTO questions?** Check `packages/types` (Zod schemas are source of truth)
-* **API contract unclear?** Look at `Method.md` (endpoint specs + request/response examples)
-* **Performance budget?** See `docs/project/requirements/Non-Functional-Requirements.md` (SLOs, cost, resource constraints)
-* **Feature scope?** Consult `FEATURES.MD` (F-IDs with acceptance criteria)
-* **Testing patterns?** Review this AGENTS.MD §7) Testing Patterns (Node/Python specifics)
+- **DTO questions?** Check `packages/types` (Zod schemas are source of truth)
+- **API contract unclear?** Look at `Method.md` (endpoint specs + request/response examples)
+- **Performance budget?** See `docs/project/requirements/Non-Functional-Requirements.md` (SLOs, cost, resource constraints)
+- **Feature scope?** Consult `FEATURES.MD` (F-IDs with acceptance criteria)
+- **Testing patterns?** Review this AGENTS.MD §7) Testing Patterns (Node/Python specifics)
 
 ---
 
@@ -272,42 +324,44 @@ queue.add('vocal', payload, {
 
 ### What to Record (after each sprint or major milestone)
 
-* **Completed work**: Features shipped, endpoints implemented, pods integrated, tests added
+- **Completed work**: Features shipped, endpoints implemented, pods integrated, tests added
 
-* **Architectural decisions made**: Why we chose a specific pattern, routing strategy, or library
-* **Development patterns established**: How we actually build queue workers, routes, tests—not just guidelines
-* **Lessons learned**: Performance bottlenecks discovered, bugs fixed, gotchas encountered
-* **Integration points created**: How pods interact with API, how frontend talks to SSE, caching strategies used
-* **Performance/cost data**: Actual TTFP measurements, GPU minutes per job, cache hit rates
-* **Tech decisions**: Why we picked specific versions, workarounds for edge cases, dependency conflicts resolved
+- **Architectural decisions made**: Why we chose a specific pattern, routing strategy, or library
+- **Development patterns established**: How we actually build queue workers, routes, tests—not just guidelines
+- **Lessons learned**: Performance bottlenecks discovered, bugs fixed, gotchas encountered
+- **Integration points created**: How pods interact with API, how frontend talks to SSE, caching strategies used
+- **Performance/cost data**: Actual TTFP measurements, GPU minutes per job, cache hit rates
+- **Tech decisions**: Why we picked specific versions, workarounds for edge cases, dependency conflicts resolved
 
 ### Where to Record
 
-* **`docs/development/DEVELOPMENT_LOG.md`**: Sprint-by-sprint record of what was built and how
+- **`docs/development/DEVELOPMENT_LOG.md`**: Sprint-by-sprint record of what was built and how
 
-* **Inline code comments**: `// NOTE: We tried X but Y worked better because...` for non-obvious patterns
-* **ADR (Architecture Decision Records)**: `docs/project/adr/ADR-NNN-{title}.md` for significant choices (routing, similarity algorithm, state management)
-* **This file (AGENTS.MD)**: Update §11 (Knowledge for Development) with patterns that worked, anti-patterns to avoid
+- **Inline code comments**: `// NOTE: We tried X but Y worked better because...` for non-obvious patterns
+- **ADR (Architecture Decision Records)**: `docs/project/adr/ADR-NNN-{title}.md` for significant choices (routing, similarity algorithm, state management)
+- **This file (AGENTS.MD)**: Update §11 (Knowledge for Development) with patterns that worked, anti-patterns to avoid
 
 ### Memory Update Cadence
 
-* **After Sprint 0**: Record monorepo setup, auth implementation, queue architecture choices
+- **After Sprint 0**: Record monorepo setup, auth implementation, queue architecture choices
 
-* **After Sprint 1**: Record preview path implementation, SSE integration, WebAudio local preview patterns
-* **After each subsequent sprint**: Update with features shipped, integration learnings, performance observations
-* **When adding features**: Document the integration point (e.g., "How we added Remix reference upload")
-* **When hitting issues**: Record the problem, solution, and why (prevents re-solving the same issue)
+- **After Sprint 1**: Record preview path implementation, SSE integration, WebAudio local preview patterns
+- **After each subsequent sprint**: Update with features shipped, integration learnings, performance observations
+- **When adding features**: Document the integration point (e.g., "How we added Remix reference upload")
+- **When hitting issues**: Record the problem, solution, and why (prevents re-solving the same issue)
 
 ### Example Development Memory Entries
 
 ```markdown
 ## Sprint 0: Foundation & Auth
+
 - Chose Prisma ORM for schema clarity + migrations; migrations live in apps/api/prisma/migrations/
 - Magic-link auth via SMTP (local console for dev); JWT stored in httpOnly cookie
 - BullMQ worker boots in separate process; listens to Redis on REDIS_URL
 - Learned: Must include Idempotency-Key in all POST requests; prevents duplicate charges and ensures exactly-once semantics
 
 ## Sprint 1: Preview Path
+
 - Music/Voice synth stubs emit click patterns + sine tones aligned to lyrics syllables
 - SSE heartbeat every 15s; reconnect with exp backoff (500ms → 8s max)
 - WebAudio transport clock synced to buffer position; pre-roll 512 samples to avoid clicks
@@ -315,6 +369,7 @@ queue.add('vocal', payload, {
 - Caching: stems by seed reduces re-renders; cache TTL 24h in MinIO lifecycle policy
 
 ## Similarity Engine Integration (Sprint 5)
+
 - Reference feature extraction: HPSS (librosa) + pitch/IOI extraction; 3-5 sec CPU time for 30s audio
 - Interval n-gram Jaccard: compare melody contours; DTW for rhythm; combined score drives verdict
 - Hard rule: 8-bar+ near-identical melodies always block (even if score < 0.48)
@@ -323,11 +378,11 @@ queue.add('vocal', payload, {
 
 ### Anti-Patterns to Record (prevent repetition)
 
-* **Regenerating full songs for one section** → costs 2–3x GPU, kills budget
+- **Regenerating full songs for one section** → costs 2–3x GPU, kills budget
 
-* **Storing raw reference audio** → GDPR risk; features are sufficient
-* **Offline similarity checking** → users tweak after checking; verdict must be at export time
-* **Not seeding pod calls** → breaks reproducibility; causes debugging nightmares
+- **Storing raw reference audio** → GDPR risk; features are sufficient
+- **Offline similarity checking** → users tweak after checking; verdict must be at export time
+- **Not seeding pod calls** → breaks reproducibility; causes debugging nightmares
 
 ### Questions Agents Should Ask
 
@@ -343,5 +398,5 @@ When picking up work:
 
 ## 13) Status
 
-* Pre‑implementation; use stubs for Music/Voice until real models are integrated.
-* Development memory begins in Sprint 0.
+- Pre‑implementation; use stubs for Music/Voice until real models are integrated.
+- Development memory begins in Sprint 0.
