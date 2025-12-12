@@ -55,13 +55,15 @@ export async function verifyMagicLinkHandler(request: FastifyRequest, reply: Fas
       email: user.email,
     })
 
-    // Set httpOnly cookie
+    // Set httpOnly cookie with strict security settings
+    const isProduction = process.env.NODE_ENV === 'production'
     reply.setCookie('auth_token', jwtToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true, // Always use secure flag (requires HTTPS)
+      sameSite: 'strict', // Stricter CSRF protection
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/',
+      domain: isProduction ? process.env.COOKIE_DOMAIN : undefined,
     })
 
     return reply.code(200).send({
@@ -110,8 +112,18 @@ export async function logoutHandler(_request: FastifyRequest, reply: FastifyRepl
 }
 
 export function registerAuthRoutes(fastify: FastifyInstance) {
-  fastify.post('/auth/magic-link', magicLinkHandler)
-  fastify.post('/auth/verify', verifyMagicLinkHandler)
+  // Stricter rate limiting for authentication endpoints
+  const authRateLimit = {
+    config: {
+      rateLimit: {
+        max: 5, // 5 requests
+        timeWindow: '15 minutes',
+      },
+    },
+  }
+
+  fastify.post('/auth/magic-link', authRateLimit, magicLinkHandler)
+  fastify.post('/auth/verify', authRateLimit, verifyMagicLinkHandler)
   fastify.get('/auth/me', getCurrentUserHandler)
   fastify.post('/auth/logout', logoutHandler)
 }

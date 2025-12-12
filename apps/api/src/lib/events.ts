@@ -1,23 +1,18 @@
-import IORedis from 'ioredis'
 import { JobEvent, JobEventSchema, JobId } from '@bluebird/types'
-
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
-
-const redisOptions = {
-  maxRetriesPerRequest: null as number | null,
-  enableReadyCheck: false,
-}
+import { getPublisherConnection, createSubscriberConnection } from './redis.js'
 
 const channelForJob = (jobId: JobId) => `job-events:${jobId}`
 
-const publisher = new IORedis(REDIS_URL, redisOptions)
+// Get shared publisher connection
+const publisher = getPublisherConnection()
 
 export async function publishJobEvent(event: JobEvent): Promise<void> {
   await publisher.publish(channelForJob(event.jobId), JSON.stringify(event))
 }
 
 export function createJobEventSubscriber(jobId: JobId) {
-  const subscriber = new IORedis(REDIS_URL, redisOptions)
+  // Each subscriber needs its own connection (Redis pub/sub requirement)
+  const subscriber = createSubscriberConnection()
   const channel = channelForJob(jobId)
 
   return {
@@ -48,5 +43,6 @@ export function createJobEventSubscriber(jobId: JobId) {
 }
 
 export async function closeEventBus(): Promise<void> {
-  await publisher.quit()
+  // Note: Publisher connection is shared and managed by redis.ts
+  // Do not close it here - use closeRedisConnections() instead
 }

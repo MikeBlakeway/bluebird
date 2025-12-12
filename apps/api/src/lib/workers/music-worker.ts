@@ -11,21 +11,16 @@
  */
 
 import { Worker, Job } from 'bullmq'
-import IORedis from 'ioredis'
 import { QUEUE_NAMES, type MusicJobData } from '../queue.js'
 import { synthesizeMusic, encodeWAV } from '../music-synth.js'
 import { uploadToS3, getS3Paths } from '../s3.js'
 import { publishJobEvent } from '../events.js'
 import { prisma } from '../db.js'
 import type { ArrangementSpec, JobStage } from '@bluebird/types'
+import { getQueueConnection } from '../redis.js'
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
-
-// Shared Redis connection for workers
-const redisConnection = new IORedis(REDIS_URL, {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-})
+// Get shared Redis connection
+const redisConnection = getQueueConnection()
 
 const now = () => new Date().toISOString()
 

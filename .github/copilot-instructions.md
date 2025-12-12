@@ -341,7 +341,217 @@ When picking up work:
 
 ---
 
-## 13) Status
+## 13) Commit Message Standards
+
+### Critical Rules (MUST FOLLOW)
+
+1. **PLAIN TEXT ONLY** - Never use Markdown formatting (##, ###, **, *, etc.)
+2. **Conventional Commits** - Use format: `type(scope): subject`
+3. **Line length limits** - Subject: 50 chars; body: 72 chars per line
+4. **Imperative mood** - "Add feature" not "Added feature" or "Adds feature"
+
+### Why Plain Text?
+
+Git commit messages are displayed in `git log`, GitHub, and other tools as **plain text**. Markdown formatting (##, ###, **bold**, *italic*) is not rendered and appears as literal text, making commits harder to read.
+
+**WRONG (Markdown):**
+```
+## Music Worker Implementation
+### Architecture
+- BullMQ worker processing jobs
+```
+
+**Displays in git log as:**
+```
+## Music Worker Implementation
+### Architecture
+- BullMQ worker processing jobs
+```
+
+**CORRECT (Plain Text):**
+```
+MUSIC WORKER IMPLEMENTATION
+
+Architecture
+  - BullMQ worker processing jobs
+```
+
+### Commit Message Structure
+
+```
+type(scope): brief subject line (50 chars max)
+
+Brief overview paragraph explaining the what and why.
+
+SECTION TITLE (ALL CAPS)
+
+Content organized with indentation for hierarchy:
+  - Use 2-space indentation for nested items
+  - Use blank lines to separate sections
+  - Use dashes or numbers for lists
+
+Another Section
+
+More details here. Keep lines to 72 characters maximum for
+readability in terminal displays.
+
+Quality Metrics
+
+✅ Tests: N/N passing
+✅ Coverage: X% (threshold: Y%)
+✅ TypeScript: 0 errors
+✅ ESLint: 0 errors
+
+Next Steps
+
+Brief note about what comes next (optional).
+```
+
+### Conventional Commit Types
+
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation only
+- `test:` - Adding or updating tests
+- `refactor:` - Code restructuring (no functionality change)
+- `perf:` - Performance improvement
+- `chore:` - Maintenance (dependencies, config, etc.)
+- `ci:` - CI/CD changes
+- `style:` - Code formatting (not CSS styling)
+
+### Example Commit Messages
+
+**Example 1: Feature Implementation**
+```
+feat(api): implement music synthesis worker (Sprint 1 Task 1.1)
+
+Complete music synthesis worker for rendering audio stems with S3 storage
+integration and test coverage improvements.
+
+MUSIC SYNTHESIS WORKER
+
+Architecture
+  - BullMQ worker for music synthesis jobs (music-worker.ts)
+  - Process jobs from 'synth' queue with concurrency: 2 jobs
+  - Rate limiter: 10 jobs per 60 seconds
+
+Workflow
+  1. Fetch arrangement plan from database
+  2. Generate audio buffer using synthesizeMusic()
+  3. Encode to WAV format (48kHz/24-bit)
+  4. Upload to S3 with structured paths
+  5. Emit SSE progress events (music-render stage)
+  6. Update Take record on completion
+
+S3 STORAGE INTEGRATION
+
+Implementation
+  - S3 client wrapper for MinIO/S3 (s3.ts)
+  - Functions: uploadToS3(), downloadFromS3(), getPresignedUrl()
+  - JSON helpers: uploadJsonToS3(), downloadJsonFromS3()
+  - Path structure: projects/{projectId}/takes/{takeId}/sections/...
+
+TEST COVERAGE
+
+Added Tests
+  - 12 S3 utility tests (path generation, JSON ops, validation)
+  - 5 music worker structure tests (exports, config, queue setup)
+  - Total: 95 tests (up from 78)
+  - Coverage: 60.0% (meets minimum 60% threshold)
+
+Quality Metrics
+
+✅ Tests: 95/95 passing
+✅ TypeScript: 0 errors
+✅ ESLint: 0 errors
+✅ Coverage: 60.0% (threshold: 60%)
+```
+
+**Example 2: Bug Fix**
+```
+fix(api): resolve Redis quit() type mismatch in queue cleanup
+
+Redis quit() returns Promise<"OK"> not Promise<void>, causing TypeScript
+compilation errors in queue.ts and worker.ts.
+
+PROBLEM
+
+  - closePromises.push(redisConnection.quit())
+  - TypeScript error: Promise<"OK"> not assignable to Promise<void>
+
+SOLUTION
+
+  - Add .then(() => {}) to convert return type
+  - Pattern: closePromises.push(redisConnection.quit().then(() => {}))
+
+FILES CHANGED
+
+  - apps/api/src/lib/queue.ts (Redis cleanup)
+  - apps/api/src/lib/worker.ts (Redis cleanup)
+
+✅ TypeScript: 0 errors
+✅ Tests: All passing
+```
+
+**Example 3: Documentation**
+```
+docs: add commit message standards to copilot-instructions
+
+Add comprehensive commit message guidelines to ensure consistent and
+readable git history across the project.
+
+GUIDELINES ADDED
+
+Format Requirements
+  - PLAIN TEXT only (no Markdown formatting)
+  - Conventional commit format (type(scope): subject)
+  - Line length limits (50 char subject, 72 char body)
+  - Imperative mood for subject lines
+
+Why Plain Text
+  - Markdown doesn't render in git log/GitHub commits
+  - Ensures readability in all git tools
+  - Consistent formatting across team
+
+LOCATION
+
+  - .github/copilot-instructions.md § 13) Commit Message Standards
+```
+
+### Checklist Before Committing
+
+- [ ] Subject line uses conventional commit format: `type(scope): subject`
+- [ ] Subject line is ≤50 characters
+- [ ] Subject line uses imperative mood ("Add" not "Added")
+- [ ] Body lines are ≤72 characters (wrap long lines)
+- [ ] **NO MARKDOWN FORMATTING** (no ##, ###, **, *, etc.)
+- [ ] Use plain text with spacing and indentation for structure
+- [ ] Sections use ALL CAPS titles (not markdown headers)
+- [ ] Lists use dashes (-) or numbers, indented with 2 spaces
+- [ ] Quality metrics included (tests, coverage, errors)
+- [ ] Files changed listed (for larger commits)
+- [ ] Next steps mentioned (if applicable)
+
+### Common Mistakes to Avoid
+
+❌ Using markdown headers: `## Section`, `### Subsection`
+✅ Use plain text with spacing: `SECTION` (all caps), then indented content
+
+❌ Using markdown bold/italic: `**important**`, `*note*`
+✅ Use capitalization or indentation for emphasis
+
+❌ Long subject lines: `feat: implement the new music synthesis worker with BullMQ and S3 integration`
+✅ Keep concise: `feat(api): implement music synthesis worker`
+
+❌ Past tense: `Added music worker`
+✅ Imperative: `Add music worker`
+
+❌ Vague commits: `fix: bug fix`, `chore: update stuff`
+✅ Specific: `fix(api): resolve Redis type mismatch in queue cleanup`
+
+---
+
+## 14) Status
 
 - Pre‑implementation; use stubs for Music/Voice until real models are integrated.
 - Development memory begins in Sprint 0.

@@ -1,5 +1,8 @@
 import Fastify from 'fastify'
 import fastifyCookie from '@fastify/cookie'
+import cors from '@fastify/cors'
+import rateLimit from '@fastify/rate-limit'
+import helmet from '@fastify/helmet'
 import { registerAuthRoutes } from './routes/auth.js'
 import { registerProjectRoutes } from './routes/projects.js'
 import { registerAnalyzerRoutes } from './routes/analyzer.js'
@@ -18,6 +21,44 @@ const ENV = process.env.BLUEBIRD_ENV || 'development'
 export async function createServer() {
   const fastify = Fastify({
     logger: ENV === 'development',
+    bodyLimit: 1024 * 1024, // 1MB global limit
+  })
+
+  // Security: CORS protection
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+    'http://localhost:3000',
+    'http://localhost:4000',
+  ]
+  await fastify.register(cors, {
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  })
+
+  // Security: Helmet for security headers
+  await fastify.register(helmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  })
+
+  // Security: Rate limiting (global)
+  await fastify.register(rateLimit, {
+    max: 100, // 100 requests
+    timeWindow: '15 minutes',
+    cache: 10000,
+    allowList: ['127.0.0.1'],
+    skipOnError: true,
   })
 
   // Register plugins

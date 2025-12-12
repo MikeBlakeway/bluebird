@@ -4,21 +4,16 @@
  */
 
 import { Worker, Job } from 'bullmq'
-import IORedis from 'ioredis'
 import { JobStage } from '@bluebird/types'
 import { QUEUE_NAMES, type PlanJobData, type AnalyzeJobData } from './queue.js'
 import { analyzeLyrics, detectRhymeScheme, estimateTempo, extractSeedPhrase } from './analyzer.js'
 import { planArrangement } from './planner.js'
 import { prisma } from './db.js'
 import { publishJobEvent } from './events.js'
+import { getQueueConnection } from './redis.js'
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
-
-// Shared Redis connection for workers
-const redisConnection = new IORedis(REDIS_URL, {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-})
+// Get shared Redis connection
+const redisConnection = getQueueConnection()
 
 const now = () => new Date().toISOString()
 
@@ -208,10 +203,8 @@ analyzeWorker.on('completed', (job) => {
 export async function closeWorkers(): Promise<void> {
   const closePromises = [planWorker.close(), analyzeWorker.close()]
 
-  // Only quit Redis if connection is still active
-  if (redisConnection.status === 'ready' || redisConnection.status === 'connecting') {
-    closePromises.push(redisConnection.quit().then(() => undefined))
-  }
+  // Note: Redis connection is shared and managed by redis.ts
+  // Do not close it here - use closeRedisConnections() instead
 
   await Promise.all(closePromises)
   // eslint-disable-next-line no-console

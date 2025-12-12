@@ -4,10 +4,8 @@
  */
 
 import { Queue, QueueOptions } from 'bullmq'
-import IORedis from 'ioredis'
 import type { ProjectId, JobId } from '@bluebird/types'
-
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
+import { getQueueConnection } from './redis.js'
 
 // Queue names (aligned with pod responsibilities)
 export const QUEUE_NAMES = {
@@ -79,11 +77,8 @@ export interface ExportJobData {
   isPro?: boolean
 }
 
-// Create Redis connection (shared across queues)
-const redisConnection = new IORedis(REDIS_URL, {
-  maxRetriesPerRequest: null, // Required for BullMQ
-  enableReadyCheck: false,
-})
+// Get shared Redis connection
+const redisConnection = getQueueConnection()
 
 // Common queue options
 const defaultQueueOptions: QueueOptions = {
@@ -212,10 +207,8 @@ export async function closeQueues(): Promise<void> {
     exportQueue.close(),
   ]
 
-  // Only quit Redis if connection is still active
-  if (redisConnection.status === 'ready' || redisConnection.status === 'connecting') {
-    closePromises.push(redisConnection.quit().then(() => undefined))
-  }
+  // Note: Redis connection is shared and managed by redis.ts
+  // Do not close it here - use closeRedisConnections() instead
 
   await Promise.all(closePromises)
 }
