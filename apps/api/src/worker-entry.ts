@@ -8,6 +8,7 @@ import './lib/worker.js'
 import './lib/workers/music-worker.js'
 import './lib/workers/voice-worker.js'
 import './lib/workers/mix-worker.js'
+import './lib/workers/export-worker.js'
 
 // eslint-disable-next-line no-console
 console.log('[WORKER] BullMQ workers started. Listening for jobs...')

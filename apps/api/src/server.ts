@@ -13,6 +13,7 @@ import { registerRenderRoutes } from './routes/render.js'
 import { registerMixRoutes } from './routes/mix.js'
 import { registerExportRoutes } from './routes/export.js'
 import { authMiddleware } from './lib/middleware.js'
+import { logger } from './lib/logger.js'
 
 const PORT = parseInt(process.env.BLUEBIRD_PORT || '4000', 10)
 const HOST = process.env.BLUEBIRD_HOST || '0.0.0.0'
@@ -20,8 +21,11 @@ const ENV = process.env.BLUEBIRD_ENV || 'development'
 
 export async function createServer() {
   const fastify = Fastify({
-    logger: ENV === 'development',
+    logger: logger as any,
     bodyLimit: 1024 * 1024, // 1MB global limit
+    disableRequestLogging: false,
+    requestIdHeader: 'x-request-id',
+    requestIdLogLabel: 'reqId',
   })
 
   // Security: CORS protection
@@ -89,14 +93,20 @@ export async function createServer() {
 export async function startServer() {
   const fastify = await createServer()
 
-  // Start server
-  await fastify.listen({ port: PORT, host: HOST })
-  // eslint-disable-next-line no-console
-  console.log(`🚀 Server running on http://${HOST}:${PORT}`)
+  try {
+    await fastify.listen({ port: PORT, host: HOST })
+    logger.info({ port: PORT, host: HOST, env: ENV }, `Server running on http://${HOST}:${PORT}`)
+  } catch (err) {
+    logger.error(err, 'Failed to start server')
+    throw err
+  }
 
   return fastify
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  startServer().catch(console.error)
+  startServer().catch((err) => {
+    logger.fatal(err, 'Fatal error during server startup')
+    process.exit(1)
+  })
 }

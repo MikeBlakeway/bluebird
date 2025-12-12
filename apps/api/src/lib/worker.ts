@@ -11,6 +11,7 @@ import { planArrangement } from './planner'
 import { prisma } from './db'
 import { publishJobEvent } from './events'
 import { getQueueConnection } from './redis'
+import { createJobLogger } from './logger'
 
 // Get shared Redis connection
 const redisConnection = getQueueConnection()
@@ -32,9 +33,9 @@ async function sendEvent(jobId: string, stage: JobStage, progress: number, messa
  */
 async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
   const { projectId, jobId, lyrics, genre, seed } = job.data
+  const log = createJobLogger(jobId, 'plan')
 
-  // eslint-disable-next-line no-console
-  console.log(`[WORKER] Processing plan job ${jobId}`)
+  log.info({ projectId, genre, seed }, 'Processing plan job')
 
   // Update progress: analyzing (0-30%)
   await job.updateProgress(10)
@@ -60,6 +61,15 @@ async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
 
   await job.updateProgress(30)
   await sendEvent(jobId, 'analyzing', 0.3, 'Analysis complete')
+  log.debug(
+    {
+      totalLines: lines.length,
+      totalSyllables: analysisResult.totalSyllables,
+      estimatedTempo,
+      rhymeScheme: rhymeScheme.rhymeScheme,
+    },
+    'Lyrics analysis complete'
+  )
 
   // Generate arrangement plan (30-70%)
   await job.updateProgress(50)
@@ -67,6 +77,7 @@ async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
   const arrangement = planArrangement(analysisResult, jobId, seed)
   await job.updateProgress(70)
   await sendEvent(jobId, 'planning', 0.7, 'Arrangement ready')
+  log.debug({ arrangement }, 'Arrangement plan generated')
 
   // Persist to database (70-90%)
   try {
@@ -124,8 +135,7 @@ async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
       },
     })
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('[WORKER] Database error:', error)
+    log.error({ error }, 'Database error while persisting plan')
     throw error
   }
 
@@ -137,8 +147,7 @@ async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
 
   await job.updateProgress(100)
   await sendEvent(jobId, 'completed', 1)
-  // eslint-disable-next-line no-console
-  console.log(`[WORKER] Completed plan job ${jobId}`)
+  log.info({ projectId }, 'Plan job completed successfully')
 }
 
 /**
@@ -147,9 +156,9 @@ async function processPlanJob(job: Job<PlanJobData>): Promise<void> {
  */
 async function processAnalyzeJob(job: Job<AnalyzeJobData>): Promise<void> {
   const { jobId } = job.data
+  const log = createJobLogger(jobId, 'analyze')
 
-  // eslint-disable-next-line no-console
-  console.log(`[WORKER] Processing analyze job ${jobId}`)
+  log.info('Processing analyze job')
 
   await job.updateProgress(50)
 
@@ -157,8 +166,7 @@ async function processAnalyzeJob(job: Job<AnalyzeJobData>): Promise<void> {
   // For now, analysis is done inline in plan jobs
 
   await job.updateProgress(100)
-  // eslint-disable-next-line no-console
-  console.log(`[WORKER] Completed analyze job ${jobId}`)
+  log.info('Analyze job completed')
 }
 
 // Initialize workers

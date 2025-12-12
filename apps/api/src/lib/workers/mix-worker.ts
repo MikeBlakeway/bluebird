@@ -19,6 +19,7 @@ import { prisma } from '../db.js'
 import { ArrangementSpecSchema, type JobStage } from '@bluebird/types'
 import { getQueueConnection } from '../redis.js'
 import { mixStemsToMaster } from '../mix.js'
+import { createJobLogger, logger } from '../logger.js'
 
 // Get shared Redis connection
 const redisConnection = getQueueConnection()
@@ -42,7 +43,8 @@ async function processMixJob(job: Job<MixJobData>): Promise<void> {
   const { projectId, jobId, takeId, targetLUFS, truePeakLimit } = job.data
 
   // eslint-disable-next-line no-console
-  console.log(`[MIX-WORKER] Processing job ${jobId} - take ${takeId}`)
+  const log = createJobLogger(jobId, 'mix')
+  log.info({ projectId, takeId }, 'Processing mix job')
 
   await job.updateProgress(5)
   await sendEvent(jobId, 'mixing', 0.05, 'Starting mix process')
@@ -87,7 +89,7 @@ async function processMixJob(job: Job<MixJobData>): Promise<void> {
       stemBuffers.push(musicBuffer)
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.warn(`[MIX-WORKER] Music stem not found for section ${i}: ${musicKey}`)
+      log.warn({ sectionIndex: i, s3Key: musicKey }, 'Music stem not found')
     }
 
     // Download vocal stem
@@ -97,7 +99,7 @@ async function processMixJob(job: Job<MixJobData>): Promise<void> {
       stemBuffers.push(vocalBuffer)
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.warn(`[MIX-WORKER] Vocal stem not found for section ${i}: ${vocalKey}`)
+      log.warn({ sectionIndex: i, s3Key: vocalKey }, 'Vocal stem not found')
     }
 
     const progressPercent = 0.2 + (i / sectionCount) * 0.3 // 20% to 50%
@@ -145,8 +147,7 @@ async function processMixJob(job: Job<MixJobData>): Promise<void> {
   await job.updateProgress(100)
   await sendEvent(jobId, 'completed', 1.0, 'Mix complete')
 
-  // eslint-disable-next-line no-console
-  console.log(`[MIX-WORKER] Completed job ${jobId}`)
+  log.info({ masterKey }, 'Mix job completed')
 }
 
 /**
@@ -162,13 +163,11 @@ export const mixWorker = new Worker<MixJobData>(QUEUE_NAMES.MIX, processMixJob, 
 })
 
 mixWorker.on('completed', (job) => {
-  // eslint-disable-next-line no-console
-  console.log(`[MIX-WORKER] Job ${job.id} completed`)
+  logger.debug({ jobId: job.id, queue: 'mix' }, 'Mix worker job completed')
 })
 
 mixWorker.on('failed', (job, err) => {
-  // eslint-disable-next-line no-console
-  console.error(`[MIX-WORKER] Job ${job?.id} failed:`, err.message)
+  logger.error({ jobId: job?.id, error: err.message, queue: 'mix' }, 'Mix worker job failed')
 })
 
 /**

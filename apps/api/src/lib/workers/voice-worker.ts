@@ -19,6 +19,7 @@ import { publishJobEvent } from '../events.js'
 import { prisma } from '../db.js'
 import { ArrangementSpecSchema, type JobStage } from '@bluebird/types'
 import { getQueueConnection } from '../redis.js'
+import { createJobLogger, logger } from '../logger.js'
 
 // Get shared Redis connection
 const redisConnection = getQueueConnection()
@@ -42,7 +43,8 @@ async function processVoiceJob(job: Job<VoiceJobData>): Promise<void> {
   const { projectId, jobId, sectionIndex, lyrics, seed } = job.data
 
   // eslint-disable-next-line no-console
-  console.log(`[VOICE-WORKER] Processing job ${jobId} - section ${sectionIndex}`)
+  const log = createJobLogger(jobId, 'voice')
+  log.info({ projectId, sectionIndex, seed }, 'Processing voice synthesis job')
 
   await job.updateProgress(5)
   await sendEvent(jobId, 'vocal-render', 0.05, 'Preparing vocal synthesis')
@@ -121,7 +123,7 @@ async function processVoiceJob(job: Job<VoiceJobData>): Promise<void> {
   await sendEvent(jobId, 'completed', 1.0, 'Vocal stem complete')
 
   // eslint-disable-next-line no-console
-  console.log(`[VOICE-WORKER] Completed job ${jobId} - ${s3Key}`)
+  log.info({ s3Key }, 'Voice synthesis job completed')
 }
 
 /**
@@ -137,13 +139,11 @@ export const voiceWorker = new Worker<VoiceJobData>(QUEUE_NAMES.VOCAL, processVo
 })
 
 voiceWorker.on('completed', (job) => {
-  // eslint-disable-next-line no-console
-  console.log(`[VOICE-WORKER] Job ${job.id} completed`)
+  logger.debug({ jobId: job.id, queue: 'vocal' }, 'Voice worker job completed')
 })
 
 voiceWorker.on('failed', (job, error) => {
-  // eslint-disable-next-line no-console
-  console.error(`[VOICE-WORKER] Job ${job?.id} failed:`, error)
+  logger.error({ jobId: job?.id, error, queue: 'vocal' }, 'Voice worker job failed')
 })
 
 /**

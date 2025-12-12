@@ -18,6 +18,7 @@ import { publishJobEvent } from '../events.js'
 import { prisma } from '../db.js'
 import { ArrangementSpecSchema, type JobStage } from '@bluebird/types'
 import { getQueueConnection } from '../redis.js'
+import { createJobLogger } from '../logger.js'
 
 // Get shared Redis connection
 const redisConnection = getQueueConnection()
@@ -39,11 +40,9 @@ async function sendEvent(jobId: string, stage: JobStage, progress: number, messa
  */
 async function processMusicJob(job: Job<MusicJobData>): Promise<void> {
   const { projectId, jobId, sectionIndex, instrument, seed } = job.data
+  const log = createJobLogger(jobId, 'music')
 
-  // eslint-disable-next-line no-console
-  console.log(
-    `[MUSIC-WORKER] Processing job ${jobId} - section ${sectionIndex}, instrument ${instrument}`
-  )
+  log.info({ projectId, sectionIndex, instrument, seed }, 'Processing music synthesis job')
 
   await job.updateProgress(5)
   await sendEvent(jobId, 'music-render', 0.05, `Synthesizing ${instrument}`)
@@ -71,6 +70,7 @@ async function processMusicJob(job: Job<MusicJobData>): Promise<void> {
 
   await job.updateProgress(15)
   await sendEvent(jobId, 'music-render', 0.15, `Loaded arrangement plan`)
+  log.debug({ sections: arrangement.sections.length, bpm: arrangement.bpm }, 'Arrangement loaded')
 
   // 2. Generate audio buffer
   const audioBuffer = await synthesizeMusic({
@@ -82,6 +82,10 @@ async function processMusicJob(job: Job<MusicJobData>): Promise<void> {
 
   await job.updateProgress(60)
   await sendEvent(jobId, 'music-render', 0.6, `Generated ${instrument} audio`)
+  log.debug(
+    { bufferLength: audioBuffer.length, sampleRate: audioBuffer.sampleRate },
+    'Audio generated'
+  )
 
   // 3. Encode to WAV
   const wavBuffer = encodeWAV(audioBuffer)
@@ -97,6 +101,7 @@ async function processMusicJob(job: Job<MusicJobData>): Promise<void> {
 
   await job.updateProgress(90)
   await sendEvent(jobId, 'music-render', 0.9, `Uploaded to S3: ${s3Key}`)
+  log.info({ s3Key, size: wavBuffer.length }, 'Music stem uploaded to S3')
 
   // 5. Update Take record (mark section music as complete)
   // For now, just update the timestamp - full section tracking can be added later
@@ -109,9 +114,7 @@ async function processMusicJob(job: Job<MusicJobData>): Promise<void> {
 
   await job.updateProgress(100)
   await sendEvent(jobId, 'completed', 1.0, `Music stem complete: ${instrument}`)
-
-  // eslint-disable-next-line no-console
-  console.log(`[MUSIC-WORKER] Completed job ${jobId} - ${s3Key}`)
+  log.info({ instrument, sectionIndex }, 'Music synthesis job completed')
 }
 
 /**
