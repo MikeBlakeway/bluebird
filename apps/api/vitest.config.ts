@@ -15,6 +15,9 @@ export default defineConfig({
       },
     },
     globalTeardown: './vitest.teardown.ts',
+    deps: {
+      inline: [/pino/],
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov', 'json-summary'],
