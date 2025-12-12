@@ -5,6 +5,7 @@
  */
 
 import './lib/worker.js'
+import './lib/workers/music-worker.js'
 
 // eslint-disable-next-line no-console
 console.log('[WORKER] BullMQ workers started. Listening for jobs...')

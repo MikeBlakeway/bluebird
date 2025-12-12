@@ -214,7 +214,7 @@ export async function closeQueues(): Promise<void> {
 
   // Only quit Redis if connection is still active
   if (redisConnection.status === 'ready' || redisConnection.status === 'connecting') {
-    closePromises.push(redisConnection.quit())
+    closePromises.push(redisConnection.quit().then(() => undefined))
   }
 
   await Promise.all(closePromises)
