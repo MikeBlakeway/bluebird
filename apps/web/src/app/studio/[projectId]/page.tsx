@@ -1,4 +1,4 @@
-export default function WorkspaceProjectPage({
+export default function StudioProjectPage({
   params,
 }: {
   params: { projectId: string }
@@ -10,7 +10,7 @@ export default function WorkspaceProjectPage({
         
         <div className="bg-card border rounded-lg p-6">
           <p className="text-muted-foreground mb-4">
-            Project workspace UI coming in Sprint 2
+            Project studio UI coming in Sprint 2
           </p>
           <p className="text-sm text-muted-foreground">
             This page will show all takes (compositions) for this project

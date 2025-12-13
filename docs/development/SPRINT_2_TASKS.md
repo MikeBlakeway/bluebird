@@ -27,7 +27,7 @@
 - [x] Next.js 15 App Router configured in `apps/web`
 - [x] TypeScript strict mode enabled
 - [x] Tailwind CSS configured with design tokens
-- [x] Basic routing structure: `/`, `/workspace/:projectId`, `/workspace/:projectId/:takeId`
+- [x] Basic routing structure: `/`, `/studio/:projectId`, `/studio/:projectId/:takeId`
 - [x] Layout with header/navigation
 - [x] Environment variables for API URL
 - [x] Hot reload working
@@ -40,9 +40,9 @@
 - `apps/web/src/app/layout.tsx` - Root layout with header/footer
 - `apps/web/src/app/page.tsx` - Home page (marketing)
 - `apps/web/src/app/globals.css` - Global styles with CSS variables
-- `apps/web/src/app/workspace/new/page.tsx` - New composition page (stub)
-- `apps/web/src/app/workspace/[projectId]/page.tsx` - Project workspace (stub)
-- `apps/web/src/app/workspace/[projectId]/[takeId]/page.tsx` - Take editor (stub)
+- `apps/web/src/app/studio/new/page.tsx` - New composition page (stub)
+- `apps/web/src/app/studio/[projectId]/page.tsx` - Project studio (stub)
+- `apps/web/src/app/studio/[projectId]/[takeId]/page.tsx` - Take editor (stub)
 - `apps/web/src/lib/utils.ts` - cn() utility for class merging
 - `apps/web/.env.local` - Local environment variables
 - `apps/web/.env.example` - Environment variable template
@@ -56,7 +56,7 @@
 
 **Build Output:**
 - Bundle size: ~102 kB First Load JS
-- 5 routes: /, /workspace/new, /workspace/[projectId], /workspace/[projectId]/[takeId], /_not-found
+- 5 routes: /, /studio/new, /studio/[projectId], /studio/[projectId]/[takeId], /_not-found
 - Build time: ~2.5s
 - Dev server: http://localhost:3000
 
