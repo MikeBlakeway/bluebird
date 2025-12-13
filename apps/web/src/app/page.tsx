@@ -2,11 +2,10 @@ export default function HomePage() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-4xl mx-auto text-center">
-        <h1 className="text-5xl font-bold mb-6">
-          Create Original Music with AI
-        </h1>
+        <h1 className="text-5xl font-bold mb-6">Create Original Music with AI</h1>
         <p className="text-xl text-muted-foreground mb-8">
-          Paste your lyrics, choose your vibe, and let Bluebird compose original melodies, harmonies, and arrangements in under 45 seconds.
+          Paste your lyrics, choose your vibe, and let Bluebird compose original melodies,
+          harmonies, and arrangements in under 45 seconds.
         </p>
         <div className="flex gap-4 justify-center">
           <a
@@ -60,10 +59,13 @@ export default function HomePage() {
       <div className="mt-24 max-w-3xl mx-auto bg-muted/50 rounded-lg p-8">
         <h2 className="text-2xl font-bold mb-4">100% Original Music</h2>
         <p className="text-muted-foreground mb-4">
-          Every composition is created from scratch using AI. We don't sample existing songs or clone celebrity voices. All melodies are checked for similarity to ensure your music is safe to use commercially.
+          Every composition is created from scratch using AI. We don't sample existing songs or
+          clone celebrity voices. All melodies are checked for similarity to ensure your music is
+          safe to use commercially.
         </p>
         <p className="text-sm text-muted-foreground">
-          Reference audio (≤30s) can guide the vibe, but we extract features only—no raw audio reuse.
+          Reference audio (≤30s) can guide the vibe, but we extract features only—no raw audio
+          reuse.
         </p>
       </div>
     </div>

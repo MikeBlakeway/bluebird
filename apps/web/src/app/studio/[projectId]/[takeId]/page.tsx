@@ -12,7 +12,7 @@ export default function TakeEditorPage({
           </div>
           <h1 className="text-2xl font-bold">Take Editor</h1>
         </div>
-        
+
         <div className="grid gap-6">
           <div className="bg-card border rounded-lg p-6">
             <h2 className="text-lg font-semibold mb-4">Section Editor</h2>
@@ -20,7 +20,8 @@ export default function TakeEditorPage({
               Section regeneration UI coming in Tasks 2.9-2.11
             </p>
             <p className="text-sm text-muted-foreground">
-              This will show sections with lock/unlock controls, regeneration buttons, and A/B comparison
+              This will show sections with lock/unlock controls, regeneration buttons, and A/B
+              comparison
             </p>
           </div>
 
@@ -36,9 +37,7 @@ export default function TakeEditorPage({
 
           <div className="bg-card border rounded-lg p-6">
             <h2 className="text-lg font-semibold mb-4">Job Progress</h2>
-            <p className="text-muted-foreground mb-4">
-              Timeline visualization coming in Task 2.7
-            </p>
+            <p className="text-muted-foreground mb-4">Timeline visualization coming in Task 2.7</p>
             <p className="text-sm text-muted-foreground">
               Real-time job progress with SSE updates (Planning → Music → Vocals → Mixing → Done)
             </p>

@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@bluebird/types', '@bluebird/ui', '@bluebird/client'],
   env: {
@@ -9,6 +10,8 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
+  // Enable statically typed routes for type-safe navigation
+  typedRoutes: true,
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['@bluebird/ui'],

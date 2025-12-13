@@ -55,15 +55,17 @@
 
 **Duration:** 2 weeks (December 2024 - January 2025)
 
-**Sprint Goal:**  
+**Sprint Goal:**
 Complete frontend workspace UI (deferred from Sprint 1) + add section-level regeneration, local WebAudio preview/mixing, and A/B comparison capabilities.
 
 **Progress:** 1/15 tasks complete (7%)
 
 **Completed Tasks:**
+
 - ✅ Task 2.1: Next.js workspace setup (apps/web with App Router, Tailwind, routing)
 
 **In Progress:**
+
 - Task 2.2: shadcn/ui components (next up)
 
 **Scope Breakdown:**
