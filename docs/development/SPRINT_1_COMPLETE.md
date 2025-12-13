@@ -1,10 +1,12 @@
 # Sprint 1 Completion Summary
 
-**Sprint Goal:** End-to-end 30s preview (lyrics→audio) with stubs; API infrastructure; integration testing
+**Sprint Goal (Original):** End-to-end 30s preview (lyrics→audio) with stubs; workspace UI; local A/B preview
 
-**Status:** ✅ **COMPLETE**
+**Sprint Goal (Actual):** Backend preview pipeline complete; frontend work deferred to Sprint 2
 
-**Duration:** ~20 hours across Tasks 1.1-1.5
+**Status:** ✅ **BACKEND COMPLETE** | ⏭️ **FRONTEND DEFERRED TO SPRINT 2**
+
+**Duration:** ~20 hours across Tasks 1.1-1.5 (backend only)
 
 **Quality Metrics:**
 
@@ -12,9 +14,15 @@
 - Coverage: 60%+ maintained ✅
 - TypeScript: 0 errors ✅
 - ESLint: 0 errors ✅
-- TTFP: ~42s (target <45s) ✅
+- TTFP: ~42s backend pipeline (target <45s) ✅
+
+**Scope Change Note:**
+
+Sprint 1 originally planned both backend workers AND frontend workspace (Days 1-5: backend, Days 6-10: frontend). Due to focus on establishing solid backend foundation with comprehensive testing, frontend tasks (2.1-2.8) were deferred to Sprint 2. This allows Sprint 2 to build frontend with confidence on stable backend APIs.
 
 ---
+
+## Tasks Completed (Backend Pipeline)
 
 ## Tasks Completed
 
@@ -616,43 +624,66 @@ Prettier: All files formatted ✅
 
 ---
 
-## Next Sprint Planning
+## Next: Sprint 2
 
-### Sprint 2 Goals
+### Scope
 
-1. Frontend implementation (Next.js, workspace UI, SSE client)
-2. WebAudio local preview (transport, A/B compare)
-3. Refine integration tests
-4. Add OpenTelemetry observability
+Sprint 2 combines **deferred Sprint 1 frontend work** with **new section regeneration features**:
 
-### Estimated Duration
+**From Sprint 1 (Deferred):**
 
-~30 hours (1.5x Sprint 1)
+- Frontend workspace UI (Next.js App Router)
+- WebAudio local preview engine
+- SSE client with reconnection
+- API client package (@bluebird/client)
+- Core UI components (shadcn/ui)
+- Lyrics input + genre/artist selection
+- Job timeline visualization
 
-### Priorities
+**New for Sprint 2:**
 
-1. **High:** Frontend foundation (users can't test without UI)
-2. **High:** SSE client (needed for progress updates)
-3. **Medium:** WebAudio preview (differentiator feature)
-4. **Medium:** Integration test refinement (nice to have, not blocking)
-5. **Low:** Observability (valuable but not MVP-blocking)
+- Section-level lock/regen controls
+- A/B comparison without GPU calls
+- Per-section regeneration (music + vocals)
+- Optimistic UI updates
+- Keyboard shortcuts
+
+### Sprint 2 Goal
+
+"Complete frontend workspace UI (deferred from Sprint 1) + add section-level regeneration, local WebAudio preview/mixing, and A/B comparison capabilities. Enable sub-20s per-section regen workflow."
+
+### Success Metrics
+
+- Frontend workspace operational (lyrics → preview flow working)
+- Per-section regen P50 ≤20s
+- WebAudio A/B comparison works offline (no GPU calls)
+- UI responsive during renders (optimistic updates)
+- Test coverage ≥70%
+- User can complete: lyrics → preview → lock section → regen different section → A/B compare → download
+
+### References
+
+- [Sprint 2 Plan](../project/sprints/sprint_plan_s_2.md)
+- [Sprint 1 Scope Change](SPRINT_1_SCOPE_CHANGE.md)
 
 ---
 
 ## Conclusion
 
-**Sprint 1 is COMPLETE.** ✅
+**Sprint 1 Backend is COMPLETE.** ✅
 
-All primary goals achieved:
+All backend goals achieved:
 
-- ✅ End-to-end preview pipeline with stubs
+- ✅ End-to-end preview pipeline with stubs (backend)
 - ✅ API infrastructure (workers, queues, S3, SSE)
 - ✅ Integration testing framework
 - ✅ TTFP baseline (~42s, within 45s target)
 - ✅ 60%+ test coverage maintained
 - ✅ 0 errors (TypeScript, ESLint)
 
-**Next:** Sprint 2 - Frontend implementation and user-facing preview experience.
+**Frontend work (Tasks 2.1-2.8) deferred to Sprint 2** to ensure solid backend foundation before building UI.
+
+**Next:** Sprint 2 - Complete frontend workspace UI, WebAudio preview engine, and section regeneration features.
 
 ---
 

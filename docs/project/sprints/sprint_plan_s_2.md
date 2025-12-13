@@ -1,11 +1,14 @@
-# Sprint 2: Section Regeneration & Frontend Foundation
+# Sprint 2: Frontend Foundation & Section Regeneration
 
 **Sprint Duration:** 2 weeks (Jan 23 – Feb 3, 2026)
 
-**Sprint Goal:** Complete frontend workspace with section-level regeneration, local WebAudio preview/mixing, and A/B comparison capabilities. Enable sub-20s per-section regen workflow.
+**Sprint Goal:** Complete frontend workspace UI (deferred from Sprint 1) + add section-level regeneration, local WebAudio preview/mixing, and A/B comparison capabilities. Enable sub-20s per-section regen workflow.
+
+**Important Note:** This sprint includes frontend work originally planned for Sprint 1 Days 6-10 (Tasks 2.1-2.8) which was deferred to ensure solid backend foundation. Sprint 2 now combines this deferred work with new section regeneration features.
 
 **Success Metrics:**
 
+- Frontend workspace operational (lyrics → preview flow working)
 - Per-section regen P50 ≤20s
 - WebAudio A/B comparison works offline (no GPU calls)
 - UI responsive during renders (optimistic updates)
@@ -16,21 +19,35 @@
 
 ## Sprint Context
 
-**What We Have (Sprint 0-1):**
+**What We Have (Sprint 0-1 Backend):**
 
 - ✅ Backend: Queue system, SSE streaming, music/voice/mix/export workers
-- ✅ API: All core endpoints implemented
+- ✅ API: All core endpoints implemented (/plan, /render, /mix, /export, /jobs/:id/events)
 - ✅ Stubs: Music synthesis (click patterns), voice synthesis (sine tones), mixing
 - ✅ Database: Full schema with projects, takes, sections, jobs, artifacts
 - ✅ CLI: `bluebird plan` with SSE watch mode
+- ✅ Integration tests: Plan flow + preview flow framework
+- ✅ TTFP baseline: ~42s (within 45s target)
 
-**What We Need (Sprint 2):**
+**What We Need (Sprint 2 - Deferred Frontend + New Features):**
 
-- Frontend workspace UI (Next.js)
-- WebAudio local preview engine
-- Section-level lock/regen controls
-- A/B comparison without GPU calls
-- Real-time job progress visualization
+**From Sprint 1 (Deferred):**
+
+- ⭕ Frontend workspace UI (Next.js App Router)
+- ⭕ WebAudio local preview engine
+- ⭕ SSE client with reconnection
+- ⭕ API client package (@bluebird/client)
+- ⭕ Core UI components (shadcn/ui)
+- ⭕ Lyrics input + genre/artist selection
+- ⭕ Job timeline visualization
+
+**New for Sprint 2:**
+
+- ⭕ Section-level lock/regen controls
+- ⭕ A/B comparison without GPU calls
+- ⭕ Per-section regeneration (music + vocals)
+- ⭕ Optimistic UI updates
+- ⭕ Keyboard shortcuts
 
 ---
 
