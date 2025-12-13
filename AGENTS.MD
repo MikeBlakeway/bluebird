@@ -396,7 +396,58 @@ When picking up work:
 
 ---
 
-## 13) Status
+## 13) Git Workflow & Branching Strategy
+
+**CRITICAL**: Follow the sprint-based branching workflow documented in [docs/development/BRANCHING_STRATEGY.md](docs/development/BRANCHING_STRATEGY.md).
+
+### Quick Rules for AI Agents
+
+**Creating Branches**
+
+- ALWAYS base feature branches on `develop` (not `main`)
+- Use naming: `feature/f-X.Y-description` (e.g., `feature/f-1.1-music-worker`)
+- Use naming: `bugfix/123-description` for bug fixes
+- Use naming: `hotfix/vX.Y.Z-description` for production bugs (base on `main`)
+
+**Creating Pull Requests**
+
+- Target `develop` for features and bugfixes
+- Target `main` ONLY for releases and hotfixes
+- Use conventional commit format in PR title (`feat(scope): description`)
+- Link to sprint tasks or feature IDs in description
+
+**Merging Code**
+
+- NEVER commit directly to `main` or `develop`
+- ALWAYS create PR even for small changes
+- Wait for CI to pass before merging
+- Delete feature branches after merge
+
+**Sprint Workflow**
+
+- Sprint start: Create feature branches from latest `develop`
+- During sprint: Merge completed features to `develop` via PR
+- Sprint end: Create `release/vX.Y.Z` from `develop`
+- After release: Merge release to `main`, tag, merge back to `develop`
+
+**Version Strategy**
+
+- Each sprint = minor version bump (v0.1.0 → v0.2.0)
+- Hotfixes = patch version bump (v0.2.0 → v0.2.1)
+- Sprint 0: v0.1.0, Sprint 1: v0.2.0, Sprint 2: v0.3.0, etc.
+
+**CI/CD Integration**
+
+- `develop` deploys to staging environment
+- `main` deploys to production environment
+- All PRs must pass: unit tests, integration tests, linting, type checks
+- Release branches also run: E2E tests, performance tests, security scans
+
+**Reference**: See [BRANCHING_STRATEGY.md](docs/development/BRANCHING_STRATEGY.md) for full workflow, commands, and decision trees.
+
+---
+
+## 14) Status
 
 - Pre‑implementation; use stubs for Music/Voice until real models are integrated.
 - Development memory begins in Sprint 0.
