@@ -6,7 +6,7 @@ describe('Button', () => {
   it('renders correctly', () => {
     render(<Button>Click me</Button>)
     const button = screen.getByRole('button', { name: /click me/i })
-    expect(button).toBeDefined()
+    expect(button).toBeInTheDocument()
   })
 
   it('applies variant classes', () => {

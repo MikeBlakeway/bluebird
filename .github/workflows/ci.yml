@@ -18,10 +18,10 @@ on:
     branches:
       - main
       - develop
-      - 'feature/**'
-      - 'bugfix/**'
-      - 'hotfix/**'
-      - 'release/**'
+      - "feature/**"
+      - "bugfix/**"
+      - "hotfix/**"
+      - "release/**"
   pull_request:
     branches:
       - main
@@ -63,7 +63,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -91,7 +91,7 @@ jobs:
         run: pnpm -F api run db:generate
 
       - name: Build packages
-        run: pnpm --filter "./packages/**" run build
+        run: pnpm --filter "./packages/*" run build
 
       - name: Type check
         run: pnpm run typecheck
@@ -121,7 +121,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -183,7 +183,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -255,7 +255,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -317,7 +317,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -361,7 +361,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -428,7 +428,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [lint-and-test, integration-tests, contract-tests, e2e-tests, security-scan]
+    needs:
+      [
+        lint-and-test,
+        integration-tests,
+        contract-tests,
+        e2e-tests,
+        security-scan,
+      ]
     # Uncomment after creating 'production' environment in GitHub Settings → Environments
     # environment:
     #   name: production
@@ -440,7 +447,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
