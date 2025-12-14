@@ -296,7 +296,7 @@ jobs:
           NODE_ENV: test
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps
+        run: pnpm -F web exec playwright install --with-deps
 
       - name: Run E2E tests
         run: pnpm run test:e2e || echo "E2E tests not yet implemented"
