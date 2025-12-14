@@ -86,6 +86,11 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm -F api run db:generate
 
+      - name: Apply database migrations
+        run: pnpm -F api run db:migrate:deploy
+        env:
+          DATABASE_URL: postgresql://bluebird:bluebird_test@localhost:5432/bluebird_test
+
       - name: Build packages
         run: pnpm --filter "./packages/*" run build
 
