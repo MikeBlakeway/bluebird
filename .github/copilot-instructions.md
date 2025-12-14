@@ -607,7 +607,7 @@ LOCATION
 
 ## 14) Git Workflow & Branching Strategy
 
-**CRITICAL**: Follow the sprint-based branching workflow documented in [docs/development/BRANCHING_STRATEGY.md](../../docs/development/BRANCHING_STRATEGY.md).
+**CRITICAL**: Follow the sprint-based branching workflow documented in [docs/development/BRANCHING_STRATEGY.md](../docs/development/BRANCHING_STRATEGY.md).
 
 ### Quick Rules for AI Agents
 
@@ -652,7 +652,7 @@ LOCATION
 - All PRs must pass: unit tests, integration tests, linting, type checks
 - Release branches also run: E2E tests, performance tests, security scans
 
-**Reference**: See [BRANCHING_STRATEGY.md](../../docs/development/BRANCHING_STRATEGY.md) for full workflow, commands, and decision trees.
+**Reference**: See [BRANCHING_STRATEGY.md](../docs/development/BRANCHING_STRATEGY.md) for full workflow, commands, and decision trees.
 
 ---
 
