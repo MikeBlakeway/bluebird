@@ -70,19 +70,18 @@
 
 ---
 
-### Task 2.2: shadcn/ui Component Library 🔲
+### Task 2.2: shadcn/ui Component Library ✅
 
 **Estimate:** 2-3 hours
 **Priority:** High (needed for all UI components)
 
-**Acceptance Criteria:**
+**Completed:**
 
-- [ ] shadcn/ui initialized in `apps/web`
-- [ ] Core components installed: Button, Input, Card, Select, Slider, Dialog
-- [ ] Shared components moved to `packages/ui`
-- [ ] Storybook setup for component documentation (optional)
-- [ ] Theme switching (light/dark mode) working
-- [ ] Component testing with Vitest + Testing Library
+- [x] shadcn/ui initialized in `apps/web`
+- [x] Core components installed: Button, Input, Card, Select, Slider, Dialog
+- [x] Shared components moved to `packages/ui`
+- [x] Theme switching (light/dark mode) working
+- [x] Component testing with Vitest + Testing Library
 
 **Files to Create/Modify:**
 

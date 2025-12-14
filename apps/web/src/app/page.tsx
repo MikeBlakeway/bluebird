@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@bluebird/ui'
 
 export default function HomePage() {
   return (
