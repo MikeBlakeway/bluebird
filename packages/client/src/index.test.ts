@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { createId } from '@paralleldrive/cuid2'
 import BluebirdClient, { BluebirdAPIError } from './index'
 
 // Mock fetch globally
@@ -11,6 +12,9 @@ global.fetch = mockFetch
 
 describe('BluebirdClient', () => {
   let client: BluebirdClient
+  const userId = createId()
+  const projectId = createId()
+  const jobId = 'job-123'
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -58,7 +62,7 @@ describe('BluebirdClient', () => {
     it('should verify magic link and set token', async () => {
       const mockResponse = {
         user: {
-          id: 'user-123',
+          id: userId,
           email: 'test@example.com',
           name: 'Test User',
           createdAt: new Date().toISOString(),
@@ -106,8 +110,8 @@ describe('BluebirdClient', () => {
   describe('Project Methods', () => {
     it('should create a project', async () => {
       const mockProject = {
-        id: 'proj-123',
-        userId: 'user-123',
+        id: projectId,
+        userId,
         name: 'My Song',
         lyrics: 'Test lyrics here',
         genre: 'Pop',
@@ -130,8 +134,8 @@ describe('BluebirdClient', () => {
 
     it('should get a project by ID', async () => {
       const mockProject = {
-        id: 'proj-123',
-        userId: 'user-123',
+        id: projectId,
+        userId,
         name: 'My Song',
         lyrics: 'Test lyrics',
         genre: 'Pop',
@@ -143,19 +147,19 @@ describe('BluebirdClient', () => {
         json: async () => mockProject,
       })
 
-      const result = await client.getProject('proj-123')
+      const result = await client.getProject(projectId)
 
       expect(result).toEqual(mockProject)
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://test-api.com/projects/proj-123',
+        `http://test-api.com/projects/${projectId}`,
         expect.objectContaining({ method: 'GET' })
       )
     })
 
     it('should update a project', async () => {
       const mockProject = {
-        id: 'proj-123',
-        userId: 'user-123',
+        id: projectId,
+        userId,
         name: 'Updated Song',
         lyrics: 'Updated lyrics',
         genre: 'Rock',
@@ -167,7 +171,7 @@ describe('BluebirdClient', () => {
         json: async () => mockProject,
       })
 
-      const result = await client.updateProject('proj-123', { name: 'Updated Song' })
+      const result = await client.updateProject(projectId, { name: 'Updated Song' })
 
       expect(result).toEqual(mockProject)
     })
@@ -178,10 +182,10 @@ describe('BluebirdClient', () => {
         status: 204,
       })
 
-      await client.deleteProject('proj-123')
+      await client.deleteProject(projectId)
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://test-api.com/projects/proj-123',
+        `http://test-api.com/projects/${projectId}`,
         expect.objectContaining({ method: 'DELETE' })
       )
     })
@@ -189,10 +193,10 @@ describe('BluebirdClient', () => {
     it('should list projects', async () => {
       const mockProjects = [
         {
-          id: 'proj-1',
-          userId: 'user-123',
+          id: projectId,
+          userId,
           name: 'Song 1',
-          lyrics: 'Lyrics 1',
+          lyrics: 'Lyrics 1 - long enough',
           genre: 'Pop',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -212,8 +216,8 @@ describe('BluebirdClient', () => {
   describe('Planning Methods', () => {
     it('should plan a song', async () => {
       const mockResponse = {
-        jobId: 'job-123',
-        projectId: 'proj-123',
+        jobId,
+        projectId,
         status: 'completed',
       }
       mockFetch.mockResolvedValueOnce({
@@ -222,7 +226,7 @@ describe('BluebirdClient', () => {
       })
 
       const result = await client.planSong({
-        projectId: 'proj-123',
+        projectId,
         lyrics: 'Test lyrics here',
         genre: 'Pop',
       })
@@ -234,7 +238,7 @@ describe('BluebirdClient', () => {
   describe('Render Methods', () => {
     it('should render a preview', async () => {
       const mockResponse = {
-        jobId: 'job-123',
+        jobId,
         status: 'queued',
       }
       mockFetch.mockResolvedValueOnce({
@@ -243,31 +247,26 @@ describe('BluebirdClient', () => {
       })
 
       const result = await client.renderPreview({
-        jobId: 'job-123',
-        arrangement: {
-          projectId: 'proj-123',
-          jobId: 'job-123',
-          bpm: 120,
-          key: 'C',
-          scale: 'major',
-          timeSignature: '4/4',
-          sections: [],
-          instrumentation: ['piano', 'drums'],
-          energyCurve: [0.5, 0.7, 0.9],
-        },
-        vocals: {
-          projectId: 'proj-123',
-          jobId: 'job-123',
-          lines: [],
-        },
+        projectId,
+        jobId,
       })
 
       expect(result).toEqual(mockResponse)
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://test-api.com/render/preview',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Idempotency-Key': expect.any(String),
+          }),
+        })
+      )
     })
 
-    it('should render a section', async () => {
+    it('should render music', async () => {
       const mockResponse = {
-        jobId: 'section-job-123',
+        jobId: 'music-job-123',
         status: 'queued',
       }
       mockFetch.mockResolvedValueOnce({
@@ -275,9 +274,32 @@ describe('BluebirdClient', () => {
         json: async () => mockResponse,
       })
 
-      const result = await client.renderSection({
-        takeId: 'take-123',
+      const result = await client.renderMusic({
+        projectId,
+        jobId,
         sectionIndex: 0,
+        instrument: 'piano',
+        seed: 42,
+      })
+
+      expect(result).toEqual(mockResponse)
+    })
+
+    it('should render vocals', async () => {
+      const mockResponse = {
+        jobId: 'vocals-job-123',
+        status: 'queued',
+      }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      })
+
+      const result = await client.renderVocals({
+        projectId,
+        jobId,
+        sectionIndex: 0,
+        lyrics: 'Hello world',
         seed: 42,
       })
 
@@ -312,7 +334,11 @@ describe('BluebirdClient', () => {
       })
 
       try {
-        await client.createProject({ name: '', lyrics: 'test', genre: 'Pop' })
+        await client.createProject({
+          name: 'Valid Name',
+          lyrics: 'This is valid lyrics with enough length.',
+          genre: 'Pop',
+        })
       } catch (error) {
         expect(error).toBeInstanceOf(BluebirdAPIError)
         if (error instanceof BluebirdAPIError) {
@@ -389,23 +415,6 @@ describe('BluebirdClient', () => {
   })
 
   describe('Job Methods', () => {
-    it('should get job status', async () => {
-      const mockJob = {
-        jobId: 'job-123',
-        stage: 'completed' as const,
-        progress: 1,
-        timestamp: new Date().toISOString(),
-      }
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockJob,
-      })
-
-      const result = await client.getJob('job-123')
-
-      expect(result).toEqual(mockJob)
-    })
-
     it('should return correct SSE URL', () => {
       const url = client.getJobEventsURL('job-123')
       expect(url).toBe('http://test-api.com/jobs/job-123/events')

@@ -38,7 +38,7 @@ importers:
         version: 4.21.0
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
 
   apps/api:
     dependencies:
@@ -117,7 +117,7 @@ importers:
         version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
       '@vitest/coverage-v8':
         specifier: ^1.0.0
-        version: 1.6.1(vitest@1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6)))
+        version: 1.6.1(vitest@1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0))
       '@vitest/ui':
         specifier: ^1.0.0
         version: 1.6.1(vitest@1.6.1)
@@ -138,7 +138,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
 
   apps/web:
     dependencies:
@@ -241,7 +241,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
 
   packages/client:
     dependencies:
@@ -252,6 +252,9 @@ importers:
         specifier: ^3.22.4
         version: 3.25.76
     devDependencies:
+      '@paralleldrive/cuid2':
+        specifier: ^3.0.4
+        version: 3.0.4
       '@types/node':
         specifier: ^20.10.0
         version: 20.19.27
@@ -272,7 +275,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
 
   packages/config:
     devDependencies:
@@ -321,7 +324,7 @@ importers:
         version: 10.28.0
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
     devDependencies:
       '@types/node':
         specifier: ^20.10.0
@@ -447,7 +450,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
 
 packages:
 
@@ -8805,7 +8808,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@1.6.1(vitest@1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6)))':
+  '@vitest/coverage-v8@1.6.1(vitest@1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -8820,7 +8823,7 @@ snapshots:
       std-env: 3.10.0
       strip-literal: 2.1.1
       test-exclude: 6.0.0
-      vitest: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
+      vitest: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -8855,7 +8858,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       sirv: 2.0.4
-      vitest: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
+      vitest: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
 
   '@vitest/utils@1.6.1':
     dependencies:
@@ -11331,7 +11334,7 @@ snapshots:
       '@types/node': 20.19.27
       fsevents: 2.3.3
 
-  vitest@1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6)):
+  vitest@1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
