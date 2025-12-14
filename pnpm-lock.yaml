@@ -38,7 +38,7 @@ importers:
         version: 4.21.0
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
 
   apps/api:
     dependencies:
@@ -48,6 +48,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.948.0
         version: 3.948.0
+      '@bluebird/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@fastify/cookie':
         specifier: ^11.0.2
         version: 11.0.2
@@ -135,7 +138,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
 
   apps/web:
     dependencies:
@@ -238,7 +241,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
 
   packages/client:
     dependencies:
@@ -269,7 +272,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
 
   packages/config:
     devDependencies:
@@ -318,7 +321,7 @@ importers:
         version: 10.28.0
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
     devDependencies:
       '@types/node':
         specifier: ^20.10.0
@@ -441,7 +444,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
+        version: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
 
 packages:
 
@@ -8814,7 +8817,7 @@ snapshots:
       std-env: 3.10.0
       strip-literal: 2.1.1
       test-exclude: 6.0.0
-      vitest: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
+      vitest: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
     transitivePeerDependencies:
       - supports-color
 
@@ -8849,7 +8852,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       sirv: 2.0.4
-      vitest: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0)
+      vitest: 1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6))
 
   '@vitest/utils@1.6.1':
     dependencies:
@@ -11325,7 +11328,7 @@ snapshots:
       '@types/node': 20.19.27
       fsevents: 2.3.3
 
-  vitest@1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0):
+  vitest@1.6.1(@types/node@20.19.27)(@vitest/ui@1.6.1)(jsdom@27.3.0(postcss@8.5.6)):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1

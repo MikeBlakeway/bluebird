@@ -87,6 +87,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma Client
+        run: pnpm -F api run db:generate
+
+      - name: Build packages
+        run: pnpm --filter "./packages/**" run build
+
       - name: Type check
         run: pnpm run typecheck
 
@@ -95,6 +101,10 @@ jobs:
 
       - name: Unit tests
         run: pnpm run test -- --run
+        env:
+          DATABASE_URL: postgresql://bluebird:bluebird_test@localhost:5432/bluebird_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
 
       - name: Build
         run: pnpm run build
@@ -196,6 +206,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm -F api run db:generate
 
       - name: Run integration tests
         run: pnpm run test:integration
