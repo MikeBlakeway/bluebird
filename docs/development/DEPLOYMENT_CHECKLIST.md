@@ -283,10 +283,10 @@
 
 **Timing**:
 
-- Deploy started: ****\_\_\_****
-- Deploy completed: ****\_\_\_****
-- Duration: ****\_\_\_****
-- Total downtime: ****\_\_\_**** (target: 0 seconds)
+- Deploy started: \***\*\_\_\_\*\***
+- Deploy completed: \***\*\_\_\_\*\***
+- Duration: \***\*\_\_\_\*\***
+- Total downtime: \***\*\_\_\_\*\*** (target: 0 seconds)
 
 **Quality**:
 
@@ -297,8 +297,8 @@
 
 **Impact**:
 
-- Services deployed: ****\_\_\_****
-- Users affected: ****\_\_\_****
+- Services deployed: \***\*\_\_\_\*\***
+- Users affected: \***\*\_\_\_\*\***
 - Rollback required: Yes / No
 - Incidents triggered: **\_**
 
@@ -308,9 +308,9 @@
 
 **On-Call Rotation**:
 
-- Primary: ****\_\_\_****
-- Secondary: ****\_\_\_****
-- Escalation: ****\_\_\_****
+- Primary: \***\*\_\_\_\*\***
+- Secondary: \***\*\_\_\_\*\***
+- Escalation: \***\*\_\_\_\*\***
 
 **Incident Channels**:
 

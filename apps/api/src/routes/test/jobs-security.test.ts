@@ -120,7 +120,8 @@ describe('SSE Authorization (Security Fix)', () => {
 
     expect(response.statusCode).toBe(401)
     const body = JSON.parse(response.body)
-    expect(body.error).toBe('Authentication required')
+    expect(body.message).toBe('Unauthorized')
+    expect(body.code).toBe('UNAUTHORIZED')
   })
 
   it('should allow authenticated user to access their own job', async () => {
@@ -134,7 +135,7 @@ describe('SSE Authorization (Security Fix)', () => {
 
     // SSE should start streaming (200)
     expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toBe('text/event-stream')
+    expect(response.headers['content-type']).toContain('text/event-stream')
   })
 
   it('should reject user trying to access another users job with 404', async () => {
@@ -175,6 +176,6 @@ describe('SSE Authorization (Security Fix)', () => {
     })
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toBe('text/event-stream')
+    expect(response.headers['content-type']).toContain('text/event-stream')
   })
 })

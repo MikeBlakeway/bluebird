@@ -87,7 +87,7 @@ async function processMixJob(job: Job<MixJobData>): Promise<void> {
     try {
       const musicBuffer = await downloadFromS3(musicKey)
       stemBuffers.push(musicBuffer)
-    } catch (error) {
+    } catch (_error) {
       // eslint-disable-next-line no-console
       log.warn({ sectionIndex: i, s3Key: musicKey }, 'Music stem not found')
     }
@@ -97,7 +97,7 @@ async function processMixJob(job: Job<MixJobData>): Promise<void> {
     try {
       const vocalBuffer = await downloadFromS3(vocalKey)
       stemBuffers.push(vocalBuffer)
-    } catch (error) {
+    } catch (_error) {
       // eslint-disable-next-line no-console
       log.warn({ sectionIndex: i, s3Key: vocalKey }, 'Vocal stem not found')
     }

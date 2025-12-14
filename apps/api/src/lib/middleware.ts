@@ -1,16 +1,24 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
+import { z } from 'zod'
 import { verifyToken, type JWTPayload } from './jwt.js'
 
 // Augment Fastify types for our auth
 declare module 'fastify' {
   interface FastifyRequest {
     user?: JWTPayload
+    idempotencyKey?: string
   }
 }
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user?: JWTPayload
+  idempotencyKey?: string
 }
+
+const IdempotencyKeySchema = z
+  .string()
+  .min(8, 'Idempotency-Key must be at least 8 characters')
+  .max(128, 'Idempotency-Key must be 128 characters or fewer')
 
 /**
  * Extract JWT from cookies or Authorization header.
@@ -64,4 +72,23 @@ export async function requireAuth(request: AuthenticatedRequest, reply: FastifyR
       code: 'UNAUTHORIZED',
     })
   }
+}
+
+/**
+ * Enforce presence of Idempotency-Key header on POST requests.
+ * This guards against duplicate expensive operations.
+ */
+export async function requireIdempotencyKey(request: AuthenticatedRequest, reply: FastifyReply) {
+  if (request.method !== 'POST') return
+
+  const parsed = IdempotencyKeySchema.safeParse(request.headers['idempotency-key'])
+  if (!parsed.success) {
+    return reply.code(400).send({
+      message: 'Missing or invalid Idempotency-Key header',
+      code: 'INVALID_IDEMPOTENCY_KEY',
+      details: parsed.error.format(),
+    })
+  }
+
+  request.idempotencyKey = parsed.data
 }

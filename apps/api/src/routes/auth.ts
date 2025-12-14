@@ -8,6 +8,7 @@ import {
 import { generateMagicLink, verifyMagicLink } from '../lib/auth.js'
 import { generateToken } from '../lib/jwt.js'
 import { createRouteLogger } from '../lib/logger.js'
+import { requireAuth, requireIdempotencyKey } from '../lib/middleware.js'
 
 const log = createRouteLogger('/auth', 'POST')
 
@@ -66,7 +67,7 @@ export async function verifyMagicLinkHandler(request: FastifyRequest, reply: Fas
     const isProduction = process.env.NODE_ENV === 'production'
     reply.setCookie('auth_token', jwtToken, {
       httpOnly: true,
-      secure: true, // Always use secure flag (requires HTTPS)
+      secure: isProduction, // Avoid breaking local dev; enforced in prod
       sameSite: 'strict', // Stricter CSRF protection
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/',
@@ -129,8 +130,16 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     },
   }
 
-  fastify.post('/auth/magic-link', authRateLimit, magicLinkHandler)
-  fastify.post('/auth/verify', authRateLimit, verifyMagicLinkHandler)
+  fastify.post(
+    '/auth/magic-link',
+    { ...authRateLimit, preHandler: [requireIdempotencyKey] },
+    magicLinkHandler
+  )
+  fastify.post(
+    '/auth/verify',
+    { ...authRateLimit, preHandler: [requireIdempotencyKey] },
+    verifyMagicLinkHandler
+  )
   fastify.get('/auth/me', getCurrentUserHandler)
-  fastify.post('/auth/logout', logoutHandler)
+  fastify.post('/auth/logout', { preHandler: [requireAuth, requireIdempotencyKey] }, logoutHandler)
 }

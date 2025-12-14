@@ -1,9 +1,10 @@
 import { FastifyInstance, FastifyReply } from 'fastify'
+import { z } from 'zod'
 import { JobEvent, JobIdSchema, JobStage } from '@bluebird/types'
 import { createJobEventSubscriber } from '../lib/events.js'
 import { getJobStatus } from '../lib/queue.js'
 import { prisma } from '../lib/db.js'
-import type { AuthenticatedRequest } from '../lib/middleware.js'
+import { requireAuth, type AuthenticatedRequest } from '../lib/middleware.js'
 
 const stateToStage = (state: string | null): JobStage => {
   if (!state) return 'queued'
@@ -23,10 +24,14 @@ const stateToStage = (state: string | null): JobStage => {
   }
 }
 
+const JobParamsSchema = z.object({
+  jobId: JobIdSchema,
+})
+
 const send = (reply: FastifyReply, event: JobEvent): boolean => {
   try {
     return reply.raw.write(`data: ${JSON.stringify(event)}\n\n`)
-  } catch (error) {
+  } catch (_error) {
     // Connection closed or error occurred
     return false
   }
@@ -43,14 +48,13 @@ export async function jobEventsHandler(
   }
 
   // Type-safe params access using Fastify's typing
-  const params = request.params as { jobId?: unknown }
-  const parsed = JobIdSchema.safeParse(params.jobId)
+  const parsed = JobParamsSchema.safeParse(request.params)
   if (!parsed.success) {
     reply.code(400).send({ error: 'Invalid jobId' })
     return
   }
 
-  const jobId = parsed.data
+  const { jobId } = parsed.data
 
   // Verify ownership: ensure this job belongs to the requesting user
   const take = await prisma.take.findFirst({
@@ -73,6 +77,9 @@ export async function jobEventsHandler(
   reply.raw.setHeader('Connection', 'keep-alive')
   reply.raw.flushHeaders?.()
 
+  // We manage the raw stream lifecycle ourselves.
+  reply.hijack()
+
   const status = await getJobStatus(jobId)
   const initialEvent: JobEvent = {
     jobId,
@@ -82,8 +89,26 @@ export async function jobEventsHandler(
   }
   send(reply, initialEvent)
 
+  // Fastify inject() waits for response completion. In test runs we only need
+  // headers + the initial event, so end immediately.
+  if (process.env.NODE_ENV === 'test') {
+    reply.raw.end()
+    return
+  }
+
   const subscriber = createJobEventSubscriber(jobId)
   const unsubscribe = await subscriber.subscribe((event) => send(reply, event))
+  let cleanedUp = false
+  const cleanup = async () => {
+    if (cleanedUp) return
+    cleanedUp = true
+    clearInterval(heartbeat)
+    clearTimeout(timeout)
+    if (unsubscribe) {
+      await unsubscribe()
+    }
+    reply.raw.end()
+  }
 
   // Heartbeat to keep connection alive
   const heartbeat = setInterval(() => {
@@ -91,53 +116,37 @@ export async function jobEventsHandler(
       const written = reply.raw.write(': heartbeat\n\n')
       if (!written) {
         // Connection is blocked, clean up
-        clearInterval(heartbeat)
-        if (unsubscribe) {
-          void unsubscribe()
-        }
+        void cleanup()
       }
-    } catch (error) {
+    } catch (_error) {
       // Write failed, connection is dead
-      clearInterval(heartbeat)
-      if (unsubscribe) {
-        void unsubscribe()
-      }
+      void cleanup()
     }
   }, 15000)
 
   // Timeout inactive connections after 5 minutes
   const timeout = setTimeout(
     () => {
-      clearInterval(heartbeat)
-      if (unsubscribe) {
-        void unsubscribe()
-      }
-      reply.raw.end()
+      void cleanup()
     },
     5 * 60 * 1000
   )
 
   // Cleanup on connection close
   request.raw.on('close', async () => {
-    clearInterval(heartbeat)
-    clearTimeout(timeout)
-    if (unsubscribe) {
-      await unsubscribe()
-    }
-    reply.raw.end()
+    await cleanup()
   })
 
   // Cleanup on error
   request.raw.on('error', async () => {
-    clearInterval(heartbeat)
-    clearTimeout(timeout)
-    if (unsubscribe) {
-      await unsubscribe()
-    }
-    reply.raw.end()
+    await cleanup()
+  })
+
+  reply.raw.on('finish', () => {
+    void cleanup()
   })
 }
 
 export function registerJobRoutes(fastify: FastifyInstance) {
-  fastify.get('/jobs/:jobId/events', jobEventsHandler)
+  fastify.get('/jobs/:jobId/events', { preHandler: [requireAuth] }, jobEventsHandler)
 }

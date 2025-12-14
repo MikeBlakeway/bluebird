@@ -22,6 +22,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "typecheck": "pnpm -r run typecheck",
     "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck",
+    "backup:db": "bash ./scripts/backup-db.sh",
     "db:migrate": "pnpm -F api run db:migrate",
     "db:studio": "pnpm -F api run db:studio",
     "cli": "pnpm -F api run cli",
@@ -29,8 +30,8 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "@typescript-eslint/eslint-plugin": "^6.15.0",
-    "@typescript-eslint/parser": "^6.15.0",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",

@@ -158,7 +158,7 @@ async function processExportJob(job: Job<ExportJobData>): Promise<void> {
             try {
               const stemUrl = await getPresignedUrl(stemPath, 30 * 60)
               stemUrls.push({ name: `${stem}_section${sectionIdx}.wav`, url: stemUrl })
-            } catch (error) {
+            } catch (_error) {
               // Stem might not exist; skip it
               // eslint-disable-next-line no-console
               log.warn({ stemPath }, 'Stem not found in S3')

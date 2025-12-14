@@ -1,14 +1,11 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import { FastifyInstance, FastifyReply } from 'fastify'
 import { PlanSongRequestSchema, type PlanSongResponse } from '@bluebird/types'
 import { enqueuePlanJob } from '../lib/queue.js'
 import { publishJobEvent } from '../lib/events.js'
+import { requireAuth, requireIdempotencyKey, type AuthenticatedRequest } from '../lib/middleware.js'
+import { createRouteLogger } from '../lib/logger.js'
 
-interface AuthenticatedRequest extends FastifyRequest {
-  user?: {
-    userId: string
-    email: string
-  }
-}
+const log = createRouteLogger('/plan/song', 'POST')
 
 /**
  * POST /plan/song
@@ -28,11 +25,11 @@ export async function planSongHandler(
   // Parse request
   const parsed = PlanSongRequestSchema.safeParse(request.body)
   if (!parsed.success) {
-    return reply.code(400).send({ error: 'Invalid request', details: parsed.error })
+    return reply.code(400).send({ error: 'Invalid request', details: parsed.error.format() })
   }
 
   const { projectId, lyrics, genre, seed } = parsed.data
-  const idempotencyKey = request.headers['idempotency-key'] as string | undefined
+  const idempotencyKey = request.idempotencyKey
 
   try {
     // Generate jobId (format: project:timestamp:seed)
@@ -67,8 +64,7 @@ export async function planSongHandler(
 
     return reply.code(202).send(response)
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('[PLAN SONG ERROR]', error)
+    log.error({ error, projectId }, 'Failed to plan song')
     return reply.code(400).send({
       message: error instanceof Error ? error.message : 'Failed to plan song',
     })
@@ -76,5 +72,5 @@ export async function planSongHandler(
 }
 
 export function registerOrchestratorRoutes(fastify: FastifyInstance) {
-  fastify.post('/plan/song', planSongHandler)
+  fastify.post('/plan/song', { preHandler: [requireAuth, requireIdempotencyKey] }, planSongHandler)
 }

@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import { FastifyInstance, FastifyReply } from 'fastify'
 import { AnalyzeRequestSchema, type AnalysisResult } from '@bluebird/types'
 import {
   analyzeLyrics,
@@ -6,13 +6,10 @@ import {
   estimateTempo,
   extractSeedPhrase,
 } from '../lib/analyzer.js'
+import { requireAuth, requireIdempotencyKey, type AuthenticatedRequest } from '../lib/middleware.js'
+import { createRouteLogger } from '../lib/logger.js'
 
-interface AuthenticatedRequest extends FastifyRequest {
-  user?: {
-    userId: string
-    email: string
-  }
-}
+const log = createRouteLogger('/analyze', 'POST')
 
 /**
  * POST /analyze
@@ -24,7 +21,12 @@ export async function analyzeHandler(request: AuthenticatedRequest, reply: Fasti
     return reply.code(401).send({ message: 'Unauthorized' })
   }
 
-  const body = AnalyzeRequestSchema.parse(request.body)
+  const parsed = AnalyzeRequestSchema.safeParse(request.body)
+  if (!parsed.success) {
+    return reply.code(400).send({ message: 'Invalid request', details: parsed.error.format() })
+  }
+
+  const body = parsed.data
 
   try {
     const analyzedLines = analyzeLyrics(body.lyrics)
@@ -46,8 +48,7 @@ export async function analyzeHandler(request: AuthenticatedRequest, reply: Fasti
 
     return reply.code(200).send(result)
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('[ANALYZE ERROR]', error)
+    log.error({ error, projectId: body.projectId }, 'Failed to analyze lyrics')
     return reply.code(400).send({
       message: error instanceof Error ? error.message : 'Failed to analyze lyrics',
     })
@@ -55,5 +56,5 @@ export async function analyzeHandler(request: AuthenticatedRequest, reply: Fasti
 }
 
 export function registerAnalyzerRoutes(fastify: FastifyInstance) {
-  fastify.post('/analyze', analyzeHandler)
+  fastify.post('/analyze', { preHandler: [requireAuth, requireIdempotencyKey] }, analyzeHandler)
 }

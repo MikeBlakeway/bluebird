@@ -18,6 +18,7 @@ export function WebVitals() {
   useReportWebVitals((metric) => {
     // Log metrics in development
     if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
       console.log('[Web Vitals]', {
         name: metric.name,
         value: metric.value,

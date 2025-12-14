@@ -1,4 +1,4 @@
-import Fastify from 'fastify'
+import Fastify, { type FastifyBaseLogger } from 'fastify'
 import fastifyCookie from '@fastify/cookie'
 import cors from '@fastify/cors'
 import rateLimit from '@fastify/rate-limit'
@@ -20,8 +20,11 @@ const HOST = process.env.BLUEBIRD_HOST || '0.0.0.0'
 const ENV = process.env.BLUEBIRD_ENV || 'development'
 
 export async function createServer() {
+  // Fastify expects `FastifyBaseLogger`; our pino instance is structurally compatible.
+  const fastifyLogger = logger as unknown as FastifyBaseLogger
+
   const fastify = Fastify({
-    logger: logger as any,
+    loggerInstance: fastifyLogger,
     bodyLimit: 1024 * 1024, // 1MB global limit
     disableRequestLogging: false,
     requestIdHeader: 'x-request-id',
