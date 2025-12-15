@@ -252,7 +252,7 @@ describe('AudioEngine', () => {
       // Should start from paused position
       const track = engine.getTrack('track1')
       const startArgs = // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (track?.sourceNode as any)?.start.mock.calls[0]
+        (track?.sourceNode as any)?.start.mock.calls[0]
       const expectedOffset = 5 - 512 / 48000
       expect(startArgs?.[1]).toBeCloseTo(expectedOffset, 3)
     })
