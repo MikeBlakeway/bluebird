@@ -66,7 +66,7 @@
 
 **Branch:** `feature/f-2.1-nextjs-setup`
 
-**Status:** ✅ **COMPLETE** (ready to merge to develop)
+**Status:** ✅ **COMPLETE** (merged to develop)
 
 ---
 
@@ -99,23 +99,25 @@
 
 **Branch:** `feature/f-2.2-shadcn-ui`
 
+**Status:** ✅ **COMPLETE** (merged to develop)
+
 ---
 
-### Task 2.3: API Client Package 🔲
+### Task 2.3: API Client Package 🔄
 
 **Estimate:** 3-4 hours
 **Priority:** High (needed for data fetching)
 
 **Acceptance Criteria:**
 
-- [ ] `packages/client` exports typed API client
-- [ ] All endpoints typed from `@bluebird/types`
-- [ ] Fetch wrapper with error handling
-- [ ] Automatic `Idempotency-Key` injection for POSTs
-- [ ] Request/response validation with Zod
-- [ ] Retry logic for transient failures
+- [x] `packages/client` exports typed API client
+- [x] All endpoints typed from `@bluebird/types`
+- [x] Fetch wrapper with error handling
+- [ ] Automatic `Idempotency-Key` injection for POSTs (pending merge)
+- [ ] Request/response validation with Zod (pending merge)
+- [x] Retry logic for transient failures
 - [ ] Client-side logging (debug mode)
-- [ ] Unit tests for client methods
+- [x] Unit tests for client methods
 
 **Files to Create/Modify:**
 
@@ -139,30 +141,34 @@ checkSimilarity(takeId)
 
 **Branch:** `feature/f-2.3-api-client`
 
+**Notes:**
+
+- Baseline typed client is on `develop`.
+- Follow-up hardening (Idempotency-Key injection + Zod request/response validation + runtime JS emit for schemas) is on `feature/f-2.3-api-client` and needs to be merged into `develop`.
+
 ---
 
-### Task 2.4: SSE Client with Reconnection 🔲
+### Task 2.4: SSE Client with Reconnection ✅
 
 **Estimate:** 2-3 hours
 **Priority:** High (needed for job progress)
 
 **Acceptance Criteria:**
 
-- [ ] EventSource wrapper with automatic reconnection
-- [ ] Exponential backoff (500ms → 8s max)
-- [ ] Heartbeat detection (15s timeout)
-- [ ] Type-safe event parsing from `@bluebird/types`
-- [ ] React hook: `useJobEvents(jobId)`
-- [ ] State management for job timeline
-- [ ] Error boundary for connection failures
-- [ ] Unit tests for reconnection logic
+- [x] EventSource wrapper with automatic reconnection
+- [x] Exponential backoff (500ms → 8s max)
+- [x] Heartbeat detection (15s timeout)
+- [x] Type-safe event parsing from `@bluebird/types`
+- [x] React hook: `useJobEvents(jobId)`
+- [ ] State management for job timeline (deferred)
+- [x] Error handling for connection failures
+- [x] Unit tests for reconnection logic
 
 **Files to Create/Modify:**
 
-- `apps/web/src/lib/sse.ts` - EventSource wrapper
-- `apps/web/src/hooks/useJobEvents.ts` - React hook
-- `apps/web/src/stores/jobStore.ts` - Zustand/Jotai store
-- `apps/web/src/test/sse.test.ts` - Tests
+- `apps/web/src/lib/sse-client.ts` - EventSource wrapper
+- `apps/web/src/hooks/use-job-events.ts` - React hook
+- `apps/web/src/lib/sse-client.test.ts` - Tests
 
 **Integration:**
 
@@ -172,33 +178,34 @@ checkSimilarity(takeId)
 
 **Branch:** `feature/f-2.4-sse-client`
 
+**Status:** ✅ **COMPLETE** (merged to develop)
+
 ---
 
-### Task 2.5: WebAudio Preview Engine 🔲
+### Task 2.5: WebAudio Preview Engine 🔄
 
 **Estimate:** 4-5 hours
 **Priority:** High (core feature)
 
 **Acceptance Criteria:**
 
-- [ ] WebAudio context with per-track gain nodes
-- [ ] Transport controls (play, pause, seek, stop)
+- [x] WebAudio context with per-track gain nodes
+- [x] Transport controls (play, pause, stop)
 - [ ] Waveform visualization with peaks
 - [ ] A/B comparison mode (no GPU calls)
-- [ ] Mute/solo per section or track
-- [ ] Master volume control
-- [ ] Time sync across all tracks
+- [x] Mute/solo per track
+- [x] Master volume control
+- [x] Time sync across all tracks
 - [ ] Pre-roll handling to avoid clicks
-- [ ] Audio buffer caching
-- [ ] React hook: `useAudioEngine()`
+- [x] Audio buffer caching
+- [x] React hook: `useAudioEngine()`
 
 **Files to Create/Modify:**
 
-- `apps/web/src/lib/audio/engine.ts` - Core WebAudio logic
-- `apps/web/src/lib/audio/transport.ts` - Playback controls
-- `apps/web/src/lib/audio/waveform.ts` - Visualization
-- `apps/web/src/hooks/useAudioEngine.ts` - React integration
-- `apps/web/src/test/audio.test.ts` - Tests
+- `apps/web/src/lib/audio-engine.ts` - Core WebAudio logic
+- `apps/web/src/hooks/use-audio-engine.ts` - React integration
+- `apps/web/src/lib/audio-engine.test.ts` - Tests
+- `apps/web/src/hooks/use-audio-engine.test.ts` - Tests
 
 **Technical Notes:**
 

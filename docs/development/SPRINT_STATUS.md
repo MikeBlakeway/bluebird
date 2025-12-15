@@ -1,7 +1,7 @@
-# Sprint Status: Transition to Sprint 2
+# Sprint Status
 
-**Date:** December 2024
-**Status:** Sprint 1 Backend Complete → Sprint 2 Ready
+**Date:** December 2025
+**Status:** Sprint 2 In Progress
 
 ---
 
@@ -58,15 +58,19 @@
 **Sprint Goal:**
 Complete frontend workspace UI (deferred from Sprint 1) + add section-level regeneration, local WebAudio preview/mixing, and A/B comparison capabilities.
 
-**Progress:** 1/15 tasks complete (7%)
+**Progress:** Core frontend foundations merged; section regeneration work pending.
 
 **Completed Tasks:**
 
 - ✅ Task 2.1: Next.js workspace setup (apps/web with App Router, Tailwind, routing)
+- ✅ Task 2.2: shadcn/ui components (shared UI package)
+- ✅ Task 2.4: SSE client with reconnection + hook
 
 **In Progress:**
 
-- Task 2.2: shadcn/ui components (next up)
+- Task 2.3: API client hardening (Idempotency-Key + Zod validation) pending merge to `develop`
+- Task 2.5: WebAudio preview engine follow-ups (A/B, waveform, pre-roll)
+- Next up: Task 2.6 lyrics input + controls
 
 **Scope Breakdown:**
 
