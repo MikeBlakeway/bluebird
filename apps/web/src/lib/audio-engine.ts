@@ -5,13 +5,25 @@
  * mute/solo functionality, and synchronized transport.
  */
 
+import { extractPeaks, type Peak } from './peaks'
+
 export type TrackState = 'loading' | 'ready' | 'error'
+export type PlaybackVersion = 'A' | 'B'
+
+interface TrackVersionData {
+  url: string
+  buffer: AudioBuffer | null
+  peaks: Peak[] | null
+  state: TrackState
+  error?: string
+}
 
 export interface Track {
   id: string
   name: string
   url: string
   buffer: AudioBuffer | null
+  peaks: Peak[] | null
   gainNode: GainNode | null
   sourceNode: AudioBufferSourceNode | null
   state: TrackState
@@ -19,12 +31,17 @@ export interface Track {
   gain: number // 0-1
   muted: boolean
   soloed: boolean
+  activeVersion: PlaybackVersion
+  versions: Record<PlaybackVersion, TrackVersionData>
 }
 
 export type PlaybackState = 'stopped' | 'playing' | 'paused'
 
 export interface AudioEngineConfig {
   sampleRate?: number
+  preRollSamples?: number
+  peaksPerSecond?: number
+  activeVersion?: PlaybackVersion
   onStateChange?: (state: PlaybackState) => void
   onTimeUpdate?: (currentTime: number) => void
   onTrackStateChange?: (trackId: string, state: TrackState) => void
@@ -40,9 +57,11 @@ export class AudioEngine {
   private pauseTime: number = 0
   private animationFrameId: number | null = null
   private config: AudioEngineConfig
+  private activeVersion: PlaybackVersion
 
   constructor(config: AudioEngineConfig = {}) {
     this.config = config
+    this.activeVersion = config.activeVersion ?? 'A'
   }
 
   /**
@@ -70,51 +89,72 @@ export class AudioEngine {
   /**
    * Add a track to the engine
    */
-  async addTrack(id: string, name: string, url: string): Promise<void> {
+  async addTrack(
+    id: string,
+    name: string,
+    url: string,
+    version: PlaybackVersion = 'A'
+  ): Promise<void> {
     if (!this.audioContext) {
       throw new Error('AudioEngine not initialized. Call initialize() first.')
     }
 
-    // Create track object
-    const track: Track = {
-      id,
-      name,
-      url,
-      buffer: null,
-      gainNode: null,
-      sourceNode: null,
-      state: 'loading',
-      gain: 1.0,
-      muted: false,
-      soloed: false,
+    const track = this.ensureTrack(id, name)
+    const versionState = track.versions[version]
+    versionState.url = url
+    versionState.state = 'loading'
+    versionState.error = undefined
+    versionState.buffer = null
+    versionState.peaks = null
+
+    if (track.activeVersion === version) {
+      track.state = 'loading'
+      track.error = undefined
+      track.buffer = null
+      track.peaks = null
+      this.config.onTrackStateChange?.(id, 'loading')
     }
 
-    this.tracks.set(id, track)
-    this.config.onTrackStateChange?.(id, 'loading')
-
     try {
-      // Fetch and decode audio
       const response = await fetch(url)
       const arrayBuffer = await response.arrayBuffer()
       const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer)
+      const peaks = extractPeaks(audioBuffer, this.config.peaksPerSecond)
 
-      // Create gain node for this track
-      const gainNode = this.audioContext.createGain()
-      gainNode.gain.value = track.gain
-      if (this.masterGainNode) {
-        gainNode.connect(this.masterGainNode)
+      versionState.buffer = audioBuffer
+      versionState.peaks = peaks
+      versionState.state = 'ready'
+      versionState.error = undefined
+
+      if (track.activeVersion === version) {
+        track.url = url
+        track.buffer = audioBuffer
+        track.peaks = peaks
+        track.state = 'ready'
+        track.error = undefined
+        this.config.onTrackStateChange?.(id, 'ready')
       }
 
-      // Update track
-      track.buffer = audioBuffer
-      track.gainNode = gainNode
-      track.state = 'ready'
-
-      this.config.onTrackStateChange?.(id, 'ready')
+      // Attach gain node once per track
+      if (!track.gainNode) {
+        const gainNode = this.audioContext.createGain()
+        gainNode.gain.value = track.gain
+        if (this.masterGainNode) {
+          gainNode.connect(this.masterGainNode)
+        }
+        track.gainNode = gainNode
+        this.refreshTrackGains()
+      }
     } catch (error) {
-      track.state = 'error'
-      track.error = error instanceof Error ? error.message : String(error)
-      this.config.onTrackStateChange?.(id, 'error')
+      versionState.state = 'error'
+      versionState.error = error instanceof Error ? error.message : String(error)
+
+      if (track.activeVersion === version) {
+        track.state = 'error'
+        track.error = versionState.error
+        this.config.onTrackStateChange?.(id, 'error')
+      }
+
       this.config.onError?.(error instanceof Error ? error : new Error(String(error)))
     }
   }
@@ -143,10 +183,10 @@ export class AudioEngine {
    */
   setTrackGain(id: string, gain: number): void {
     const track = this.tracks.get(id)
-    if (!track || !track.gainNode) return
+    if (!track) return
 
     track.gain = Math.max(0, Math.min(1, gain))
-    track.gainNode.gain.value = track.muted ? 0 : track.gain
+    this.refreshTrackGains()
   }
 
   /**
@@ -162,10 +202,10 @@ export class AudioEngine {
    */
   setTrackMuted(id: string, muted: boolean): void {
     const track = this.tracks.get(id)
-    if (!track || !track.gainNode) return
+    if (!track) return
 
     track.muted = muted
-    track.gainNode.gain.value = muted ? 0 : track.gain
+    this.refreshTrackGains()
   }
 
   /**
@@ -177,19 +217,31 @@ export class AudioEngine {
 
     track.soloed = soloed
 
-    // Update all track gains based on solo state
-    const hasSoloedTracks = Array.from(this.tracks.values()).some((t) => t.soloed)
+    this.refreshTrackGains()
+  }
 
-    for (const [, t] of this.tracks) {
-      if (!t.gainNode) continue
+  async setActiveVersion(version: PlaybackVersion): Promise<void> {
+    if (this.activeVersion === version) return
 
-      if (hasSoloedTracks) {
-        // If any tracks are soloed, only play soloed tracks
-        t.gainNode.gain.value = t.soloed && !t.muted ? t.gain : 0
-      } else {
-        // No solo, respect mute state
-        t.gainNode.gain.value = t.muted ? 0 : t.gain
-      }
+    const wasPlaying = this.playbackState === 'playing'
+    const position = this.getCurrentTime()
+
+    this.stopAllSources()
+    this.playbackState = 'paused'
+    this.pauseTime = position
+    this.startTime = 0
+    this.activeVersion = version
+
+    for (const track of this.tracks.values()) {
+      track.activeVersion = version
+      this.applyActiveVersionState(track)
+    }
+
+    if (wasPlaying) {
+      await this.play()
+    } else {
+      this.config.onTimeUpdate?.(position)
+      this.refreshTrackGains()
     }
   }
 
@@ -209,17 +261,21 @@ export class AudioEngine {
     // Stop any currently playing sources
     this.stopAllSources()
 
-    const currentTime = this.playbackState === 'paused' ? this.pauseTime : 0
+    const requestedTime = this.playbackState === 'paused' ? this.pauseTime : 0
+    const preRollSeconds = this.getPreRollSeconds()
+    const startOffset = Math.max(0, requestedTime - preRollSeconds)
+    const rampDuration = requestedTime - startOffset
+    const hasSoloedTracks = this.hasSoloedTracks()
+    const now = this.audioContext.currentTime
 
-    // Create and start new source nodes for all ready tracks
     for (const track of this.tracks.values()) {
-      if (track.state !== 'ready' || !track.buffer || !track.gainNode) continue
+      const versionState = track.versions[track.activeVersion]
+      if (versionState.state !== 'ready' || !versionState.buffer || !track.gainNode) continue
 
       const source = this.audioContext.createBufferSource()
-      source.buffer = track.buffer
+      source.buffer = versionState.buffer
       source.connect(track.gainNode)
 
-      // Handle playback end
       source.onended = () => {
         if (this.playbackState === 'playing') {
           this.handlePlaybackEnd()
@@ -227,10 +283,33 @@ export class AudioEngine {
       }
 
       track.sourceNode = source
-      source.start(0, currentTime)
+
+      const targetGain = this.computeEffectiveGain(track, hasSoloedTracks)
+      const gainParam = track.gainNode.gain as unknown as {
+        setValueAtTime?: (value: number, startTime: number) => void
+        linearRampToValueAtTime?: (value: number, endTime: number) => void
+        value: number
+      }
+
+      if (
+        typeof gainParam.setValueAtTime === 'function' &&
+        typeof gainParam.linearRampToValueAtTime === 'function'
+      ) {
+        gainParam.setValueAtTime(0, now)
+        if (rampDuration <= 0) {
+          gainParam.setValueAtTime(targetGain, now)
+        } else {
+          gainParam.linearRampToValueAtTime(targetGain, now + rampDuration)
+        }
+      } else {
+        gainParam.value = targetGain
+      }
+
+      const offset = Math.min(startOffset, Math.max(versionState.buffer.duration - 0.001, 0))
+      source.start(0, offset)
     }
 
-    this.startTime = this.audioContext.currentTime - currentTime
+    this.startTime = this.audioContext.currentTime - requestedTime
     this.playbackState = 'playing'
     this.config.onStateChange?.('playing')
 
@@ -310,8 +389,9 @@ export class AudioEngine {
     let maxDuration = 0
 
     for (const track of this.tracks.values()) {
-      if (track.buffer) {
-        maxDuration = Math.max(maxDuration, track.buffer.duration)
+      const versionState = track.versions[track.activeVersion]
+      if (versionState?.buffer) {
+        maxDuration = Math.max(maxDuration, versionState.buffer.duration)
       }
     }
 
@@ -337,6 +417,10 @@ export class AudioEngine {
    */
   getPlaybackState(): PlaybackState {
     return this.playbackState
+  }
+
+  getActiveVersion(): PlaybackVersion {
+    return this.activeVersion
   }
 
   /**
@@ -369,6 +453,78 @@ export class AudioEngine {
   }
 
   // Private methods
+
+  private ensureTrack(id: string, name: string): Track {
+    const existing = this.tracks.get(id)
+    if (existing) {
+      existing.name = name
+      return existing
+    }
+
+    const versionTemplate: TrackVersionData = {
+      url: '',
+      buffer: null,
+      peaks: null,
+      state: 'loading',
+    }
+
+    const track: Track = {
+      id,
+      name,
+      url: '',
+      buffer: null,
+      peaks: null,
+      gainNode: null,
+      sourceNode: null,
+      state: 'loading',
+      gain: 1.0,
+      muted: false,
+      soloed: false,
+      activeVersion: this.activeVersion,
+      versions: {
+        A: { ...versionTemplate },
+        B: { ...versionTemplate },
+      },
+    }
+
+    this.tracks.set(id, track)
+    return track
+  }
+
+  private applyActiveVersionState(track: Track): void {
+    const versionState = track.versions[track.activeVersion]
+    track.buffer = versionState.buffer
+    track.peaks = versionState.peaks
+    track.state = versionState.state
+    track.error = versionState.error
+    track.url = versionState.url
+  }
+
+  private hasSoloedTracks(): boolean {
+    return Array.from(this.tracks.values()).some((t) => t.soloed)
+  }
+
+  private computeEffectiveGain(track: Track, hasSoloedTracks: boolean): number {
+    if (track.muted) return 0
+    if (hasSoloedTracks && !track.soloed) return 0
+    return track.gain
+  }
+
+  private refreshTrackGains(): void {
+    const hasSoloedTracks = this.hasSoloedTracks()
+
+    for (const track of this.tracks.values()) {
+      if (!track.gainNode) continue
+      const effectiveGain = this.computeEffectiveGain(track, hasSoloedTracks)
+      track.gainNode.gain.value = effectiveGain
+    }
+  }
+
+  private getPreRollSeconds(): number {
+    const sampleRate = this.audioContext?.sampleRate ?? this.config.sampleRate ?? 48000
+    const preRollSamples = this.config.preRollSamples ?? 512
+    return Math.max(0, preRollSamples) / sampleRate
+  }
 
   private stopAllSources(): void {
     for (const track of this.tracks.values()) {

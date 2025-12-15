@@ -3,18 +3,36 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import type { Mock } from 'vitest'
 import { AudioEngine } from './audio-engine'
 
 // Mock AudioContext and related APIs
 class MockAudioBuffer {
   duration: number
-  constructor(duration: number) {
+  sampleRate: number
+  numberOfChannels: number
+  length: number
+  private data: Float32Array[]
+
+  constructor(duration: number, data?: Float32Array[], sampleRate = 48000) {
     this.duration = duration
+    this.sampleRate = sampleRate
+    this.data = data ?? [new Float32Array(480).fill(0)]
+    this.length = this.data[0]?.length ?? 0
+    this.numberOfChannels = this.data.length
+  }
+
+  getChannelData(channel: number): Float32Array {
+    return this.data[channel] ?? new Float32Array()
   }
 }
 
 class MockGainNode {
-  gain = { value: 1.0 }
+  gain = {
+    value: 1.0,
+    setValueAtTime: vi.fn(),
+    linearRampToValueAtTime: vi.fn(),
+  }
   connect = vi.fn()
   disconnect = vi.fn()
 }
@@ -145,6 +163,13 @@ describe('AudioEngine', () => {
       expect(onTrackStateChange).toHaveBeenCalledWith('track1', 'error')
     })
 
+    it('should compute peaks for a loaded track', async () => {
+      await engine.addTrack('track1', 'Track 1', 'http://example.com/track1.mp3')
+
+      const track = engine.getTrack('track1')
+      expect(track?.peaks?.length).toBeGreaterThan(0)
+    })
+
     it('should remove a track', async () => {
       await engine.addTrack('track1', 'Track 1', 'http://example.com/track1.mp3')
       expect(engine.getTracks()).toHaveLength(1)
@@ -226,8 +251,29 @@ describe('AudioEngine', () => {
 
       // Should start from paused position
       const track = engine.getTrack('track1')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((track?.sourceNode as any)?.start).toHaveBeenCalledWith(0, 5)
+      const startArgs = // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (track?.sourceNode as any)?.start.mock.calls[0]
+      const expectedOffset = 5 - 512 / 48000
+      expect(startArgs?.[1]).toBeCloseTo(expectedOffset, 3)
+    })
+
+    it('should apply pre-roll ramping', async () => {
+      engine = new AudioEngine({ preRollSamples: 4800 })
+      await engine.initialize()
+      await engine.addTrack('track1', 'Track 1', 'http://example.com/track1.mp3')
+
+      await engine.seek(2)
+      await engine.play()
+
+      const track = engine.getTrack('track1')
+      const gain = (track?.gainNode as unknown as MockGainNode).gain
+
+      expect(gain.setValueAtTime).toHaveBeenCalledWith(0, 0)
+      expect(gain.linearRampToValueAtTime).toHaveBeenCalled()
+
+      const startArgs = (track?.sourceNode as unknown as MockAudioBufferSourceNode).start.mock
+        .calls[0]
+      expect(startArgs?.[1]).toBeCloseTo(2 - 4800 / 48000, 3)
     })
   })
 
@@ -349,6 +395,24 @@ describe('AudioEngine', () => {
 
     it('should return 0 when stopped', () => {
       expect(engine.getCurrentTime()).toBe(0)
+    })
+  })
+
+  describe('Versions', () => {
+    beforeEach(async () => {
+      await engine.initialize()
+    })
+
+    it('switches between A/B versions using cached buffers', async () => {
+      await engine.addTrack('track1', 'Track 1', 'http://example.com/track1-a.mp3', 'A')
+      await engine.addTrack('track1', 'Track 1', 'http://example.com/track1-b.mp3', 'B')
+
+      await engine.setActiveVersion('B')
+
+      const track = engine.getTrack('track1')
+      expect(track?.activeVersion).toBe('B')
+      expect(track?.state).toBe('ready')
+      expect(global.fetch as Mock).toHaveBeenCalledTimes(2)
     })
   })
 

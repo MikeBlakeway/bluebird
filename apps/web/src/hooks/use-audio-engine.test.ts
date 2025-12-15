@@ -20,6 +20,7 @@ vi.mock('@/lib/audio-engine', () => {
     private playbackState = 'stopped'
     private currentTime = 0
     private tracks = new Map()
+    private activeVersion: 'A' | 'B' = 'A'
 
     constructor(options?: typeof mockCallbacks) {
       Object.assign(mockCallbacks, options)
@@ -29,7 +30,7 @@ vi.mock('@/lib/audio-engine', () => {
       // Mock initialization
     }
 
-    async addTrack(id: string, name: string, url: string) {
+    async addTrack(id: string, name: string, url: string, version: 'A' | 'B' = 'A') {
       this.tracks.set(id, {
         id,
         name,
@@ -38,6 +39,8 @@ vi.mock('@/lib/audio-engine', () => {
         gain: 1,
         muted: false,
         soloed: false,
+        activeVersion: version,
+        peaks: [],
       })
       mockCallbacks.onTrackStateChange?.(id, 'ready')
     }
@@ -91,6 +94,14 @@ vi.mock('@/lib/audio-engine', () => {
       if (track) {
         track.soloed = soloed
       }
+    }
+
+    async setActiveVersion(version: 'A' | 'B') {
+      this.activeVersion = version
+    }
+
+    getActiveVersion() {
+      return this.activeVersion
     }
 
     getPlaybackState() {
@@ -348,6 +359,20 @@ describe('useAudioEngine', () => {
 
     track = result.current.tracks.find((t) => t.id === 'track1')
     expect(track?.soloed).toBe(false)
+  })
+
+  it('should switch active version', async () => {
+    const { result } = renderHook(() => useAudioEngine())
+
+    await waitFor(() => {
+      expect(result.current.isInitialized).toBe(true)
+    })
+
+    await act(async () => {
+      await result.current.setActiveVersion('B')
+    })
+
+    expect(result.current.activeVersion).toBe('B')
   })
 
   it('should handle time updates', async () => {
