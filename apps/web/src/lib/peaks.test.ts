@@ -22,13 +22,23 @@ class SimpleAudioBuffer {
 describe('extractPeaks', () => {
   it('computes min/max peaks per window', () => {
     const samples = new Float32Array([0.1, -0.2, 0.5, -0.4, 0.2, 0.6])
-    const buffer = new SimpleAudioBuffer([samples]) as unknown as AudioBuffer
+    const buffer = new SimpleAudioBuffer([samples], 2) as unknown as AudioBuffer
 
-    const peaks = extractPeaks(buffer, 3)
+    // With 6 samples at 2 Hz sampleRate and 1 peak/sec = 2 samples per peak
+    const peaks = extractPeaks(buffer, 1)
 
     expect(peaks).toHaveLength(3)
-    expect(peaks[0]).toEqual({ min: -0.2, max: 0.1 })
-    expect(peaks[1]).toEqual({ min: -0.4, max: 0.5 })
-    expect(peaks[2]).toEqual({ min: 0.2, max: 0.6 })
+    expect(peaks[0]).toEqual({
+      min: expect.closeTo(-0.2, 5),
+      max: expect.closeTo(0.1, 5),
+    })
+    expect(peaks[1]).toEqual({
+      min: expect.closeTo(-0.4, 5),
+      max: expect.closeTo(0.5, 5),
+    })
+    expect(peaks[2]).toEqual({
+      min: expect.closeTo(0.2, 5),
+      max: expect.closeTo(0.6, 5),
+    })
   })
 })
