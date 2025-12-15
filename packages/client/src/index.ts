@@ -167,10 +167,10 @@ export class BluebirdClient {
       opts.onEvent(parsed.data)
     }
 
-    es.onerror = () => {
+    es.onerror = (event) => {
       const err = new Error('SSE connection error')
       opts.onError?.(err)
-      this.log({ level: 'warn', message: 'SSE connection error', error: err, path: url })
+      this.log({ level: 'warn', message: 'SSE connection error', error: { err, event }, path: url })
     }
 
     return es
@@ -548,6 +548,12 @@ export class BluebirdClient {
     if (entry.level === 'warn') {
       // eslint-disable-next-line no-console
       console.warn(prefix, entry)
+      return
+    }
+
+    if (entry.level === 'info') {
+      // eslint-disable-next-line no-console
+      console.info(prefix, entry)
       return
     }
 

@@ -61,6 +61,83 @@ describe('BluebirdClient', () => {
       expect(logger.mock.calls.some((c) => c[0]?.message === 'HTTP request')).toBe(true)
       expect(logger.mock.calls.some((c) => c[0]?.message === 'HTTP response')).toBe(true)
     })
+
+    it('should not log by default (debug disabled)', async () => {
+      const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {})
+      const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      try {
+        mockFetch.mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: async () => ({ success: true, message: 'Email sent' }),
+        })
+
+        await client.requestMagicLink({ email: 'test@example.com' })
+
+        expect(debugSpy).not.toHaveBeenCalled()
+        expect(infoSpy).not.toHaveBeenCalled()
+        expect(warnSpy).not.toHaveBeenCalled()
+        expect(errorSpy).not.toHaveBeenCalled()
+      } finally {
+        debugSpy.mockRestore()
+        infoSpy.mockRestore()
+        warnSpy.mockRestore()
+        errorSpy.mockRestore()
+      }
+    })
+
+    it('should route log levels to appropriate console methods', async () => {
+      const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {})
+      const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      try {
+        const debugClient = new BluebirdClient({
+          baseURL: 'http://test-api.com',
+          debug: true,
+          retries: 1,
+          timeout: 1000,
+        })
+
+        // Success path should produce debug (request) + info (response)
+        mockFetch.mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: async () => ({ success: true, message: 'Email sent' }),
+        })
+
+        await debugClient.requestMagicLink({ email: 'test@example.com' })
+
+        expect(debugSpy.mock.calls.some((c) => c[1]?.message === 'HTTP request')).toBe(true)
+        expect(infoSpy.mock.calls.some((c) => c[1]?.message === 'HTTP response')).toBe(true)
+
+        // Error path should produce warn (http error response) + error (request failed)
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error',
+          text: async () => 'boom',
+        })
+
+        await expect(
+          debugClient.requestMagicLink({ email: 'test@example.com' })
+        ).rejects.toBeInstanceOf(BluebirdAPIError)
+
+        expect(warnSpy.mock.calls.some((c) => c[1]?.message === 'HTTP error response')).toBe(true)
+        expect(errorSpy.mock.calls.some((c) => c[1]?.message === 'Request failed')).toBe(true)
+      } finally {
+        debugSpy.mockRestore()
+        infoSpy.mockRestore()
+        warnSpy.mockRestore()
+        errorSpy.mockRestore()
+      }
+    })
   })
 
   describe('Job Events (SSE)', () => {
@@ -68,7 +145,7 @@ describe('BluebirdClient', () => {
       class FakeEventSource {
         public onopen: null | (() => void) = null
         public onmessage: null | ((e: { data: string }) => void) = null
-        public onerror: null | (() => void) = null
+        public onerror: null | ((event: Event) => void) = null
 
         constructor(
           public url: string,
@@ -77,6 +154,18 @@ describe('BluebirdClient', () => {
 
         emitMessage(data: unknown) {
           this.onmessage?.({ data: JSON.stringify(data) })
+        }
+
+        emitMessageRaw(data: string) {
+          this.onmessage?.({ data })
+        }
+
+        emitOpen() {
+          this.onopen?.()
+        }
+
+        emitError(event: Event) {
+          this.onerror?.(event)
         }
       }
 
@@ -87,12 +176,17 @@ describe('BluebirdClient', () => {
       try {
         const onEvent = vi.fn()
         const onError = vi.fn()
+        const onOpen = vi.fn()
 
         const es = client.createJobEventsSource('job-123', {
           withCredentials: true,
           onEvent,
           onError,
+          onOpen,
         }) as unknown as FakeEventSource
+
+        es.emitOpen()
+        expect(onOpen).toHaveBeenCalledTimes(1)
 
         es.emitMessage({
           jobId: 'job-123',
@@ -103,6 +197,23 @@ describe('BluebirdClient', () => {
 
         expect(onEvent).toHaveBeenCalledTimes(1)
         expect(onError).not.toHaveBeenCalled()
+
+        // Invalid JSON
+        es.emitMessageRaw('{not-json')
+        expect(onError).toHaveBeenCalled()
+        expect(
+          onError.mock.calls.some((c) => c[0]?.message === 'Failed to parse SSE JSON payload')
+        ).toBe(true)
+
+        // Schema validation failure
+        es.emitMessage({ foo: 'bar' })
+        expect(onError.mock.calls.some((c) => c[0]?.message === 'Invalid SSE event payload')).toBe(
+          true
+        )
+
+        // Connection error
+        es.emitError(new Event('error'))
+        expect(onError.mock.calls.some((c) => c[0]?.message === 'SSE connection error')).toBe(true)
       } finally {
         globalThis.EventSource = prev
       }
