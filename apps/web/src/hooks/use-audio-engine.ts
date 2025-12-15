@@ -8,7 +8,12 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { AudioEngine, type PlaybackState, type Track } from '@/lib/audio-engine'
+import {
+  AudioEngine,
+  type PlaybackState,
+  type Track,
+  type PlaybackVersion,
+} from '@/lib/audio-engine'
 
 export interface UseAudioEngineOptions {
   sampleRate?: number
@@ -22,6 +27,7 @@ export interface UseAudioEngineReturn {
   duration: number
   tracks: Track[]
   isInitialized: boolean
+  activeVersion: PlaybackVersion
 
   // Playback controls
   play: () => Promise<void>
@@ -30,8 +36,11 @@ export interface UseAudioEngineReturn {
   seek: (time: number) => Promise<void>
 
   // Track management
-  addTrack: (id: string, name: string, url: string) => Promise<void>
+  addTrack: (id: string, name: string, url: string, version?: PlaybackVersion) => Promise<void>
   removeTrack: (id: string) => void
+
+  // Version control
+  setActiveVersion: (version: PlaybackVersion) => Promise<void>
 
   // Gain controls
   setTrackGain: (id: string, gain: number) => void
@@ -49,6 +58,7 @@ export function useAudioEngine(options: UseAudioEngineOptions = {}): UseAudioEng
   const [duration, setDuration] = useState(0)
   const [tracks, setTracks] = useState<Track[]>([])
   const [isInitialized, setIsInitialized] = useState(false)
+  const [activeVersion, setActiveVersionState] = useState<PlaybackVersion>('A')
 
   const engineRef = useRef<AudioEngine | null>(null)
   const isMountedRef = useRef(true)
@@ -86,6 +96,7 @@ export function useAudioEngine(options: UseAudioEngineOptions = {}): UseAudioEng
       .then(() => {
         if (isMountedRef.current) {
           setIsInitialized(true)
+          setActiveVersionState(engine.getActiveVersion())
         }
       })
       .catch((error) => {
@@ -123,17 +134,20 @@ export function useAudioEngine(options: UseAudioEngineOptions = {}): UseAudioEng
   }, [])
 
   // Track management
-  const addTrack = useCallback(async (id: string, name: string, url: string) => {
-    if (!engineRef.current) return
+  const addTrack = useCallback(
+    async (id: string, name: string, url: string, version: PlaybackVersion = 'A') => {
+      if (!engineRef.current) return
 
-    await engineRef.current.addTrack(id, name, url)
+      await engineRef.current.addTrack(id, name, url, version)
 
-    // Update state
-    if (isMountedRef.current) {
-      setTracks(engineRef.current.getTracks())
-      setDuration(engineRef.current.getDuration())
-    }
-  }, [])
+      // Update state
+      if (isMountedRef.current) {
+        setTracks(engineRef.current.getTracks())
+        setDuration(engineRef.current.getDuration())
+      }
+    },
+    []
+  )
 
   const removeTrack = useCallback((id: string) => {
     if (!engineRef.current) return
@@ -183,6 +197,17 @@ export function useAudioEngine(options: UseAudioEngineOptions = {}): UseAudioEng
     }
   }, [])
 
+  const setActiveVersion = useCallback(async (version: PlaybackVersion) => {
+    if (!engineRef.current) return
+    await engineRef.current.setActiveVersion(version)
+
+    if (isMountedRef.current) {
+      setActiveVersionState(engineRef.current.getActiveVersion())
+      setTracks(engineRef.current.getTracks())
+      setDuration(engineRef.current.getDuration())
+    }
+  }, [])
+
   return {
     // State
     playbackState,
@@ -190,6 +215,7 @@ export function useAudioEngine(options: UseAudioEngineOptions = {}): UseAudioEng
     duration,
     tracks,
     isInitialized,
+    activeVersion,
 
     // Controls
     play,
@@ -206,6 +232,7 @@ export function useAudioEngine(options: UseAudioEngineOptions = {}): UseAudioEng
     setMasterGain,
     setTrackMuted,
     setTrackSoloed,
+    setActiveVersion,
 
     // Engine reference
     engine: engineRef.current,
