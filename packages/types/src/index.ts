@@ -288,12 +288,35 @@ export const PlanSongResponseSchema = z.object({
 export type PlanSongResponse = z.infer<typeof PlanSongResponseSchema>
 
 export const RenderPreviewRequestSchema = z.object({
+  projectId: ProjectIdSchema,
   jobId: JobIdSchema,
-  arrangement: ArrangementSpecSchema,
-  vocals: VocalScoreSchema,
-  seed: z.number().int().optional(),
 })
 export type RenderPreviewRequest = z.infer<typeof RenderPreviewRequestSchema>
+
+export const RenderMusicRequestSchema = z.object({
+  projectId: ProjectIdSchema,
+  jobId: JobIdSchema,
+  sectionIndex: z.number().int().min(0),
+  instrument: z.string().min(1),
+  seed: z.number().int().optional(),
+})
+export type RenderMusicRequest = z.infer<typeof RenderMusicRequestSchema>
+
+export const RenderVoiceRequestSchema = z.object({
+  projectId: ProjectIdSchema,
+  jobId: JobIdSchema,
+  sectionIndex: z.number().int().min(0),
+  lyrics: z.string().min(1),
+  seed: z.number().int().optional(),
+})
+export type RenderVoiceRequest = z.infer<typeof RenderVoiceRequestSchema>
+
+export const JobResponseSchema = z.object({
+  jobId: JobIdSchema,
+  status: z.string(),
+  message: z.string().optional(),
+})
+export type JobResponse = z.infer<typeof JobResponseSchema>
 
 export const CheckSimilarityRequestSchema = z.object({
   jobId: JobIdSchema,
@@ -311,3 +334,20 @@ export const ExportRequestSchema = z.object({
   bitDepth: z.number().int().default(24),
 })
 export type ExportRequest = z.infer<typeof ExportRequestSchema>
+
+export const MixFinalRequestSchema = z.object({
+  projectId: ProjectIdSchema,
+  jobId: JobIdSchema,
+  takeId: z.string().min(1),
+  targetLUFS: z.number().min(-24).max(-6).default(-14),
+  truePeakLimit: z.number().min(-2).max(0).default(-1),
+})
+export type MixFinalRequest = z.infer<typeof MixFinalRequestSchema>
+
+export const ExportPreviewRequestSchema = z.object({
+  projectId: ProjectIdSchema,
+  takeId: z.string().min(1),
+  format: z.enum(['wav', 'mp3']).default('mp3'),
+  includeStems: z.boolean().default(false),
+})
+export type ExportPreviewRequest = z.infer<typeof ExportPreviewRequestSchema>

@@ -10,18 +10,42 @@ import type {
   AnalysisResult,
   AuthResponse,
   CreateProjectRequest,
-  ExportBundle,
-  ExportRequest,
-  JobEvent,
+  ExportPreviewRequest,
+  JobResponse,
   MagicLinkRequest,
   MagicLinkResponse,
+  MixFinalRequest,
   PlanSongRequest,
   PlanSongResponse,
   Project,
+  RenderMusicRequest,
   RenderPreviewRequest,
+  RenderVoiceRequest,
   UpdateProjectRequest,
   VerifyMagicLinkRequest,
 } from '@bluebird/types'
+
+import {
+  AnalyzeRequestSchema,
+  AnalysisResultSchema,
+  AuthResponseSchema,
+  CreateProjectRequestSchema,
+  JobResponseSchema,
+  MagicLinkRequestSchema,
+  MagicLinkResponseSchema,
+  MixFinalRequestSchema,
+  PlanSongRequestSchema,
+  PlanSongResponseSchema,
+  ProjectSchema,
+  RenderMusicRequestSchema,
+  RenderPreviewRequestSchema,
+  RenderVoiceRequestSchema,
+  UpdateProjectRequestSchema,
+  VerifyMagicLinkRequestSchema,
+  ExportPreviewRequestSchema,
+} from '@bluebird/types'
+
+import { z } from 'zod'
 
 // ============================================================================
 // Types
@@ -33,12 +57,6 @@ export interface ClientConfig {
   timeout?: number
   retries?: number
   onTokenRefresh?: (token: string) => void
-}
-
-export interface JobResponse {
-  jobId: string
-  status: string
-  message?: string
 }
 
 export class BluebirdAPIError extends Error {
@@ -79,14 +97,24 @@ export class BluebirdClient {
    * Request a magic link to be sent to the user's email
    */
   async requestMagicLink(request: MagicLinkRequest): Promise<MagicLinkResponse> {
-    return this.post<MagicLinkResponse>('/auth/magic-link', request)
+    const parsed = MagicLinkRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/auth/magic-link', parsed.data, MagicLinkResponseSchema)
   }
 
   /**
    * Verify a magic link token and get auth response
    */
   async verifyMagicLink(request: VerifyMagicLinkRequest): Promise<AuthResponse> {
-    const response = await this.post<AuthResponse>('/auth/verify', request)
+    const parsed = VerifyMagicLinkRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    const response = await this.post('/auth/verify', parsed.data, AuthResponseSchema)
 
     // Store token and notify callback
     if (response.token) {
@@ -121,21 +149,31 @@ export class BluebirdClient {
    * Create a new project
    */
   async createProject(request: CreateProjectRequest): Promise<Project> {
-    return this.post<Project>('/projects', request)
+    const parsed = CreateProjectRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/projects', parsed.data, ProjectSchema)
   }
 
   /**
    * Get a project by ID
    */
   async getProject(projectId: string): Promise<Project> {
-    return this.get<Project>(`/projects/${projectId}`)
+    return this.get(`/projects/${projectId}`, ProjectSchema)
   }
 
   /**
    * Update a project
    */
   async updateProject(projectId: string, request: UpdateProjectRequest): Promise<Project> {
-    return this.patch<Project>(`/projects/${projectId}`, request)
+    const parsed = UpdateProjectRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.patch(`/projects/${projectId}`, parsed.data, ProjectSchema)
   }
 
   /**
@@ -149,7 +187,7 @@ export class BluebirdClient {
    * List all projects for the authenticated user
    */
   async listProjects(): Promise<Project[]> {
-    return this.get<Project[]>('/projects')
+    return this.get('/projects', ProjectSchema.array())
   }
 
   // ==========================================================================
@@ -160,7 +198,12 @@ export class BluebirdClient {
    * Analyze lyrics to extract structure and features
    */
   async analyzeLyrics(request: AnalyzeRequest): Promise<AnalysisResult> {
-    return this.post<AnalysisResult>('/analyze', request)
+    const parsed = AnalyzeRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/analyze', parsed.data, AnalysisResultSchema)
   }
 
   // ==========================================================================
@@ -171,7 +214,12 @@ export class BluebirdClient {
    * Plan a song (arrangement + vocal score)
    */
   async planSong(request: PlanSongRequest): Promise<PlanSongResponse> {
-    return this.post<PlanSongResponse>('/plan/song', request)
+    const parsed = PlanSongRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/plan/song', parsed.data, PlanSongResponseSchema)
   }
 
   // ==========================================================================
@@ -182,18 +230,32 @@ export class BluebirdClient {
    * Render a preview (music + vocals + mix)
    */
   async renderPreview(request: RenderPreviewRequest): Promise<JobResponse> {
-    return this.post<JobResponse>('/render/preview', request)
+    const parsed = RenderPreviewRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/render/preview', parsed.data, JobResponseSchema)
   }
 
-  /**
-   * Render a single section
-   */
-  async renderSection(request: {
-    takeId: string
-    sectionIndex: number
-    seed?: number
-  }): Promise<JobResponse> {
-    return this.post<JobResponse>('/render/section', request)
+  /** Render a music stem for a section + instrument */
+  async renderMusic(request: RenderMusicRequest): Promise<JobResponse> {
+    const parsed = RenderMusicRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/render/music', parsed.data, JobResponseSchema)
+  }
+
+  /** Render vocals for a section */
+  async renderVocals(request: RenderVoiceRequest): Promise<JobResponse> {
+    const parsed = RenderVoiceRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/render/vocals', parsed.data, JobResponseSchema)
   }
 
   // ==========================================================================
@@ -203,8 +265,13 @@ export class BluebirdClient {
   /**
    * Create a final mix
    */
-  async mixFinal(request: { takeId: string }): Promise<JobResponse> {
-    return this.post<JobResponse>('/mix/final', request)
+  async mixFinal(request: MixFinalRequest): Promise<JobResponse> {
+    const parsed = MixFinalRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/mix/final', parsed.data, JobResponseSchema)
   }
 
   // ==========================================================================
@@ -214,20 +281,18 @@ export class BluebirdClient {
   /**
    * Export a preview
    */
-  async exportPreview(request: ExportRequest): Promise<ExportBundle> {
-    return this.post<ExportBundle>('/export', request)
+  async exportPreview(request: ExportPreviewRequest): Promise<JobResponse> {
+    const parsed = ExportPreviewRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/export/preview', parsed.data, JobResponseSchema)
   }
 
   // ==========================================================================
   // Job Methods
   // ==========================================================================
-
-  /**
-   * Get job status
-   */
-  async getJob(jobId: string): Promise<JobEvent> {
-    return this.get<JobEvent>(`/jobs/${jobId}`)
-  }
 
   /**
    * Create an EventSource for job events (SSE)
@@ -241,10 +306,23 @@ export class BluebirdClient {
   // Internal HTTP Methods
   // ==========================================================================
 
-  private async request<T>(method: string, path: string, body?: unknown, attempt = 1): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    opts: {
+      body?: unknown
+      responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>
+      idempotencyKey?: string
+    },
+    attempt = 1
+  ): Promise<T> {
     const url = `${this.baseURL}${path}`
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+    }
+
+    if (method === 'POST') {
+      headers['Idempotency-Key'] = opts.idempotencyKey ?? this.createIdempotencyKey()
     }
 
     if (this.authToken) {
@@ -258,7 +336,7 @@ export class BluebirdClient {
       const response = await fetch(url, {
         method,
         headers,
-        body: body ? JSON.stringify(body) : undefined,
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
         signal: controller.signal,
       })
 
@@ -282,36 +360,71 @@ export class BluebirdClient {
 
       // Handle 204 No Content
       if (response.status === 204) {
-        return undefined as T
+        const parsed = opts.responseSchema.safeParse(undefined)
+        if (!parsed.success) {
+          throw new BluebirdAPIError('Invalid response from server', response.status, {
+            zodError: parsed.error.format(),
+          })
+        }
+
+        return parsed.data
       }
 
-      return (await response.json()) as T
+      const json: unknown = await response.json()
+
+      const parsed = opts.responseSchema.safeParse(json)
+      if (!parsed.success) {
+        throw new BluebirdAPIError('Invalid response from server', response.status, {
+          zodError: parsed.error.format(),
+          response: json,
+        })
+      }
+      return parsed.data
     } catch (error) {
       // Retry logic for transient failures
       if (attempt < this.retries && this.isRetryableError(error)) {
         const delay = this.getBackoffDelay(attempt)
         await this.sleep(delay)
-        return this.request<T>(method, path, body, attempt + 1)
+        return this.request(method, path, opts, attempt + 1)
       }
 
       throw error
     }
   }
 
-  private async get<T>(path: string): Promise<T> {
-    return this.request<T>('GET', path)
+  private async get<T>(
+    path: string,
+    responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>
+  ): Promise<T> {
+    return this.request('GET', path, { responseSchema })
   }
 
-  private async post<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>('POST', path, body)
+  private async post<T>(
+    path: string,
+    body: unknown,
+    responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>
+  ): Promise<T> {
+    return this.request('POST', path, { body, responseSchema })
   }
 
-  private async patch<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>('PATCH', path, body)
+  private async patch<T>(
+    path: string,
+    body: unknown,
+    responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>
+  ): Promise<T> {
+    return this.request('PATCH', path, { body, responseSchema })
   }
 
   private async delete(path: string): Promise<undefined> {
-    return this.request<undefined>('DELETE', path)
+    return this.request('DELETE', path, { responseSchema: z.undefined() })
+  }
+
+  private createIdempotencyKey(): string {
+    const uuid = globalThis.crypto?.randomUUID?.()
+    if (uuid) return uuid
+
+    // Best-effort fallback for older runtimes.
+    return `bb_${Date.now()}_${Math.random().toString(16).slice(2)}`
   }
 
   // ==========================================================================
@@ -363,15 +476,17 @@ export type {
   AnalysisResult,
   AuthResponse,
   CreateProjectRequest,
-  ExportBundle,
-  ExportRequest,
-  JobEvent,
+  ExportPreviewRequest,
+  JobResponse,
   MagicLinkRequest,
   MagicLinkResponse,
+  MixFinalRequest,
   PlanSongRequest,
   PlanSongResponse,
   Project,
+  RenderMusicRequest,
   RenderPreviewRequest,
+  RenderVoiceRequest,
   UpdateProjectRequest,
   VerifyMagicLinkRequest,
 }
