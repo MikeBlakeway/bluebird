@@ -33,7 +33,7 @@ export function GenreSelect({ value, onChange, disabled, className }: GenreSelec
         Genre
       </label>
       <Select value={value} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger id="genre">
+        <SelectTrigger id="genre" className="h-10">
           <SelectValue placeholder="Select a genre..." />
         </SelectTrigger>
         <SelectContent>

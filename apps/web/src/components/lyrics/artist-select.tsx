@@ -28,7 +28,7 @@ export function ArtistSelect({ value, onChange, disabled, className }: ArtistSel
         AI Artist
       </label>
       <Select value={value} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger id="artist">
+        <SelectTrigger id="artist" className="h-10">
           <SelectValue placeholder="Select an artist..." />
         </SelectTrigger>
         <SelectContent>

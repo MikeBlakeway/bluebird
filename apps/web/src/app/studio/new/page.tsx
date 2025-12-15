@@ -20,16 +20,36 @@ export default function NewStudioPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">New Composition</h1>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95 py-12">
+      <div className="container mx-auto px-4">
+        <div className="max-w-2xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="space-y-3">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground">
+              Create a Composition
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Write your lyrics and Bluebird will generate an original melody, harmony, and
+              arrangement.
+            </p>
+          </div>
 
-        <div className="bg-card border rounded-lg p-6">
-          <LyricsForm
-            projectId={projectId}
-            onJobCreated={handleJobStarted}
-            onError={handleError}
-          />
+          {/* Form Card */}
+          <div className="bg-card border border-border rounded-xl p-8 shadow-sm hover:shadow-md transition-shadow">
+            <LyricsForm
+              projectId={projectId}
+              onJobCreated={handleJobStarted}
+              onError={handleError}
+            />
+          </div>
+
+          {/* Info Callout */}
+          <div className="rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
+            <p className="text-sm text-muted-foreground">
+              💡 <span className="font-medium">Tip:</span> The longer and more detailed your lyrics,
+              the better the composition will be.
+            </p>
+          </div>
         </div>
       </div>
     </div>

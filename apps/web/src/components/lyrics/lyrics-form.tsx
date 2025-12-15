@@ -85,34 +85,54 @@ export function LyricsForm({ projectId, onJobCreated, onError, className }: Lyri
   )
 
   return (
-    <form onSubmit={handleSubmit} className={cn('space-y-6', className)}>
+    <form onSubmit={handleSubmit} className={cn('space-y-8', className)}>
+      {/* Lyrics Input Section */}
       <div className="space-y-4">
+        <div className="border-b border-border/40 pb-3">
+          <h2 className="text-lg font-semibold text-foreground">Lyrics</h2>
+          <p className="text-sm text-muted-foreground mt-2">
+            Enter 4-100 lines (10-5000 characters total). One line per row.
+          </p>
+        </div>
         <LyricsInput
           value={lyrics}
           onChange={setLyrics}
           error={lyricsError || undefined}
           disabled={isLoading}
         />
+      </div>
 
+      {/* Genre & Artist Section */}
+      <div className="space-y-4">
+        <div className="border-b border-border/40 pb-3">
+          <h2 className="text-lg font-semibold text-foreground">Style</h2>
+          <p className="text-sm text-muted-foreground mt-2">
+            Select genre and AI artist to define your composition's sound.
+          </p>
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <GenreSelect value={genre} onChange={setGenre} disabled={isLoading} />
           <ArtistSelect value={artist} onChange={setArtist} disabled={isLoading} />
         </div>
       </div>
 
-      {/* Form-level error */}
+      {/* Error Message */}
       {error && (
-        <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {error}
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 space-y-1">
+          <p className="text-sm font-semibold text-destructive">Error</p>
+          <p className="text-sm text-destructive/90">{error}</p>
         </div>
       )}
 
-      <GenerateButton
-        type="submit"
-        disabled={!canSubmit}
-        isLoading={isLoading}
-        className="w-full"
-      />
+      {/* Submit Button */}
+      <div className="pt-2">
+        <GenerateButton
+          type="submit"
+          disabled={!canSubmit}
+          isLoading={isLoading}
+          className="w-full h-11 text-base"
+        />
+      </div>
     </form>
   )
 }
