@@ -11,6 +11,7 @@ import type {
   AuthResponse,
   CreateProjectRequest,
   ExportPreviewRequest,
+  JobEvent,
   JobResponse,
   MagicLinkRequest,
   MagicLinkResponse,
@@ -30,6 +31,7 @@ import {
   AnalysisResultSchema,
   AuthResponseSchema,
   CreateProjectRequestSchema,
+  JobEventSchema,
   JobResponseSchema,
   MagicLinkRequestSchema,
   MagicLinkResponseSchema,
@@ -56,7 +58,24 @@ export interface ClientConfig {
   authToken?: string
   timeout?: number
   retries?: number
+  /** Enable debug logging (default: false) */
+  debug?: boolean
+  /** Optional logger; used when debug is enabled */
+  logger?: (entry: ClientLogEntry) => void
   onTokenRefresh?: (token: string) => void
+}
+
+export type ClientLogLevel = 'debug' | 'info' | 'warn' | 'error'
+
+export interface ClientLogEntry {
+  level: ClientLogLevel
+  message: string
+  method?: string
+  path?: string
+  statusCode?: number
+  attempt?: number
+  durationMs?: number
+  error?: unknown
 }
 
 export class BluebirdAPIError extends Error {
@@ -79,6 +98,8 @@ export class BluebirdClient {
   private authToken?: string
   private timeout: number
   private retries: number
+  private debug: boolean
+  private logger?: (entry: ClientLogEntry) => void
   private onTokenRefresh?: (token: string) => void
 
   constructor(config: ClientConfig = {}) {
@@ -86,7 +107,73 @@ export class BluebirdClient {
     this.authToken = config.authToken
     this.timeout = config.timeout || 30000
     this.retries = config.retries || 3
+    this.debug = config.debug ?? false
+    this.logger = config.logger
     this.onTokenRefresh = config.onTokenRefresh
+  }
+
+  // ==========================================================================
+  // Job Events (SSE)
+  // ==========================================================================
+
+  /**
+   * Create an EventSource for job events and validate events with Zod.
+   *
+   * Note: EventSource cannot set Authorization headers; this works best when
+   * auth is provided via cookie (e.g. `auth_token`) and CORS allows credentials.
+   */
+  createJobEventsSource(
+    jobId: string,
+    opts: {
+      withCredentials?: boolean
+      onEvent: (event: JobEvent) => void
+      onError?: (error: Error) => void
+      onOpen?: () => void
+    }
+  ): EventSource {
+    if (typeof EventSource === 'undefined') {
+      throw new BluebirdAPIError('EventSource is not available in this environment')
+    }
+
+    const url = this.getJobEventsURL(jobId)
+    const es = new EventSource(url, { withCredentials: opts.withCredentials })
+
+    es.onopen = () => {
+      opts.onOpen?.()
+    }
+
+    es.onmessage = (e) => {
+      let json: unknown
+      try {
+        json = JSON.parse(e.data)
+      } catch (err) {
+        opts.onError?.(new Error('Failed to parse SSE JSON payload'))
+        this.log({ level: 'warn', message: 'SSE JSON parse failed', error: err, path: url })
+        return
+      }
+
+      const parsed = JobEventSchema.safeParse(json)
+      if (!parsed.success) {
+        opts.onError?.(new Error('Invalid SSE event payload'))
+        this.log({
+          level: 'warn',
+          message: 'SSE event schema validation failed',
+          error: parsed.error.format(),
+          path: url,
+        })
+        return
+      }
+
+      opts.onEvent(parsed.data)
+    }
+
+    es.onerror = () => {
+      const err = new Error('SSE connection error')
+      opts.onError?.(err)
+      this.log({ level: 'warn', message: 'SSE connection error', error: err, path: url })
+    }
+
+    return es
   }
 
   // ==========================================================================
@@ -317,6 +404,7 @@ export class BluebirdClient {
     attempt = 1
   ): Promise<T> {
     const url = `${this.baseURL}${path}`
+    const startMs = Date.now()
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
@@ -330,6 +418,8 @@ export class BluebirdClient {
     }
 
     try {
+      this.log({ level: 'debug', message: 'HTTP request', method, path, attempt })
+
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), this.timeout)
 
@@ -351,6 +441,16 @@ export class BluebirdClient {
           errorDetails = errorText
         }
 
+        this.log({
+          level: 'warn',
+          message: 'HTTP error response',
+          method,
+          path,
+          statusCode: response.status,
+          attempt,
+          durationMs: Date.now() - startMs,
+        })
+
         throw new BluebirdAPIError(
           `HTTP ${response.status}: ${response.statusText}`,
           response.status,
@@ -367,6 +467,16 @@ export class BluebirdClient {
           })
         }
 
+        this.log({
+          level: 'info',
+          message: 'HTTP response',
+          method,
+          path,
+          statusCode: response.status,
+          attempt,
+          durationMs: Date.now() - startMs,
+        })
+
         return parsed.data
       }
 
@@ -379,17 +489,70 @@ export class BluebirdClient {
           response: json,
         })
       }
+
+      this.log({
+        level: 'info',
+        message: 'HTTP response',
+        method,
+        path,
+        statusCode: response.status,
+        attempt,
+        durationMs: Date.now() - startMs,
+      })
       return parsed.data
     } catch (error) {
       // Retry logic for transient failures
       if (attempt < this.retries && this.isRetryableError(error)) {
         const delay = this.getBackoffDelay(attempt)
+        this.log({
+          level: 'debug',
+          message: 'Retrying request',
+          method,
+          path,
+          attempt,
+          durationMs: Date.now() - startMs,
+          error,
+        })
         await this.sleep(delay)
         return this.request(method, path, opts, attempt + 1)
       }
 
+      this.log({
+        level: 'error',
+        message: 'Request failed',
+        method,
+        path,
+        attempt,
+        durationMs: Date.now() - startMs,
+        error,
+      })
+
       throw error
     }
+  }
+
+  private log(entry: ClientLogEntry): void {
+    if (!this.debug) return
+
+    if (this.logger) {
+      this.logger(entry)
+      return
+    }
+
+    const prefix = '[BluebirdClient]'
+    if (entry.level === 'error') {
+      // eslint-disable-next-line no-console
+      console.error(prefix, entry)
+      return
+    }
+    if (entry.level === 'warn') {
+      // eslint-disable-next-line no-console
+      console.warn(prefix, entry)
+      return
+    }
+
+    // eslint-disable-next-line no-console
+    console.debug(prefix, entry)
   }
 
   private async get<T>(
@@ -477,6 +640,7 @@ export type {
   AuthResponse,
   CreateProjectRequest,
   ExportPreviewRequest,
+  JobEvent,
   JobResponse,
   MagicLinkRequest,
   MagicLinkResponse,

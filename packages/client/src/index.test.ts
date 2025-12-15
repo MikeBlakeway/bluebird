@@ -39,6 +39,76 @@ describe('BluebirdClient', () => {
     })
   })
 
+  describe('Debug logging', () => {
+    it('should call custom logger when debug is enabled', async () => {
+      const logger = vi.fn()
+      const debugClient = new BluebirdClient({
+        baseURL: 'http://test-api.com',
+        debug: true,
+        logger,
+      })
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => ({ success: true, message: 'Email sent' }),
+      })
+
+      await debugClient.requestMagicLink({ email: 'test@example.com' })
+
+      expect(logger).toHaveBeenCalled()
+      expect(logger.mock.calls.some((c) => c[0]?.message === 'HTTP request')).toBe(true)
+      expect(logger.mock.calls.some((c) => c[0]?.message === 'HTTP response')).toBe(true)
+    })
+  })
+
+  describe('Job Events (SSE)', () => {
+    it('should validate SSE payloads and call onEvent', () => {
+      class FakeEventSource {
+        public onopen: null | (() => void) = null
+        public onmessage: null | ((e: { data: string }) => void) = null
+        public onerror: null | (() => void) = null
+
+        constructor(
+          public url: string,
+          public init?: { withCredentials?: boolean }
+        ) {}
+
+        emitMessage(data: unknown) {
+          this.onmessage?.({ data: JSON.stringify(data) })
+        }
+      }
+
+      const prev = globalThis.EventSource
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      globalThis.EventSource = FakeEventSource as any
+
+      try {
+        const onEvent = vi.fn()
+        const onError = vi.fn()
+
+        const es = client.createJobEventsSource('job-123', {
+          withCredentials: true,
+          onEvent,
+          onError,
+        }) as unknown as FakeEventSource
+
+        es.emitMessage({
+          jobId: 'job-123',
+          stage: 'queued',
+          progress: 0,
+          timestamp: new Date().toISOString(),
+        })
+
+        expect(onEvent).toHaveBeenCalledTimes(1)
+        expect(onError).not.toHaveBeenCalled()
+      } finally {
+        globalThis.EventSource = prev
+      }
+    })
+  })
+
   describe('Auth Methods', () => {
     it('should request magic link', async () => {
       const mockResponse = { success: true, message: 'Email sent' }
