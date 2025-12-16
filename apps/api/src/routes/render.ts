@@ -7,9 +7,9 @@
 
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { ProjectIdSchema, JobIdSchema } from '@bluebird/types'
+import { ProjectIdSchema, JobIdSchema, RenderSectionRequestSchema } from '@bluebird/types'
 import { requireAuth, requireIdempotencyKey } from '../lib/middleware.js'
-import { enqueueMusicJob, enqueueVoiceJob } from '../lib/queue.js'
+import { enqueueMusicJob, enqueueVoiceJob, enqueueSectionJob } from '../lib/queue.js'
 
 const RenderMusicRequestSchema = z.object({
   projectId: ProjectIdSchema,
@@ -124,6 +124,38 @@ export function registerRenderRoutes(fastify: FastifyInstance) {
         jobId,
         status: 'queued' as const,
         message: 'Preview render queued',
+      })
+    }
+  )
+
+  /**
+   * POST /render/section
+   * Regenerate a specific section (music + vocals)
+   */
+  fastify.post(
+    '/render/section',
+    { preHandler: [requireAuth, requireIdempotencyKey] },
+    async (request, reply) => {
+      const parsed = RenderSectionRequestSchema.safeParse(request.body)
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Invalid request', details: parsed.error })
+      }
+
+      const { projectId, planId, sectionId, regen } = parsed.data
+
+      // Enqueue section regeneration job
+      const jobId = await enqueueSectionJob({
+        projectId,
+        planId,
+        sectionId,
+        regen,
+        isPro: false, // TODO: Check user tier
+      })
+
+      return reply.code(200).send({
+        jobId,
+        status: 'queued' as const,
+        message: `Section regeneration queued for ${sectionId}`,
       })
     }
   )
