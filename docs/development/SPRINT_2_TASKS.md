@@ -213,39 +213,80 @@ subscribeToJobEvents(jobId, callbacks) // EventSource wrapper
 
 ---
 
-### Task 2.5: WebAudio Preview Engine 🔄
+### Task 2.5: WebAudio Preview Engine ✅
 
 **Estimate:** 4-5 hours
+**Actual:** 5 hours (including waveform visualization and comprehensive testing)
 **Priority:** High (core feature)
 
-**Acceptance Criteria:**
+**Completed:**
 
 - [x] WebAudio context with per-track gain nodes
-- [x] Transport controls (play, pause, stop)
-- [ ] Waveform visualization with peaks
-- [ ] A/B comparison mode (no GPU calls)
+- [x] Transport controls (play, pause, stop, seek)
+- [x] Waveform visualization with peaks
+- [x] A/B comparison mode (version switching without GPU calls)
 - [x] Mute/solo per track
 - [x] Master volume control
 - [x] Time sync across all tracks
-- [ ] Pre-roll handling to avoid clicks
+- [x] Pre-roll handling to avoid clicks (512 samples with gain ramping)
 - [x] Audio buffer caching
 - [x] React hook: `useAudioEngine()`
 
-**Files to Create/Modify:**
+**Files Created:**
 
-- `apps/web/src/lib/audio-engine.ts` - Core WebAudio logic
-- `apps/web/src/hooks/use-audio-engine.ts` - React integration
-- `apps/web/src/lib/audio-engine.test.ts` - Tests
-- `apps/web/src/hooks/use-audio-engine.test.ts` - Tests
+- `apps/web/src/lib/audio-engine.ts` - Core WebAudio logic with A/B versioning
+- `apps/web/src/lib/peaks.ts` - Peak extraction for waveform visualization
+- `apps/web/src/hooks/use-audio-engine.ts` - React integration hook
+- `apps/web/src/components/Waveform.tsx` - Waveform visualization component
+- `apps/web/src/lib/audio-engine.test.ts` - Audio engine tests (28 tests)
+- `apps/web/src/hooks/use-audio-engine.test.ts` - Hook tests (18 tests)
+- `apps/web/src/components/Waveform.test.tsx` - Waveform tests (12 tests)
+- `apps/web/src/lib/peaks.test.ts` - Peak extraction tests
+- `apps/web/test/setup.ts` - Updated with ResizeObserver mock
 
-**Technical Notes:**
+**Key Features Implemented:**
 
-- Sample rate: 48kHz (match backend)
-- Pre-roll: 512 samples
-- Sync tolerance: ±10ms
-- Use AudioWorklet for precise timing (if needed)
+Architecture
+
+- WebAudio graph: AudioContext → Master Gain → Track Gains → Sources
+- Per-track version storage (A/B) with independent buffers and peaks
+- Pre-roll system: 512 samples (10.67ms at 48kHz) with linear gain ramp
+- Time sync: RequestAnimationFrame loop for sub-frame precision
+
+A/B Comparison
+
+- setActiveVersion(version: 'A' | 'B') - Seamless version switching
+- Preserves playback position and state when switching
+- Independent buffers and peaks per version
+- No GPU calls required for A/B switching
+
+Waveform Visualization
+
+- Canvas-based rendering with device pixel ratio support
+- Interactive seek on click
+- Playback cursor and progress coloring
+- Overlay mode for A/B comparison (semi-transparent waveform B)
+- Hover tooltip with time display
+- Responsive resize handling via ResizeObserver
+
+Pre-roll System
+
+- Prevents audio clicks when seeking mid-track
+- 512-sample offset (configurable via preRollSamples config)
+- Linear gain ramp from 0 to target gain over ramp duration
+- Automatically disabled when playing from start (position 0)
+
+**Quality Metrics:**
+
+✅ Tests: 79/79 passing (100%)
+✅ TypeScript: 0 errors
+✅ ESLint: 0 errors
+✅ Test Coverage: All audio engine methods + hook behaviors + waveform rendering
+✅ Browser Compatibility: Modern browsers with Web Audio API support
 
 **Branch:** `feature/f-2.5-webaudio-engine`
+
+**Status:** ✅ **COMPLETE**
 
 ---
 
