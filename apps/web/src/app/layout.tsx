@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
+import { HeroUIProvider } from '@heroui/react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { WebVitals } from '@/components/web-vitals'
 import './globals.css'
@@ -64,32 +65,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <WebVitals />
-          <div className="min-h-screen flex flex-col">
-            <header className="border-b">
-              <div className="container mx-auto px-4 py-4">
-                <nav className="flex items-center justify-between">
-                  <h1 className="text-2xl font-bold">🐦 Bluebird</h1>
-                  <div className="flex gap-4 items-center">
-                    <ThemeToggle />
-                  </div>
-                </nav>
-              </div>
-            </header>
-            <main className="flex-1">{children}</main>
-            <footer className="border-t py-6">
-              <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-                <p>&copy; 2024 Bluebird. Original music, powered by AI.</p>
-              </div>
-            </footer>
-          </div>
-        </ThemeProvider>
+        <HeroUIProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <WebVitals />
+            <div className="min-h-screen flex flex-col">
+              <header className="border-b">
+                <div className="container mx-auto px-4 py-4">
+                  <nav className="flex items-center justify-between">
+                    <h1 className="text-2xl font-bold">🐦 Bluebird</h1>
+                    <div className="flex gap-4 items-center">
+                      <ThemeToggle />
+                    </div>
+                  </nav>
+                </div>
+              </header>
+              <main className="flex-1">{children}</main>
+              <footer className="border-t py-6">
+                <div className="container mx-auto px-4 text-center text-sm text-default-500">
+                  <p>&copy; 2024 Bluebird. Original music, powered by AI.</p>
+                </div>
+              </footer>
+            </div>
+          </ThemeProvider>
+        </HeroUIProvider>
       </body>
     </html>
   )
