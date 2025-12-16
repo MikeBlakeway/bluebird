@@ -103,48 +103,79 @@
 
 ---
 
-### Task 2.3: API Client Package 🔄
+### Task 2.3: API Client Package ✅
 
 **Estimate:** 3-4 hours
+**Actual:** 4 hours (including schema additions and comprehensive testing)
 **Priority:** High (needed for data fetching)
 
-**Acceptance Criteria:**
+**Completed:**
 
 - [x] `packages/client` exports typed API client
 - [x] All endpoints typed from `@bluebird/types`
 - [x] Fetch wrapper with error handling
-- [ ] Automatic `Idempotency-Key` injection for POSTs (pending merge)
-- [ ] Request/response validation with Zod (pending merge)
-- [x] Retry logic for transient failures
-- [ ] Client-side logging (debug mode)
-- [x] Unit tests for client methods
+- [x] Automatic `Idempotency-Key` injection for POSTs
+- [x] Request/response validation with Zod
+- [x] Retry logic for transient failures (500/429 errors, exponential backoff)
+- [x] Client-side logging (debug mode with custom logger support)
+- [x] Unit tests for all client methods (31 tests, 100% passing)
 
-**Files to Create/Modify:**
+**Files Created/Modified:**
 
-- `packages/client/src/index.ts` - Main client export
-- `packages/client/src/client.ts` - Fetch wrapper
-- `packages/client/src/endpoints/*` - Typed endpoint functions
-- `packages/client/src/test/*` - Unit tests
+- `packages/client/src/index.ts` - Main client with all API methods
+- `packages/client/src/index.test.ts` - Comprehensive test suite (31 tests)
+- `packages/types/src/index.ts` - Added 4 new schemas:
+  - `RenderSectionRequestSchema`
+  - `UploadReferenceRequestSchema`
+  - `CheckSimilaritySimpleRequestSchema`
+  - `ExportTakeRequestSchema`
 
-**API Methods to Implement:**
+**API Methods Implemented:**
 
 ```typescript
-planSong(opts)
-renderPreview(opts)
-renderSection(opts)
-mixFinal(opts)
-exportTake(opts)
-getJobEvents(jobId) // EventSource wrapper
-uploadReference(file)
-checkSimilarity(takeId)
+// Auth
+requestMagicLink(email)
+verifyMagicLink(token)
+
+// Projects
+createProject(input)
+getProject(projectId)
+updateProject(projectId, input)
+deleteProject(projectId)
+listProjects()
+
+// Planning & Rendering
+planSong(request)
+renderPreview(request)
+renderMusic(request)
+renderVocals(request)
+renderSection(request) // NEW - Section-level regeneration
+
+// Remix & Similarity
+uploadReference(request) // NEW - Reference audio upload
+checkSimilarity(planId) // NEW - Similarity checking
+
+// Export & Mix
+exportPreview(request)
+exportTake(request) // NEW - Export with stems/markers
+mixFinal(request) // NEW - Final mix
+
+// Job Events
+getJobEventsUrl(jobId) // SSE URL generator
+subscribeToJobEvents(jobId, callbacks) // EventSource wrapper
 ```
 
-**Branch:** `feature/f-2.3-api-client`
+**Quality Metrics:**
 
-**Notes:**
+✅ Tests: 31/31 passing (100%)
+✅ TypeScript: 0 errors
+✅ ESLint: 0 errors, 0 warnings
+✅ Coverage: All methods tested with error scenarios
+✅ Build: Successful (dist/index.js + dist/index.d.ts)
 
-- Baseline typed client is on `develop`.
-- Follow-up hardening (Idempotency-Key injection + Zod request/response validation + runtime JS emit for schemas) is on `feature/f-2.3-api-client` and needs to be merged into `develop`.
+**Branch:** `feature/f-2.3-api-client` (merged to develop)
+
+**Status:** ✅ **COMPLETE**
 
 ---
 

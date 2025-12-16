@@ -9,8 +9,10 @@ import type {
   AnalyzeRequest,
   AnalysisResult,
   AuthResponse,
+  CheckSimilaritySimpleRequest,
   CreateProjectRequest,
   ExportPreviewRequest,
+  ExportTakeRequest,
   JobEvent,
   JobResponse,
   MagicLinkRequest,
@@ -21,8 +23,11 @@ import type {
   Project,
   RenderMusicRequest,
   RenderPreviewRequest,
+  RenderSectionRequest,
   RenderVoiceRequest,
+  SimilarityReport,
   UpdateProjectRequest,
+  UploadReferenceRequest,
   VerifyMagicLinkRequest,
 } from '@bluebird/types'
 
@@ -30,7 +35,10 @@ import {
   AnalyzeRequestSchema,
   AnalysisResultSchema,
   AuthResponseSchema,
+  CheckSimilaritySimpleRequestSchema,
   CreateProjectRequestSchema,
+  ExportPreviewRequestSchema,
+  ExportTakeRequestSchema,
   JobEventSchema,
   JobResponseSchema,
   MagicLinkRequestSchema,
@@ -41,10 +49,12 @@ import {
   ProjectSchema,
   RenderMusicRequestSchema,
   RenderPreviewRequestSchema,
+  RenderSectionRequestSchema,
   RenderVoiceRequestSchema,
+  SimilarityReportSchema,
   UpdateProjectRequestSchema,
+  UploadReferenceRequestSchema,
   VerifyMagicLinkRequestSchema,
-  ExportPreviewRequestSchema,
 } from '@bluebird/types'
 
 import { z } from 'zod'
@@ -377,6 +387,63 @@ export class BluebirdClient {
     return this.post('/export/preview', parsed.data, JobResponseSchema)
   }
 
+  /**
+   * Export final take (master + optional stems)
+   * Note: May return 409 if similarity check blocks export
+   */
+  async exportTake(request: ExportTakeRequest): Promise<JobResponse> {
+    const parsed = ExportTakeRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/export', parsed.data, JobResponseSchema)
+  }
+
+  // ==========================================================================
+  // Section Render Methods
+  // ==========================================================================
+
+  /**
+   * Render a specific section (for regeneration)
+   */
+  async renderSection(request: RenderSectionRequest): Promise<JobResponse> {
+    const parsed = RenderSectionRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/render/section', parsed.data, JobResponseSchema)
+  }
+
+  // ==========================================================================
+  // Remix/Reference Methods
+  // ==========================================================================
+
+  /**
+   * Upload reference audio for remix feature extraction
+   */
+  async uploadReference(request: UploadReferenceRequest): Promise<JobResponse> {
+    const parsed = UploadReferenceRequestSchema.safeParse(request)
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/remix/reference/upload', parsed.data, JobResponseSchema)
+  }
+
+  /**
+   * Check similarity against reference (pre-export gating)
+   */
+  async checkSimilarity(planId: string): Promise<SimilarityReport> {
+    const parsed = CheckSimilaritySimpleRequestSchema.safeParse({ planId })
+    if (!parsed.success) {
+      throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
+    }
+
+    return this.post('/check/similarity', parsed.data, SimilarityReportSchema)
+  }
+
   // ==========================================================================
   // Job Methods
   // ==========================================================================
@@ -644,8 +711,10 @@ export type {
   AnalyzeRequest,
   AnalysisResult,
   AuthResponse,
+  CheckSimilaritySimpleRequest,
   CreateProjectRequest,
   ExportPreviewRequest,
+  ExportTakeRequest,
   JobEvent,
   JobResponse,
   MagicLinkRequest,
@@ -656,7 +725,10 @@ export type {
   Project,
   RenderMusicRequest,
   RenderPreviewRequest,
+  RenderSectionRequest,
   RenderVoiceRequest,
+  SimilarityReport,
   UpdateProjectRequest,
+  UploadReferenceRequest,
   VerifyMagicLinkRequest,
 }

@@ -488,6 +488,184 @@ describe('BluebirdClient', () => {
     })
   })
 
+  describe('Section Render Methods', () => {
+    it('should render a section', async () => {
+      const mockResponse = {
+        jobId: 'section-job-123',
+        status: 'queued',
+      }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockResponse,
+      })
+
+      const result = await client.renderSection({
+        projectId,
+        planId: jobId,
+        sectionId: 'section-0',
+        regen: true,
+      })
+
+      expect(result).toEqual(mockResponse)
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://test-api.com/render/section',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Idempotency-Key': expect.any(String),
+          }),
+        })
+      )
+    })
+  })
+
+  describe('Remix Methods', () => {
+    it('should upload reference', async () => {
+      const mockResponse = {
+        jobId: 'ref-job-123',
+        status: 'queued',
+      }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockResponse,
+      })
+
+      const result = await client.uploadReference({
+        projectId,
+        planId: jobId,
+        referenceUrl: 'https://example.com/ref.wav',
+        durationSec: 25,
+      })
+
+      expect(result).toEqual(mockResponse)
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://test-api.com/remix/reference/upload',
+        expect.objectContaining({
+          method: 'POST',
+        })
+      )
+    })
+
+    it('should check similarity', async () => {
+      const mockReport = {
+        jobId,
+        referenceKey: 's3://bucket/ref.wav',
+        scores: {
+          melody: 0.25,
+          rhythm: 0.15,
+          combined: 0.2,
+        },
+        verdict: 'pass' as const,
+        reason: 'Melody and rhythm scores below threshold',
+        checkedAt: new Date().toISOString(),
+      }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockReport,
+      })
+
+      const result = await client.checkSimilarity(jobId)
+
+      expect(result).toEqual(mockReport)
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://test-api.com/check/similarity',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ planId: jobId }),
+        })
+      )
+    })
+  })
+
+  describe('Export Methods', () => {
+    it('should export preview', async () => {
+      const mockResponse = {
+        jobId: 'export-preview-123',
+        status: 'queued',
+      }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockResponse,
+      })
+
+      const result = await client.exportPreview({
+        projectId,
+        takeId: 'take-123',
+        format: 'mp3',
+        includeStems: false,
+      })
+
+      expect(result).toEqual(mockResponse)
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://test-api.com/export/preview',
+        expect.objectContaining({
+          method: 'POST',
+        })
+      )
+    })
+
+    it('should export take with stems', async () => {
+      const mockResponse = {
+        jobId: 'export-job-123',
+        status: 'queued',
+      }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockResponse,
+      })
+
+      const result = await client.exportTake({
+        planId: jobId,
+        includeStems: true,
+        format: ['wav24', 'mp3_320'],
+        includeMarkers: true,
+      })
+
+      expect(result).toEqual(mockResponse)
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://test-api.com/export',
+        expect.objectContaining({
+          method: 'POST',
+        })
+      )
+    })
+  })
+
+  describe('Mix Methods', () => {
+    it('should mix final', async () => {
+      const mockResponse = {
+        jobId: 'mix-job-123',
+        status: 'queued',
+      }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockResponse,
+      })
+
+      const result = await client.mixFinal({
+        projectId,
+        jobId: jobId,
+        takeId: 'take-123',
+        targetLUFS: -14,
+        truePeakLimit: -1,
+      })
+
+      expect(result).toEqual(mockResponse)
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://test-api.com/mix/final',
+        expect.objectContaining({
+          method: 'POST',
+        })
+      )
+    })
+  })
+
   describe('Error Handling', () => {
     it('should throw BluebirdAPIError on HTTP error', async () => {
       mockFetch.mockResolvedValueOnce({

@@ -311,6 +311,35 @@ export const RenderVoiceRequestSchema = z.object({
 })
 export type RenderVoiceRequest = z.infer<typeof RenderVoiceRequestSchema>
 
+export const RenderSectionRequestSchema = z.object({
+  projectId: ProjectIdSchema,
+  planId: JobIdSchema,
+  sectionId: z.string().min(1),
+  regen: z.boolean().default(true),
+})
+export type RenderSectionRequest = z.infer<typeof RenderSectionRequestSchema>
+
+export const UploadReferenceRequestSchema = z.object({
+  projectId: ProjectIdSchema,
+  planId: JobIdSchema,
+  referenceUrl: z.string().url().optional(),
+  durationSec: z.number().min(1).max(30),
+})
+export type UploadReferenceRequest = z.infer<typeof UploadReferenceRequestSchema>
+
+export const CheckSimilaritySimpleRequestSchema = z.object({
+  planId: JobIdSchema,
+})
+export type CheckSimilaritySimpleRequest = z.infer<typeof CheckSimilaritySimpleRequestSchema>
+
+export const ExportTakeRequestSchema = z.object({
+  planId: JobIdSchema,
+  includeStems: z.boolean().default(false),
+  format: z.array(z.enum(['wav24', 'mp3_320'])).default(['mp3_320']),
+  includeMarkers: z.boolean().default(true),
+})
+export type ExportTakeRequest = z.infer<typeof ExportTakeRequestSchema>
+
 export const JobResponseSchema = z.object({
   jobId: JobIdSchema,
   status: z.string(),
