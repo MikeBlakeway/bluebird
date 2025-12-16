@@ -28,8 +28,8 @@ describe('LyricsForm', () => {
     )
 
     expect(screen.getByLabelText('Lyrics')).toBeDefined()
-    expect(screen.getByText('Genre')).toBeDefined()
-    expect(screen.getByText('AI Artist')).toBeDefined()
+    expect(screen.getAllByText('Genre').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('AI Artist').length).toBeGreaterThan(0)
   })
 
   it('disables submit button when form is invalid', () => {

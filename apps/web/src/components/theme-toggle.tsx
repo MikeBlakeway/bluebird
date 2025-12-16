@@ -3,8 +3,7 @@
 import * as React from 'react'
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
-
-import { Button } from '@bluebird/ui'
+import { Button } from '@heroui/react'
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
@@ -21,8 +20,8 @@ export function ThemeToggle() {
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
+      isIconOnly
+      variant="light"
       onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
       aria-label="Toggle theme"
     >

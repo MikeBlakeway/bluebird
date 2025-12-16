@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@bluebird/ui'
+import { Select, SelectItem } from '@heroui/react'
 
 interface GenreSelectProps {
   value: string
@@ -25,25 +25,20 @@ const GENRES = [
 
 export function GenreSelect({ value, onChange, disabled, className }: GenreSelectProps) {
   return (
-    <div className={cn('space-y-2', className)}>
-      <label
-        htmlFor="genre"
-        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
-        Genre
-      </label>
-      <Select value={value} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger id="genre" className="h-10">
-          <SelectValue placeholder="Select a genre..." />
-        </SelectTrigger>
-        <SelectContent>
-          {GENRES.map((genre) => (
-            <SelectItem key={genre.value} value={genre.value}>
-              {genre.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select
+      label="Genre"
+      placeholder="Select a genre..."
+      selectedKeys={value ? [value] : []}
+      onSelectionChange={(keys) => {
+        const selected = Array.from(keys)[0]
+        if (selected) onChange(selected as string)
+      }}
+      isDisabled={disabled}
+      className={cn(className)}
+    >
+      {GENRES.map((genre) => (
+        <SelectItem key={genre.value}>{genre.label}</SelectItem>
+      ))}
+    </Select>
   )
 }

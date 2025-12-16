@@ -1,8 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Button, type ButtonProps } from '@bluebird/ui'
-import { Loader2 } from 'lucide-react'
+import { Button, type ButtonProps } from '@heroui/react'
 import { cn } from '@/lib/utils'
 
 interface GenerateButtonProps extends Omit<ButtonProps, 'type'> {
@@ -16,7 +15,7 @@ export function GenerateButton({
   isLoading,
   loadingText = 'Generating...',
   children = 'Generate Preview',
-  disabled,
+  isDisabled,
   className,
   type = 'button',
   ...props
@@ -24,12 +23,14 @@ export function GenerateButton({
   return (
     <Button
       type={type}
-      disabled={isLoading || disabled}
-      className={cn('gap-2', className)}
+      isLoading={isLoading}
+      isDisabled={isLoading || isDisabled}
+      color="primary"
+      size="lg"
+      className={cn(className)}
       {...props}
     >
-      {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-      <span>{isLoading ? loadingText : children}</span>
+      {isLoading ? loadingText : children}
     </Button>
   )
 }
