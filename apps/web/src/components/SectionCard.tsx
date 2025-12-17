@@ -8,6 +8,8 @@
 import { Button, Card, CardBody, CardHeader } from '@heroui/react'
 import { Music, Mic, RotateCw } from 'lucide-react'
 import { LockToggle } from './LockToggle'
+import { ABToggle } from './ABToggle'
+import type { PlaybackVersion } from '@/lib/audio-engine'
 
 // ============================================================================
 // Types
@@ -36,6 +38,15 @@ export interface SectionCardProps {
   isRegenerating?: boolean
   /** Whether regeneration is available */
   canRegenerate?: boolean
+
+  /** Active playback version for this section (A/B) */
+  activeVersion?: PlaybackVersion
+  /** Whether Version B is available for this section */
+  isVersionBAvailable?: boolean
+  /** Callback to switch playback version for this section */
+  onSelectVersion?: (sectionIdx: number, version: PlaybackVersion) => void
+  /** Callback when the section card receives focus (for keyboard shortcuts) */
+  onFocusSection?: (sectionIdx: number) => void
 }
 
 // ============================================================================
@@ -50,6 +61,10 @@ export function SectionCard({
   onRegenerate,
   isRegenerating = false,
   canRegenerate = true,
+  activeVersion = 'A',
+  isVersionBAvailable = false,
+  onSelectVersion,
+  onFocusSection,
 }: SectionCardProps) {
   const handleRegenerate = () => {
     if (isLocked) {
@@ -62,6 +77,10 @@ export function SectionCard({
 
   const isRegenDisabled = isLocked || isRegenerating || !canRegenerate
 
+  const handleSelectVersion = (version: PlaybackVersion) => {
+    onSelectVersion?.(sectionIdx, version)
+  }
+
   return (
     <Card
       className={`
@@ -71,6 +90,7 @@ export function SectionCard({
       aria-label={`Section ${sectionIdx + 1}: ${section.name}`}
       aria-readonly={isLocked}
       tabIndex={0}
+      onFocus={() => onFocusSection?.(sectionIdx)}
     >
       <CardHeader className="flex-row items-center justify-between gap-2">
         <div className="flex-1">
@@ -107,6 +127,16 @@ export function SectionCard({
             </div>
           )}
         </div>
+
+        {/* A/B Comparison */}
+        {onSelectVersion && (
+          <ABToggle
+            activeVersion={activeVersion}
+            onChange={handleSelectVersion}
+            disabled={isRegenerating}
+            isBAvailable={isVersionBAvailable}
+          />
+        )}
 
         {/* Regenerate button */}
         {onRegenerate && (

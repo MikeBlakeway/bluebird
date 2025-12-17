@@ -1,9 +1,11 @@
 import { FastifyInstance, FastifyReply } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import {
   CreateProjectRequestSchema,
   ProjectIdSchema,
   UpdateProjectRequestSchema,
+  ProjectSchema,
   type Project,
 } from '@bluebird/types'
 import { prisma } from '../lib/db.js'
@@ -29,12 +31,7 @@ export async function createProjectHandler(request: AuthenticatedRequest, reply:
     return reply.code(401).send({ message: 'Unauthorized' })
   }
 
-  const parsed = CreateProjectRequestSchema.safeParse(request.body)
-  if (!parsed.success) {
-    return reply.code(400).send({ message: 'Invalid request', details: parsed.error.format() })
-  }
-
-  const body = parsed.data
+  const body = request.body as z.infer<typeof CreateProjectRequestSchema>
 
   try {
     const project = await prisma.project.create({
@@ -272,13 +269,85 @@ export async function deleteProjectHandler(request: AuthenticatedRequest, reply:
 }
 
 export function registerProjectRoutes(fastify: FastifyInstance) {
-  fastify.post(
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
+
+  app.post(
     '/projects',
-    { preHandler: [requireAuth, requireIdempotencyKey] },
+    {
+      schema: {
+        body: CreateProjectRequestSchema,
+        response: {
+          201: ProjectSchema,
+        },
+        tags: ['Projects'],
+        description: 'Create a new project',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
     createProjectHandler
   )
-  fastify.get('/projects', { preHandler: [requireAuth] }, listProjectsHandler)
-  fastify.get('/projects/:projectId', { preHandler: [requireAuth] }, getProjectHandler)
-  fastify.put('/projects/:projectId', { preHandler: [requireAuth] }, updateProjectHandler)
-  fastify.delete('/projects/:projectId', { preHandler: [requireAuth] }, deleteProjectHandler)
+  app.get(
+    '/projects',
+    {
+      schema: {
+        querystring: ListProjectsQuerySchema,
+        response: {
+          200: z.array(ProjectSchema),
+        },
+        tags: ['Projects'],
+        description: 'List all projects',
+      },
+      preHandler: [requireAuth],
+    },
+    listProjectsHandler
+  )
+  app.get(
+    '/projects/:projectId',
+    {
+      schema: {
+        params: ProjectParamsSchema,
+        response: {
+          200: ProjectSchema,
+          404: z.object({ message: z.string() }),
+        },
+        tags: ['Projects'],
+        description: 'Get a project by ID',
+      },
+      preHandler: [requireAuth],
+    },
+    getProjectHandler
+  )
+  app.put(
+    '/projects/:projectId',
+    {
+      schema: {
+        params: ProjectParamsSchema,
+        body: UpdateProjectRequestSchema,
+        response: {
+          200: ProjectSchema,
+          404: z.object({ message: z.string() }),
+        },
+        tags: ['Projects'],
+        description: 'Update a project',
+      },
+      preHandler: [requireAuth],
+    },
+    updateProjectHandler
+  )
+  app.delete(
+    '/projects/:projectId',
+    {
+      schema: {
+        params: ProjectParamsSchema,
+        response: {
+          204: z.null(),
+          404: z.object({ message: z.string() }),
+        },
+        tags: ['Projects'],
+        description: 'Delete a project',
+      },
+      preHandler: [requireAuth],
+    },
+    deleteProjectHandler
+  )
 }

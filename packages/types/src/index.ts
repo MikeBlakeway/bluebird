@@ -64,7 +64,7 @@ export type VocalScore = z.infer<typeof VocalScoreSchema>
 // Analyzer (Lyrics Parsing)
 // ============================================================================
 
-export const AnalysisResultSchema = z.object({
+const AnalysisResultSchemaInternal = z.object({
   projectId: ProjectIdSchema,
   lyrics: z.string(),
   lines: z.array(
@@ -82,13 +82,17 @@ export const AnalysisResultSchema = z.object({
   seedPhrase: z.string().optional(), // Main hook/theme
   analyzedAt: z.string().datetime(),
 })
-export type AnalysisResult = z.infer<typeof AnalysisResultSchema>
+export type AnalysisResult = z.infer<typeof AnalysisResultSchemaInternal>
+export const AnalysisResultSchema: z.ZodType<AnalysisResult, z.ZodTypeDef, unknown> =
+  AnalysisResultSchemaInternal
 
-export const AnalyzeRequestSchema = z.object({
+const AnalyzeRequestSchemaInternal = z.object({
   projectId: ProjectIdSchema,
   lyrics: z.string().min(10).max(5000),
 })
-export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>
+export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchemaInternal>
+export const AnalyzeRequestSchema: z.ZodType<AnalyzeRequest, z.ZodTypeDef, unknown> =
+  AnalyzeRequestSchemaInternal
 
 // ============================================================================
 // Remix & Reference
@@ -119,7 +123,7 @@ export type SimilarityScore = z.infer<typeof SimilarityScoreSchema>
 export const SimilarityVerdictSchema = z.enum(['pass', 'borderline', 'block'])
 export type SimilarityVerdict = z.infer<typeof SimilarityVerdictSchema>
 
-export const SimilarityReportSchema = z.object({
+const SimilarityReportSchemaInternal = z.object({
   jobId: JobIdSchema,
   referenceKey: z.string(),
   scores: SimilarityScoreSchema,
@@ -128,7 +132,9 @@ export const SimilarityReportSchema = z.object({
   recommendations: z.array(z.string()).optional(),
   checkedAt: z.string().datetime(),
 })
-export type SimilarityReport = z.infer<typeof SimilarityReportSchema>
+export type SimilarityReport = z.infer<typeof SimilarityReportSchemaInternal>
+export const SimilarityReportSchema: z.ZodType<SimilarityReport, z.ZodTypeDef, unknown> =
+  SimilarityReportSchemaInternal
 
 // ============================================================================
 // Export & Delivery
@@ -182,7 +188,7 @@ export const JobStageSchema = z.enum([
 ])
 export type JobStage = z.infer<typeof JobStageSchema>
 
-export const JobEventSchema = z.object({
+const JobEventSchemaInternal = z.object({
   jobId: JobIdSchema,
   stage: JobStageSchema,
   progress: z.number().min(0).max(1),
@@ -191,42 +197,55 @@ export const JobEventSchema = z.object({
   duration: z.number().optional(), // milliseconds
   error: z.string().optional(),
 })
-export type JobEvent = z.infer<typeof JobEventSchema>
+export type JobEvent = z.infer<typeof JobEventSchemaInternal>
+export const JobEventSchema: z.ZodType<JobEvent, z.ZodTypeDef, unknown> = JobEventSchemaInternal
 
 // ============================================================================
 // Authentication & User
 // ============================================================================
 
-export const UserSchema = z.object({
+const UserSchemaInternal = z.object({
   id: IdSchema,
   email: z.string().email(),
   name: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 })
-export type User = z.infer<typeof UserSchema>
+export type User = z.infer<typeof UserSchemaInternal>
+export const UserSchema: z.ZodType<User, z.ZodTypeDef, unknown> = UserSchemaInternal
 
-export const MagicLinkRequestSchema = z.object({
+const MagicLinkRequestSchemaInternal = z.object({
   email: z.string().email(),
 })
-export type MagicLinkRequest = z.infer<typeof MagicLinkRequestSchema>
+export type MagicLinkRequest = z.infer<typeof MagicLinkRequestSchemaInternal>
+export const MagicLinkRequestSchema: z.ZodType<MagicLinkRequest, z.ZodTypeDef, unknown> =
+  MagicLinkRequestSchemaInternal
 
-export const MagicLinkResponseSchema = z.object({
+const MagicLinkResponseSchemaInternal = z.object({
   success: z.boolean(),
   message: z.string(),
 })
-export type MagicLinkResponse = z.infer<typeof MagicLinkResponseSchema>
+export type MagicLinkResponse = z.infer<typeof MagicLinkResponseSchemaInternal>
+export const MagicLinkResponseSchema: z.ZodType<MagicLinkResponse, z.ZodTypeDef, unknown> =
+  MagicLinkResponseSchemaInternal
 
-export const VerifyMagicLinkRequestSchema = z.object({
+const VerifyMagicLinkRequestSchemaInternal = z.object({
   token: z.string(),
 })
-export type VerifyMagicLinkRequest = z.infer<typeof VerifyMagicLinkRequestSchema>
+export type VerifyMagicLinkRequest = z.infer<typeof VerifyMagicLinkRequestSchemaInternal>
+export const VerifyMagicLinkRequestSchema: z.ZodType<
+  VerifyMagicLinkRequest,
+  z.ZodTypeDef,
+  unknown
+> = VerifyMagicLinkRequestSchemaInternal
 
-export const AuthResponseSchema = z.object({
+const AuthResponseSchemaInternal = z.object({
   user: UserSchema,
   token: z.string(),
 })
-export type AuthResponse = z.infer<typeof AuthResponseSchema>
+export type AuthResponse = z.infer<typeof AuthResponseSchemaInternal>
+export const AuthResponseSchema: z.ZodType<AuthResponse, z.ZodTypeDef, unknown> =
+  AuthResponseSchemaInternal
 
 export const JWTPayloadSchema = z.object({
   userId: IdSchema,
@@ -240,7 +259,7 @@ export type JWTPayload = z.infer<typeof JWTPayloadSchema>
 // Project
 // ============================================================================
 
-export const ProjectSchema = z.object({
+const ProjectSchemaInternal = z.object({
   id: ProjectIdSchema,
   userId: IdSchema,
   name: z.string().min(1).max(255),
@@ -249,103 +268,136 @@ export const ProjectSchema = z.object({
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 })
-export type Project = z.infer<typeof ProjectSchema>
+export type Project = z.infer<typeof ProjectSchemaInternal>
+export const ProjectSchema: z.ZodType<Project, z.ZodTypeDef, unknown> = ProjectSchemaInternal
 
-export const CreateProjectRequestSchema = z.object({
+const CreateProjectRequestSchemaInternal = z.object({
   name: z.string().min(1).max(255),
   lyrics: z.string().min(10).max(5000),
   genre: z.string().min(1).max(100),
 })
-export type CreateProjectRequest = z.infer<typeof CreateProjectRequestSchema>
+export type CreateProjectRequest = z.infer<typeof CreateProjectRequestSchemaInternal>
+export const CreateProjectRequestSchema: z.ZodType<CreateProjectRequest, z.ZodTypeDef, unknown> =
+  CreateProjectRequestSchemaInternal
 
-export const UpdateProjectRequestSchema = z.object({
+const UpdateProjectRequestSchemaInternal = z.object({
   name: z.string().min(1).max(255).optional(),
   lyrics: z.string().min(10).max(5000).optional(),
   genre: z.string().min(1).max(100).optional(),
 })
-export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>
+export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchemaInternal>
+export const UpdateProjectRequestSchema: z.ZodType<UpdateProjectRequest, z.ZodTypeDef, unknown> =
+  UpdateProjectRequestSchemaInternal
 
 // ============================================================================
 // API Request/Response
 // ============================================================================
 
-export const PlanSongRequestSchema = z.object({
+const PlanSongRequestSchemaInternal = z.object({
   projectId: ProjectIdSchema,
   lyrics: z.string().min(10).max(5000),
   genre: z.string().min(1),
   referenceKey: z.string().optional(), // S3 path to reference audio features
   seed: z.number().int().optional(),
 })
-export type PlanSongRequest = z.infer<typeof PlanSongRequestSchema>
+export type PlanSongRequest = z.infer<typeof PlanSongRequestSchemaInternal>
+export const PlanSongRequestSchema: z.ZodType<PlanSongRequest, z.ZodTypeDef, unknown> =
+  PlanSongRequestSchemaInternal
 
-export const PlanSongResponseSchema = z.object({
+const PlanSongResponseSchemaInternal = z.object({
   jobId: JobIdSchema,
   projectId: ProjectIdSchema,
   status: z.string(),
   plan: ArrangementSpecSchema.optional(),
   vocalization: VocalScoreSchema.optional(),
 })
-export type PlanSongResponse = z.infer<typeof PlanSongResponseSchema>
+export type PlanSongResponse = z.infer<typeof PlanSongResponseSchemaInternal>
+export const PlanSongResponseSchema: z.ZodType<PlanSongResponse, z.ZodTypeDef, unknown> =
+  PlanSongResponseSchemaInternal
 
-export const RenderPreviewRequestSchema = z.object({
+const RenderPreviewRequestSchemaInternal = z.object({
   projectId: ProjectIdSchema,
   jobId: JobIdSchema,
 })
-export type RenderPreviewRequest = z.infer<typeof RenderPreviewRequestSchema>
+export type RenderPreviewRequest = z.infer<typeof RenderPreviewRequestSchemaInternal>
+export const RenderPreviewRequestSchema: z.ZodType<RenderPreviewRequest, z.ZodTypeDef, unknown> =
+  RenderPreviewRequestSchemaInternal
 
-export const RenderMusicRequestSchema = z.object({
+const RenderMusicRequestSchemaInternal = z.object({
   projectId: ProjectIdSchema,
   jobId: JobIdSchema,
   sectionIndex: z.number().int().min(0),
   instrument: z.string().min(1),
   seed: z.number().int().optional(),
 })
-export type RenderMusicRequest = z.infer<typeof RenderMusicRequestSchema>
+export type RenderMusicRequest = z.infer<typeof RenderMusicRequestSchemaInternal>
+export const RenderMusicRequestSchema: z.ZodType<RenderMusicRequest, z.ZodTypeDef, unknown> =
+  RenderMusicRequestSchemaInternal
 
-export const RenderVoiceRequestSchema = z.object({
+const RenderVoiceRequestSchemaInternal = z.object({
   projectId: ProjectIdSchema,
   jobId: JobIdSchema,
   sectionIndex: z.number().int().min(0),
   lyrics: z.string().min(1),
   seed: z.number().int().optional(),
 })
-export type RenderVoiceRequest = z.infer<typeof RenderVoiceRequestSchema>
+export type RenderVoiceRequest = z.infer<typeof RenderVoiceRequestSchemaInternal>
+export const RenderVoiceRequestSchema: z.ZodType<RenderVoiceRequest, z.ZodTypeDef, unknown> =
+  RenderVoiceRequestSchemaInternal
 
-export const RenderSectionRequestSchema = z.object({
+const RenderSectionRequestSchemaInternal = z.object({
   projectId: ProjectIdSchema,
   planId: JobIdSchema,
   sectionId: z.string().min(1),
   regen: z.boolean().default(true),
 })
-export type RenderSectionRequest = z.infer<typeof RenderSectionRequestSchema>
+export type RenderSectionRequest = z.infer<typeof RenderSectionRequestSchemaInternal>
+export const RenderSectionRequestSchema: z.ZodType<RenderSectionRequest, z.ZodTypeDef, unknown> =
+  RenderSectionRequestSchemaInternal
 
-export const UploadReferenceRequestSchema = z.object({
+const UploadReferenceRequestSchemaInternal = z.object({
   projectId: ProjectIdSchema,
   planId: JobIdSchema,
   referenceUrl: z.string().url().optional(),
   durationSec: z.number().min(1).max(30),
 })
-export type UploadReferenceRequest = z.infer<typeof UploadReferenceRequestSchema>
+export type UploadReferenceRequest = z.infer<typeof UploadReferenceRequestSchemaInternal>
+export const UploadReferenceRequestSchema: z.ZodType<
+  UploadReferenceRequest,
+  z.ZodTypeDef,
+  unknown
+> = UploadReferenceRequestSchemaInternal
 
-export const CheckSimilaritySimpleRequestSchema = z.object({
+const CheckSimilaritySimpleRequestSchemaInternal = z.object({
   planId: JobIdSchema,
 })
-export type CheckSimilaritySimpleRequest = z.infer<typeof CheckSimilaritySimpleRequestSchema>
+export type CheckSimilaritySimpleRequest = z.infer<
+  typeof CheckSimilaritySimpleRequestSchemaInternal
+>
+export const CheckSimilaritySimpleRequestSchema: z.ZodType<
+  CheckSimilaritySimpleRequest,
+  z.ZodTypeDef,
+  unknown
+> = CheckSimilaritySimpleRequestSchemaInternal
 
-export const ExportTakeRequestSchema = z.object({
+const ExportTakeRequestSchemaInternal = z.object({
   planId: JobIdSchema,
   includeStems: z.boolean().default(false),
   format: z.array(z.enum(['wav24', 'mp3_320'])).default(['mp3_320']),
   includeMarkers: z.boolean().default(true),
 })
-export type ExportTakeRequest = z.infer<typeof ExportTakeRequestSchema>
+export type ExportTakeRequest = z.infer<typeof ExportTakeRequestSchemaInternal>
+export const ExportTakeRequestSchema: z.ZodType<ExportTakeRequest, z.ZodTypeDef, unknown> =
+  ExportTakeRequestSchemaInternal
 
-export const JobResponseSchema = z.object({
+const JobResponseSchemaInternal = z.object({
   jobId: JobIdSchema,
   status: z.string(),
   message: z.string().optional(),
 })
-export type JobResponse = z.infer<typeof JobResponseSchema>
+export type JobResponse = z.infer<typeof JobResponseSchemaInternal>
+export const JobResponseSchema: z.ZodType<JobResponse, z.ZodTypeDef, unknown> =
+  JobResponseSchemaInternal
 
 export const CheckSimilarityRequestSchema = z.object({
   jobId: JobIdSchema,
@@ -364,19 +416,23 @@ export const ExportRequestSchema = z.object({
 })
 export type ExportRequest = z.infer<typeof ExportRequestSchema>
 
-export const MixFinalRequestSchema = z.object({
+const MixFinalRequestSchemaInternal = z.object({
   projectId: ProjectIdSchema,
   jobId: JobIdSchema,
   takeId: z.string().min(1),
   targetLUFS: z.number().min(-24).max(-6).default(-14),
   truePeakLimit: z.number().min(-2).max(0).default(-1),
 })
-export type MixFinalRequest = z.infer<typeof MixFinalRequestSchema>
+export type MixFinalRequest = z.infer<typeof MixFinalRequestSchemaInternal>
+export const MixFinalRequestSchema: z.ZodType<MixFinalRequest, z.ZodTypeDef, unknown> =
+  MixFinalRequestSchemaInternal
 
-export const ExportPreviewRequestSchema = z.object({
+const ExportPreviewRequestSchemaInternal = z.object({
   projectId: ProjectIdSchema,
   takeId: z.string().min(1),
   format: z.enum(['wav', 'mp3']).default('mp3'),
   includeStems: z.boolean().default(false),
 })
-export type ExportPreviewRequest = z.infer<typeof ExportPreviewRequestSchema>
+export type ExportPreviewRequest = z.infer<typeof ExportPreviewRequestSchemaInternal>
+export const ExportPreviewRequestSchema: z.ZodType<ExportPreviewRequest, z.ZodTypeDef, unknown> =
+  ExportPreviewRequestSchemaInternal

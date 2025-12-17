@@ -157,4 +157,52 @@ describe('SectionCard', () => {
     const card = screen.getByLabelText('Section 1: Intro')
     expect(card.getAttribute('aria-readonly')).toBe('true')
   })
+
+  it('shows A/B toggle when onSelectVersion provided', () => {
+    render(
+      <SectionCard
+        {...defaultProps}
+        onSelectVersion={vi.fn()}
+        activeVersion="A"
+        isVersionBAvailable={true}
+      />
+    )
+
+    expect(screen.getByLabelText(/a\/b version toggle/i)).not.toBeNull()
+    expect(screen.getByRole('button', { name: /switch to version a/i })).not.toBeNull()
+    expect(screen.getByRole('button', { name: /switch to version b/i })).not.toBeNull()
+  })
+
+  it('calls onSelectVersion with sectionIdx and version', () => {
+    const onSelectVersion = vi.fn()
+
+    render(
+      <SectionCard
+        {...defaultProps}
+        sectionIdx={1}
+        onSelectVersion={onSelectVersion}
+        activeVersion="A"
+        isVersionBAvailable={true}
+      />
+    )
+
+    const buttonB = screen.getByRole('button', { name: /switch to version b/i })
+    fireEvent.click(buttonB)
+
+    expect(onSelectVersion).toHaveBeenCalledWith(1, 'B')
+  })
+
+  it('disables Version B when unavailable', () => {
+    render(
+      <SectionCard
+        {...defaultProps}
+        onSelectVersion={vi.fn()}
+        activeVersion="A"
+        isVersionBAvailable={false}
+      />
+    )
+
+    const buttonB = screen.getByRole('button', { name: /version b unavailable/i })
+    expect((buttonB as HTMLButtonElement).disabled).toBe(true)
+  })
 })

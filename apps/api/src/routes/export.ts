@@ -5,18 +5,13 @@
  */
 
 import type { FastifyInstance } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ProjectIdSchema, TakeIdSchema } from '@bluebird/types'
+import { TakeIdSchema, ExportPreviewRequestSchema } from '@bluebird/types'
 import { requireAuth, requireIdempotencyKey } from '../lib/middleware.js'
 import { enqueueExportJob } from '../lib/queue.js'
 import { createRouteLogger } from '../lib/logger.js'
 
-const ExportPreviewRequestSchema = z.object({
-  projectId: ProjectIdSchema,
-  takeId: z.string().min(1),
-  format: z.enum(['wav', 'mp3']).default('mp3'),
-  includeStems: z.boolean().default(false),
-})
 const ExportStatusParamsSchema = z.object({
   takeId: TakeIdSchema,
 })
@@ -24,20 +19,33 @@ const ExportStatusParamsSchema = z.object({
 const log = createRouteLogger('/export', 'routes')
 
 export function registerExportRoutes(fastify: FastifyInstance) {
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
+
   /**
    * POST /export/preview
    * Export preview with presigned URLs for download
    */
-  fastify.post(
+  app.post(
     '/export/preview',
-    { preHandler: [requireAuth, requireIdempotencyKey] },
+    {
+      schema: {
+        body: ExportPreviewRequestSchema,
+        response: {
+          200: z.object({
+            jobId: z.string(),
+            status: z.literal('queued'),
+            message: z.string(),
+          }),
+          400: z.object({ error: z.string() }),
+          500: z.object({ error: z.string() }),
+        },
+        tags: ['Export'],
+        description: 'Export preview',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
     async (request, reply) => {
-      const parsed = ExportPreviewRequestSchema.safeParse(request.body)
-      if (!parsed.success) {
-        return reply.code(400).send({ error: 'Invalid request', details: parsed.error.format() })
-      }
-
-      const { projectId, takeId, format, includeStems } = parsed.data
+      const { projectId, takeId, format, includeStems } = request.body
 
       try {
         const jobId = request.idempotencyKey ?? `export:${projectId}:${takeId}:${Date.now()}`
@@ -68,27 +76,43 @@ export function registerExportRoutes(fastify: FastifyInstance) {
    * GET /export/:takeId/status
    * Check export status and get presigned URLs when ready
    */
-  fastify.get('/export/:takeId/status', { preHandler: requireAuth }, async (request, reply) => {
-    const parsedParams = ExportStatusParamsSchema.safeParse(request.params)
-    if (!parsedParams.success) {
-      return reply
-        .code(400)
-        .send({ error: 'Invalid request parameters', details: parsedParams.error.format() })
-    }
-
-    const { takeId } = parsedParams.data
-
-    // TODO: Query database for export status and S3 URLs
-    // For now, return placeholder
-
-    return reply.code(200).send({
-      takeId,
-      status: 'completed',
-      urls: {
-        master: `https://cdn.bluebird.local/exports/${takeId}/master.mp3`,
-        stems: [],
+  app.get(
+    '/export/:takeId/status',
+    {
+      schema: {
+        params: ExportStatusParamsSchema,
+        response: {
+          200: z.object({
+            takeId: z.string(),
+            status: z.string(),
+            urls: z.object({
+              master: z.string(),
+              stems: z.array(z.string()),
+            }),
+            expiresAt: z.string(),
+          }),
+          400: z.object({ error: z.string() }),
+        },
+        tags: ['Export'],
+        description: 'Get export status',
       },
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    })
-  })
+      preHandler: [requireAuth],
+    },
+    async (request, reply) => {
+      const { takeId } = request.params
+
+      // TODO: Query database for export status and S3 URLs
+      // For now, return placeholder
+
+      return reply.code(200).send({
+        takeId,
+        status: 'completed',
+        urls: {
+          master: `https://cdn.bluebird.local/exports/${takeId}/master.mp3`,
+          stems: [],
+        },
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      })
+    }
+  )
 }

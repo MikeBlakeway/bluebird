@@ -6,47 +6,44 @@
  */
 
 import type { FastifyInstance } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ProjectIdSchema, JobIdSchema, RenderSectionRequestSchema } from '@bluebird/types'
+import {
+  RenderMusicRequestSchema,
+  RenderVoiceRequestSchema,
+  RenderPreviewRequestSchema,
+  RenderSectionRequestSchema,
+} from '@bluebird/types'
 import { requireAuth, requireIdempotencyKey } from '../lib/middleware.js'
 import { enqueueMusicJob, enqueueVoiceJob, enqueueSectionJob } from '../lib/queue.js'
 
-const RenderMusicRequestSchema = z.object({
-  projectId: ProjectIdSchema,
-  jobId: JobIdSchema,
-  sectionIndex: z.number().int().min(0),
-  instrument: z.string().min(1),
-  seed: z.number().int().optional(),
-})
-
-const RenderVoiceRequestSchema = z.object({
-  projectId: ProjectIdSchema,
-  jobId: JobIdSchema,
-  sectionIndex: z.number().int().min(0),
-  lyrics: z.string().min(1),
-  seed: z.number().int().optional(),
-})
-
-const RenderPreviewRequestSchema = z.object({
-  projectId: ProjectIdSchema,
-  jobId: JobIdSchema,
-})
-
 export function registerRenderRoutes(fastify: FastifyInstance) {
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
+
   /**
    * POST /render/music
    * Render a music stem for a specific section and instrument
    */
-  fastify.post(
+  app.post(
     '/render/music',
-    { preHandler: [requireAuth, requireIdempotencyKey] },
+    {
+      schema: {
+        body: RenderMusicRequestSchema,
+        response: {
+          200: z.object({
+            jobId: z.string(),
+            status: z.literal('queued'),
+            message: z.string(),
+          }),
+          400: z.object({ error: z.string() }),
+        },
+        tags: ['Render'],
+        description: 'Render music stem',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
     async (request, reply) => {
-      const parsed = RenderMusicRequestSchema.safeParse(request.body)
-      if (!parsed.success) {
-        return reply.code(400).send({ error: 'Invalid request', details: parsed.error })
-      }
-
-      const { projectId, jobId, sectionIndex, instrument, seed } = parsed.data
+      const { projectId, jobId, sectionIndex, instrument, seed } = request.body
 
       // Enqueue music synthesis job
       await enqueueMusicJob({
@@ -70,16 +67,26 @@ export function registerRenderRoutes(fastify: FastifyInstance) {
    * POST /render/vocals
    * Render vocals for a specific section with lyrics
    */
-  fastify.post(
+  app.post(
     '/render/vocals',
-    { preHandler: [requireAuth, requireIdempotencyKey] },
+    {
+      schema: {
+        body: RenderVoiceRequestSchema,
+        response: {
+          200: z.object({
+            jobId: z.string(),
+            status: z.literal('queued'),
+            message: z.string(),
+          }),
+          400: z.object({ error: z.string() }),
+        },
+        tags: ['Render'],
+        description: 'Render vocals',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
     async (request, reply) => {
-      const parsed = RenderVoiceRequestSchema.safeParse(request.body)
-      if (!parsed.success) {
-        return reply.code(400).send({ error: 'Invalid request', details: parsed.error })
-      }
-
-      const { projectId, jobId, sectionIndex, lyrics, seed } = parsed.data
+      const { projectId, jobId, sectionIndex, lyrics, seed } = request.body
 
       // Enqueue voice synthesis job
       await enqueueVoiceJob({
@@ -103,16 +110,26 @@ export function registerRenderRoutes(fastify: FastifyInstance) {
    * POST /render/preview
    * Render complete preview (all sections, all stems)
    */
-  fastify.post(
+  app.post(
     '/render/preview',
-    { preHandler: [requireAuth, requireIdempotencyKey] },
+    {
+      schema: {
+        body: RenderPreviewRequestSchema,
+        response: {
+          200: z.object({
+            jobId: z.string(),
+            status: z.literal('queued'),
+            message: z.string(),
+          }),
+          400: z.object({ error: z.string() }),
+        },
+        tags: ['Render'],
+        description: 'Render preview',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
     async (request, reply) => {
-      const parsed = RenderPreviewRequestSchema.safeParse(request.body)
-      if (!parsed.success) {
-        return reply.code(400).send({ error: 'Invalid request', details: parsed.error })
-      }
-
-      const { jobId } = parsed.data
+      const { jobId } = request.body
 
       // TODO: Enqueue orchestration job that coordinates:
       // 1. Render all music stems for all sections
@@ -132,16 +149,26 @@ export function registerRenderRoutes(fastify: FastifyInstance) {
    * POST /render/section
    * Regenerate a specific section (music + vocals)
    */
-  fastify.post(
+  app.post(
     '/render/section',
-    { preHandler: [requireAuth, requireIdempotencyKey] },
+    {
+      schema: {
+        body: RenderSectionRequestSchema,
+        response: {
+          200: z.object({
+            jobId: z.string(),
+            status: z.literal('queued'),
+            message: z.string(),
+          }),
+          400: z.object({ error: z.string() }),
+        },
+        tags: ['Render'],
+        description: 'Regenerate section',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
     async (request, reply) => {
-      const parsed = RenderSectionRequestSchema.safeParse(request.body)
-      if (!parsed.success) {
-        return reply.code(400).send({ error: 'Invalid request', details: parsed.error })
-      }
-
-      const { projectId, planId, sectionId, regen } = parsed.data
+      const { projectId, planId, sectionId, regen } = request.body
 
       // Enqueue section regeneration job
       const jobId = await enqueueSectionJob({

@@ -41,6 +41,7 @@ export interface UseAudioEngineReturn {
 
   // Version control
   setActiveVersion: (version: PlaybackVersion) => Promise<void>
+  setTrackActiveVersion: (trackId: string, version: PlaybackVersion) => Promise<void>
 
   // Gain controls
   setTrackGain: (id: string, gain: number) => void
@@ -208,6 +209,16 @@ export function useAudioEngine(options: UseAudioEngineOptions = {}): UseAudioEng
     }
   }, [])
 
+  const setTrackActiveVersion = useCallback(async (trackId: string, version: PlaybackVersion) => {
+    if (!engineRef.current) return
+    await engineRef.current.setTrackActiveVersion(trackId, version)
+
+    if (isMountedRef.current) {
+      setTracks(engineRef.current.getTracks())
+      setDuration(engineRef.current.getDuration())
+    }
+  }, [])
+
   return {
     // State
     playbackState,
@@ -233,6 +244,7 @@ export function useAudioEngine(options: UseAudioEngineOptions = {}): UseAudioEng
     setTrackMuted,
     setTrackSoloed,
     setActiveVersion,
+    setTrackActiveVersion,
 
     // Engine reference
     engine: engineRef.current,

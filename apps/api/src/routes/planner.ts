@@ -1,5 +1,7 @@
 import { FastifyInstance, FastifyReply } from 'fastify'
-import { AnalyzeRequestSchema } from '@bluebird/types'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { z } from 'zod'
+import { AnalyzeRequestSchema, ArrangementSpecSchema } from '@bluebird/types'
 import { planArrangement } from '../lib/planner.js'
 import {
   analyzeLyrics,
@@ -64,14 +66,38 @@ export async function planArrangementHandler(
 }
 
 export function registerPlannerRoutes(fastify: FastifyInstance) {
-  fastify.post(
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
+
+  app.post(
     '/plan/arrangement',
-    { preHandler: [requireAuth, requireIdempotencyKey] },
+    {
+      schema: {
+        body: AnalyzeRequestSchema,
+        response: {
+          200: ArrangementSpecSchema,
+          400: z.object({ message: z.string() }),
+        },
+        tags: ['Planner'],
+        description: 'Generate song arrangement from lyrics',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
     planArrangementHandler
   )
-  fastify.post(
+  app.post(
     '/plan/vocals',
-    { preHandler: [requireAuth, requireIdempotencyKey] },
+    {
+      schema: {
+        body: AnalyzeRequestSchema,
+        response: {
+          200: ArrangementSpecSchema,
+          400: z.object({ message: z.string() }),
+        },
+        tags: ['Planner'],
+        description: 'Generate song arrangement from lyrics (alias)',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
     planArrangementHandler
   ) // Alias
 }

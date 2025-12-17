@@ -1,5 +1,11 @@
 import { FastifyInstance, FastifyReply } from 'fastify'
-import { PlanSongRequestSchema, type PlanSongResponse } from '@bluebird/types'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { z } from 'zod'
+import {
+  PlanSongRequestSchema,
+  PlanSongResponseSchema,
+  type PlanSongResponse,
+} from '@bluebird/types'
 import { enqueuePlanJob } from '../lib/queue.js'
 import { publishJobEvent } from '../lib/events.js'
 import { requireAuth, requireIdempotencyKey, type AuthenticatedRequest } from '../lib/middleware.js'
@@ -72,5 +78,22 @@ export async function planSongHandler(
 }
 
 export function registerOrchestratorRoutes(fastify: FastifyInstance) {
-  fastify.post('/plan/song', { preHandler: [requireAuth, requireIdempotencyKey] }, planSongHandler)
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
+
+  app.post(
+    '/plan/song',
+    {
+      schema: {
+        body: PlanSongRequestSchema,
+        response: {
+          202: PlanSongResponseSchema,
+          400: z.object({ message: z.string() }),
+        },
+        tags: ['Orchestrator'],
+        description: 'Plan a song',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
+    planSongHandler
+  )
 }

@@ -41,5 +41,11 @@
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^3.0.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "zod": "3.24.1",
+      "zod-to-json-schema": "3.24.1"
+    }
   }
 }

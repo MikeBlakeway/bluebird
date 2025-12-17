@@ -1,5 +1,7 @@
 import { FastifyInstance, FastifyReply } from 'fastify'
-import { AnalyzeRequestSchema, type AnalysisResult } from '@bluebird/types'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { z } from 'zod'
+import { AnalyzeRequestSchema, AnalysisResultSchema, type AnalysisResult } from '@bluebird/types'
 import {
   analyzeLyrics,
   detectRhymeScheme,
@@ -56,5 +58,22 @@ export async function analyzeHandler(request: AuthenticatedRequest, reply: Fasti
 }
 
 export function registerAnalyzerRoutes(fastify: FastifyInstance) {
-  fastify.post('/analyze', { preHandler: [requireAuth, requireIdempotencyKey] }, analyzeHandler)
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
+
+  app.post(
+    '/analyze',
+    {
+      schema: {
+        body: AnalyzeRequestSchema,
+        response: {
+          200: AnalysisResultSchema,
+          400: z.object({ message: z.string() }),
+        },
+        tags: ['Analyzer'],
+        description: 'Analyze lyrics',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
+    analyzeHandler
+  )
 }

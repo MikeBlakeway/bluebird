@@ -245,6 +245,87 @@ export class AudioEngine {
     }
   }
 
+  async setTrackActiveVersion(trackId: string, version: PlaybackVersion): Promise<void> {
+    const track = this.tracks.get(trackId)
+    if (!track) return
+    if (track.activeVersion === version) return
+
+    const versionState = track.versions[version]
+    if (versionState.state !== 'ready' || !versionState.buffer) {
+      // Do not switch into an unloaded/unready version.
+      return
+    }
+
+    const wasPlaying = this.playbackState === 'playing'
+    const position = this.getCurrentTime()
+
+    track.activeVersion = version
+    this.applyActiveVersionState(track)
+    this.config.onTrackStateChange?.(trackId, track.state)
+
+    if (!this.audioContext || !track.gainNode) {
+      return
+    }
+
+    if (!wasPlaying) {
+      this.refreshTrackGains()
+      return
+    }
+
+    // Seamless switching: restart only this track at the current position.
+    if (track.sourceNode) {
+      try {
+        track.sourceNode.stop()
+      } catch {
+        // Ignore errors from already stopped sources
+      }
+      track.sourceNode.disconnect()
+      track.sourceNode = null
+    }
+
+    const preRollSeconds = this.getPreRollSeconds()
+    const startOffset = Math.max(0, position - preRollSeconds)
+    const rampDuration = position - startOffset
+    const hasSoloedTracks = this.hasSoloedTracks()
+    const now = this.audioContext.currentTime
+
+    const source = this.audioContext.createBufferSource()
+    source.buffer = versionState.buffer
+    source.connect(track.gainNode)
+
+    source.onended = () => {
+      if (this.playbackState === 'playing') {
+        this.handlePlaybackEnd()
+      }
+    }
+
+    track.sourceNode = source
+
+    const targetGain = this.computeEffectiveGain(track, hasSoloedTracks)
+    const gainParam = track.gainNode.gain as unknown as {
+      setValueAtTime?: (value: number, startTime: number) => void
+      linearRampToValueAtTime?: (value: number, endTime: number) => void
+      value: number
+    }
+
+    if (
+      typeof gainParam.setValueAtTime === 'function' &&
+      typeof gainParam.linearRampToValueAtTime === 'function'
+    ) {
+      gainParam.setValueAtTime(0, now)
+      if (rampDuration <= 0) {
+        gainParam.setValueAtTime(targetGain, now)
+      } else {
+        gainParam.linearRampToValueAtTime(targetGain, now + rampDuration)
+      }
+    } else {
+      gainParam.value = targetGain
+    }
+
+    const offset = Math.min(startOffset, Math.max(versionState.buffer.duration - 0.001, 0))
+    source.start(0, offset)
+  }
+
   /**
    * Play all tracks from current position
    */

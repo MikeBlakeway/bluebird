@@ -1,7 +1,11 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { z } from 'zod'
 import {
   MagicLinkRequestSchema,
   VerifyMagicLinkRequestSchema,
+  MagicLinkResponseSchema,
+  AuthResponseSchema,
   type AuthResponse,
   type MagicLinkResponse,
 } from '@bluebird/types'
@@ -120,6 +124,8 @@ export async function logoutHandler(_request: FastifyRequest, reply: FastifyRepl
 }
 
 export function registerAuthRoutes(fastify: FastifyInstance) {
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
+
   // Stricter rate limiting for authentication endpoints
   const authRateLimit = {
     config: {
@@ -130,16 +136,66 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     },
   }
 
-  fastify.post(
+  app.post(
     '/auth/magic-link',
-    { ...authRateLimit, preHandler: [requireIdempotencyKey] },
+    {
+      schema: {
+        body: MagicLinkRequestSchema,
+        response: {
+          200: MagicLinkResponseSchema,
+          400: z.object({ success: z.boolean(), message: z.string() }),
+        },
+        tags: ['Auth'],
+        description: 'Request a magic link to sign in',
+      },
+      ...authRateLimit,
+      preHandler: [requireIdempotencyKey],
+    },
     magicLinkHandler
   )
-  fastify.post(
+  app.post(
     '/auth/verify',
-    { ...authRateLimit, preHandler: [requireIdempotencyKey] },
+    {
+      schema: {
+        body: VerifyMagicLinkRequestSchema,
+        response: {
+          200: AuthResponseSchema,
+          400: z.object({ success: z.boolean(), message: z.string() }),
+        },
+        tags: ['Auth'],
+        description: 'Verify magic link token',
+      },
+      ...authRateLimit,
+      preHandler: [requireIdempotencyKey],
+    },
     verifyMagicLinkHandler
   )
-  fastify.get('/auth/me', getCurrentUserHandler)
-  fastify.post('/auth/logout', { preHandler: [requireAuth, requireIdempotencyKey] }, logoutHandler)
+  app.get(
+    '/auth/me',
+    {
+      schema: {
+        response: {
+          200: z.object({ id: z.string(), email: z.string() }),
+          401: z.object({ message: z.string() }),
+        },
+        tags: ['Auth'],
+        description: 'Get current user',
+      },
+    },
+    getCurrentUserHandler
+  )
+  app.post(
+    '/auth/logout',
+    {
+      schema: {
+        response: {
+          200: z.object({ success: z.boolean(), message: z.string() }),
+        },
+        tags: ['Auth'],
+        description: 'Logout user',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
+    logoutHandler
+  )
 }

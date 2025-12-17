@@ -100,6 +100,13 @@ vi.mock('@/lib/audio-engine', () => {
       this.activeVersion = version
     }
 
+    async setTrackActiveVersion(id: string, version: 'A' | 'B') {
+      const track = this.tracks.get(id)
+      if (track) {
+        track.activeVersion = version
+      }
+    }
+
     getActiveVersion() {
       return this.activeVersion
     }
@@ -373,6 +380,25 @@ describe('useAudioEngine', () => {
     })
 
     expect(result.current.activeVersion).toBe('B')
+  })
+
+  it('should switch a single track version', async () => {
+    const { result } = renderHook(() => useAudioEngine())
+
+    await waitFor(() => {
+      expect(result.current.isInitialized).toBe(true)
+    })
+
+    await act(async () => {
+      await result.current.addTrack('track1', 'Track 1', 'http://example.com/track1.mp3', 'A')
+    })
+
+    await act(async () => {
+      await result.current.setTrackActiveVersion('track1', 'B')
+    })
+
+    const track = result.current.tracks.find((t) => t.id === 'track1')
+    expect(track?.activeVersion).toBe('B')
   })
 
   it('should handle time updates', async () => {

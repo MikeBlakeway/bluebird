@@ -414,6 +414,22 @@ describe('AudioEngine', () => {
       expect(track?.state).toBe('ready')
       expect(global.fetch as Mock).toHaveBeenCalledTimes(2)
     })
+
+    it('switches a single track version without changing global version', async () => {
+      await engine.addTrack('track1', 'Track 1', 'http://example.com/track1-a.mp3', 'A')
+      await engine.addTrack('track1', 'Track 1', 'http://example.com/track1-b.mp3', 'B')
+      await engine.addTrack('track2', 'Track 2', 'http://example.com/track2-a.mp3', 'A')
+
+      expect(engine.getActiveVersion()).toBe('A')
+
+      await engine.setTrackActiveVersion('track1', 'B')
+
+      const track1 = engine.getTrack('track1')
+      const track2 = engine.getTrack('track2')
+      expect(track1?.activeVersion).toBe('B')
+      expect(track2?.activeVersion).toBe('A')
+      expect(engine.getActiveVersion()).toBe('A')
+    })
   })
 
   describe('Cleanup', () => {

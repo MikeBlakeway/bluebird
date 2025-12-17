@@ -59,6 +59,12 @@ import {
 
 import { z } from 'zod'
 
+declare const process:
+  | {
+      env?: Record<string, string | undefined>
+    }
+  | undefined
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -113,7 +119,7 @@ export class BluebirdClient {
   private onTokenRefresh?: (token: string) => void
 
   constructor(config: ClientConfig = {}) {
-    this.baseURL = config.baseURL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+    this.baseURL = config.baseURL || process?.env?.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
     this.authToken = config.authToken
     this.timeout = config.timeout || 30000
     this.retries = config.retries || 3
