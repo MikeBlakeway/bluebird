@@ -58,7 +58,7 @@
 **Sprint Goal:**
 Complete frontend workspace UI (deferred from Sprint 1) + add section-level regeneration, local WebAudio preview/mixing, and A/B comparison capabilities.
 
-**Progress:** 13 of 15 tasks complete (87%); section regeneration + A/B comparison + optimistic UI + integration tests + E2E foundation complete
+**Progress:** 14 of 15 tasks complete (93%); section regeneration + A/B comparison + optimistic UI + integration tests + E2E foundation + performance validation complete
 
 **Completed Tasks:**
 
@@ -75,6 +75,7 @@ Complete frontend workspace UI (deferred from Sprint 1) + add section-level rege
 - ✅ Task 2.11: A/B Comparison (WebAudio local comparison, no GPU cost)
 - ✅ Task 2.12: Optimistic UI Updates (toast notifications, skeleton loaders, state management)
 - ✅ Task 2.14: Integration Testing (SSE flow, regen, WebAudio, export API integration)
+- ✅ Task 2.15: Performance Validation (TTFP, section regen, WebAudio, bundle size, Lighthouse)
 
 **In Progress/Pending:**
 
