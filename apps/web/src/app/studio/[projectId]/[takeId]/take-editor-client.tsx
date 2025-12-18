@@ -1,9 +1,10 @@
 'use client'
 
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { Button, Card, CardBody, CardFooter, CardHeader } from '@heroui/react'
-import { AlertTriangle, Pause, Play, StopCircle } from 'lucide-react'
+import { Button, Card, CardBody, CardFooter, CardHeader, useDisclosure } from '@heroui/react'
+import { AlertTriangle, Download, Pause, Play, StopCircle } from 'lucide-react'
 import { SectionCard, type Section as SectionMeta } from '@/components/SectionCard'
+import { ExportModal } from '@/components/export/ExportModal'
 import { JobTimeline } from '@/components/timeline/JobTimeline'
 import { useABComparison } from '@/hooks/use-ab-comparison'
 import { useAudioEngine } from '@/hooks/use-audio-engine'
@@ -31,6 +32,8 @@ function getTrackId(sectionIdx: number): string {
 
 export default function TakeEditorClient({ projectId, takeId, planId }: TakeEditorClientProps) {
   const resolvedPlanId = planId
+  const { isOpen: isExportOpen, onOpen: onExportOpen, onClose: onExportClose } = useDisclosure()
+
   const sections = useMemo<SectionMeta[]>(
     () => [
       { name: 'Intro', duration: 24, bpm: 120, hasMusic: true, hasVocals: false },
@@ -253,6 +256,14 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
               >
                 Stop
               </Button>
+              <Button
+                size="sm"
+                color="success"
+                startContent={<Download className="h-4 w-4" />}
+                onPress={onExportOpen}
+              >
+                Export
+              </Button>
             </div>
           </CardHeader>
           <CardBody className="flex flex-col gap-2 text-sm text-muted-foreground">
@@ -275,6 +286,14 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
         </Card>
 
         <JobTimeline jobId={activeJob?.jobId ?? null} showHeader compact={false} />
+
+        <ExportModal
+          isOpen={isExportOpen}
+          onClose={onExportClose}
+          projectId={projectId}
+          takeId={takeId}
+          planId={resolvedPlanId}
+        />
       </div>
     </div>
   )
