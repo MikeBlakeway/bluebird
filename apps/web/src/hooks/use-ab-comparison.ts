@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { PlaybackVersion } from '@/lib/audio-engine'
+import { isTextEntryActiveElement } from '@/lib/keyboard-utils'
 
 export interface UseABComparisonOptions {
   sectionCount: number
@@ -21,24 +22,6 @@ export interface UseABComparisonReturn {
   setFocusedSectionIdx: (sectionIdx: number) => void
   getSectionVersion: (sectionIdx: number) => PlaybackVersion
   setSectionVersion: (sectionIdx: number, version: PlaybackVersion) => Promise<void>
-}
-
-function isTextEntryActiveElement(): boolean {
-  const el = document.activeElement
-  if (!el) return false
-
-  if (el instanceof HTMLInputElement) return true
-  if (el instanceof HTMLTextAreaElement) return true
-  if (el instanceof HTMLSelectElement) return true
-
-  if (el instanceof HTMLElement && el.isContentEditable) return true
-
-  if (el instanceof HTMLElement) {
-    const role = el.getAttribute('role')
-    if (role === 'textbox') return true
-  }
-
-  return false
 }
 
 export function useABComparison(options: UseABComparisonOptions): UseABComparisonReturn {

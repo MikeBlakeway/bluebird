@@ -2,16 +2,18 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Button, Card, CardBody, CardFooter, CardHeader, useDisclosure } from '@heroui/react'
-import { AlertTriangle, Download, Pause, Play, StopCircle } from 'lucide-react'
+import { AlertTriangle, Download, HelpCircle, Pause, Play, StopCircle } from 'lucide-react'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { SectionCard, type Section as SectionMeta } from '@/components/SectionCard'
+import { ShortcutsPanel } from '@/components/ShortcutsPanel'
 import { SkeletonSection } from '@/components/SkeletonSection'
 import { ExportModal } from '@/components/export/ExportModal'
 import { JobTimeline } from '@/components/timeline/JobTimeline'
 import { useABComparison } from '@/hooks/use-ab-comparison'
 import { useAudioEngine } from '@/hooks/use-audio-engine'
 import { useJobEvents } from '@/hooks/use-job-events'
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { useRegenSection } from '@/hooks/use-regen-section'
 import { useSectionLock } from '@/hooks/use-section-lock'
 import { switchTrackVersion } from '@/lib/audio/abSwitch'
@@ -36,6 +38,11 @@ function getTrackId(sectionIdx: number): string {
 export default function TakeEditorClient({ projectId, takeId, planId }: TakeEditorClientProps) {
   const resolvedPlanId = planId
   const { isOpen: isExportOpen, onOpen: onExportOpen, onClose: onExportClose } = useDisclosure()
+  const {
+    isOpen: isShortcutsOpen,
+    onOpen: onShortcutsOpen,
+    onClose: onShortcutsClose,
+  } = useDisclosure()
 
   const sections = useMemo<SectionMeta[]>(
     () => [
@@ -172,6 +179,61 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
+  // Keyboard shortcuts integration
+  const handlePlayPause = useCallback(() => {
+    if (playbackState === 'playing') {
+      pause()
+    } else {
+      void play()
+    }
+  }, [playbackState, play, pause])
+
+  const handleNavigateUp = useCallback(() => {
+    const newIdx = Math.max(0, focusedSectionIdx - 1)
+    setFocusedSectionIdx(newIdx)
+  }, [focusedSectionIdx, setFocusedSectionIdx])
+
+  const handleNavigateDown = useCallback(() => {
+    const newIdx = Math.min(sections.length - 1, focusedSectionIdx + 1)
+    setFocusedSectionIdx(newIdx)
+  }, [focusedSectionIdx, sections.length, setFocusedSectionIdx])
+
+  const handleShortcutLockUnlock = useCallback(
+    (sectionIdx: number) => {
+      toggleLock(sectionIdx)
+    },
+    [toggleLock]
+  )
+
+  const handleShortcutRegenerate = useCallback(
+    async (sectionIdx: number) => {
+      if (!resolvedPlanId || isLocked(sectionIdx)) return
+      await handleRegenerateSection(sectionIdx)
+    },
+    [resolvedPlanId, isLocked, handleRegenerateSection]
+  )
+
+  const handleCancelJob = useCallback(() => {
+    // Job cancellation not yet implemented
+    toast.info('Job cancellation not yet supported', {
+      autoClose: 3000,
+      position: 'bottom-right',
+    })
+  }, [])
+
+  useKeyboardShortcuts({
+    onPlayPause: handlePlayPause,
+    onLockUnlock: handleShortcutLockUnlock,
+    onRegenerate: handleShortcutRegenerate,
+    onNavigateUp: handleNavigateUp,
+    onNavigateDown: handleNavigateDown,
+    onCancel: handleCancelJob,
+    onShowHelp: onShortcutsOpen,
+    focusedSectionIdx,
+    sectionCount: sections.length,
+    isJobActive: activeJob !== null,
+  })
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -246,6 +308,15 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
               </p>
             </div>
             <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="flat"
+                startContent={<HelpCircle className="h-4 w-4" />}
+                onPress={onShortcutsOpen}
+                aria-label="Show keyboard shortcuts"
+              >
+                Help (?)
+              </Button>
               <Button size="sm" variant="flat" onPress={loadDemoTracks}>
                 Load demo
               </Button>
@@ -311,6 +382,8 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
           takeId={takeId}
           planId={resolvedPlanId}
         />
+
+        <ShortcutsPanel isOpen={isShortcutsOpen} onClose={onShortcutsClose} />
 
         <ToastContainer
           position="bottom-right"

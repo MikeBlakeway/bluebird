@@ -780,26 +780,79 @@ Notification Triggers:
 
 ---
 
-### Task 2.13: Keyboard Shortcuts 🔲
+### Task 2.13: Keyboard Shortcuts ✅
 
 **Estimate:** 2 hours
+**Actual:** 2.5 hours
 **Priority:** Low (nice-to-have)
 
-**Acceptance Criteria:**
+**Completed:**
 
-- [ ] Space: Play/Pause
-- [ ] L: Lock/unlock focused section
-- [ ] R: Regenerate focused section
-- [ ] A/B: Switch A/B comparison
-- [ ] ↑/↓: Navigate sections
-- [ ] Esc: Cancel active job (if possible)
-- [ ] Shortcuts panel (? key to show)
-- [ ] Don't trigger when typing in inputs
+- [x] Space: Play/Pause transport
+- [x] L: Lock/unlock focused section
+- [x] R: Regenerate focused section
+- [x] A/B: Switch A/B comparison (already implemented in Task 2.11)
+- [x] ↑/↓: Navigate sections with focus management
+- [x] Esc: Cancel active job (placeholder with toast notification)
+- [x] ?: Show shortcuts panel with complete cheatsheet
+- [x] Input focus detection (shortcuts disabled when typing in text fields)
+- [x] Help button in UI to open shortcuts panel
+- [x] Comprehensive unit tests (keyboard hook, keyboard utils)
+- [x] Component tests (ShortcutsPanel rendering)
+- [x] E2E tests (keyboard navigation, shortcuts panel)
 
-**Files to Create/Modify:**
+**Files Created:**
 
-- `apps/web/src/hooks/useKeyboardShortcuts.ts`
-- `apps/web/src/components/ShortcutsPanel.tsx`
+- `apps/web/src/lib/keyboard-utils.ts` — isTextEntryActiveElement() helper
+- `apps/web/src/hooks/use-keyboard-shortcuts.ts` — Centralized keyboard shortcut hook
+- `apps/web/src/components/ShortcutsPanel.tsx` — HeroUI Modal with shortcut cheatsheet
+- `apps/web/src/lib/keyboard-utils.test.ts` — Unit tests for keyboard utils (9 passing, 1 skipped)
+- `apps/web/src/hooks/use-keyboard-shortcuts.test.ts` — Unit tests for shortcuts hook (19 passing)
+- `apps/web/src/components/ShortcutsPanel.test.tsx` — Component tests for panel (2 passing)
+- `apps/web/tests/e2e/keyboard-shortcuts.spec.ts` — E2E tests for shortcuts (6 scenarios, 2 skipped)
+
+**Files Modified:**
+
+- `apps/web/src/hooks/use-ab-comparison.ts` — Refactored to use shared keyboard-utils
+- `apps/web/src/app/studio/[projectId]/[takeId]/take-editor-client.tsx` — Integrated keyboard shortcuts hook and Help button
+
+**Implementation Details:**
+
+Centralized keyboard shortcut system with the following features:
+
+1. **Shortcut Mappings:**
+   - Space: Play/Pause (prevents page scroll)
+   - L: Lock/Unlock focused section
+   - R: Regenerate focused section (blocked during active jobs)
+   - A/B: Switch versions (existing implementation preserved)
+   - ↑/↓: Navigate sections (updates focused section index)
+   - Esc: Cancel job (shows "not yet supported" toast)
+   - ?: Show shortcuts panel (Shift+/ or ?)
+
+2. **Safety Features:**
+   - Shortcuts disabled when typing in input/textarea/select/contentEditable
+   - Shortcuts ignored when modifier keys pressed (Ctrl/Meta/Alt, except Shift for ?)
+   - Focus detection prevents accidental triggers
+   - Event cleanup on component unmount
+
+3. **User Experience:**
+   - Help button in UI (HelpCircle icon) next to transport controls
+   - Modal cheatsheet with all shortcuts in table format
+   - Keyboard hints in tooltips (future enhancement noted)
+   - Clear context indicators (Global, Focused section, etc.)
+
+4. **Test Coverage:**
+   - 30 unit tests (28 passing, 1 skipped for jsdom limitation)
+   - 2 component tests (ShortcutsPanel rendering)
+   - 6 E2E scenarios (4 active, 2 skipped pending backend)
+   - Coverage: keyboard event handling, focus detection, modifier keys, cleanup
+
+**Validation:**
+
+- `pnpm typecheck` — pass (0 errors)
+- `pnpm lint` — pass (0 errors, 0 warnings)
+- `pnpm -F web test -- keyboard` — pass (28/29 tests, 1 skipped)
+- E2E tests created (require backend for full validation)
 
 **Branch:** `feature/f-2.13-keyboard-shortcuts`
 
