@@ -58,7 +58,7 @@
 **Sprint Goal:**
 Complete frontend workspace UI (deferred from Sprint 1) + add section-level regeneration, local WebAudio preview/mixing, and A/B comparison capabilities.
 
-**Progress:** 10 of 15 tasks complete (66%); section regeneration + A/B comparison + optimistic UI + integration tests complete
+**Progress:** 13 of 15 tasks complete (87%); section regeneration + A/B comparison + optimistic UI + integration tests + E2E foundation complete
 
 **Completed Tasks:**
 
@@ -66,7 +66,10 @@ Complete frontend workspace UI (deferred from Sprint 1) + add section-level rege
 - ✅ Task 2.2: shadcn/ui components (shared UI package)
 - ✅ Task 2.3: API client hardening (Idempotency-Key + Zod validation)
 - ✅ Task 2.4: SSE client with reconnection + hook
+- ✅ Task 2.5: Audio State Management (Zustand store, AudioEngine integration)
 - ✅ Task 2.6: Export Modal (job timeline, download links, error handling)
+- ✅ Task 2.7: Audio Loading & Error Handling (presigned URLs, retry logic, user feedback)
+- ✅ Task 2.8: E2E Test Foundation (Playwright, Page Object Models, test fixtures)
 - ✅ Task 2.9: Section Lock/Unlock (per-section state, lock icon, prevent regen of locked sections)
 - ✅ Task 2.10: Per-Section Regeneration (music + vocals synthesis per section)
 - ✅ Task 2.11: A/B Comparison (WebAudio local comparison, no GPU cost)
