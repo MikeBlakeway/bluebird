@@ -4,28 +4,33 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
-import { useKeyboardShortcuts } from './use-keyboard-shortcuts'
+import { useKeyboardShortcuts, type UseKeyboardShortcutsOptions } from './use-keyboard-shortcuts'
+
+type CallbackMap = Required<
+  Pick<
+    UseKeyboardShortcutsOptions,
+    | 'onPlayPause'
+    | 'onLockUnlock'
+    | 'onRegenerate'
+    | 'onNavigateUp'
+    | 'onNavigateDown'
+    | 'onCancel'
+    | 'onShowHelp'
+  >
+>
 
 describe('useKeyboardShortcuts', () => {
-  let callbacks: {
-    onPlayPause: ReturnType<typeof vi.fn<[], void>>
-    onLockUnlock: ReturnType<typeof vi.fn<[sectionIdx: number], void>>
-    onRegenerate: ReturnType<typeof vi.fn<[sectionIdx: number], void>>
-    onNavigateUp: ReturnType<typeof vi.fn<[], void>>
-    onNavigateDown: ReturnType<typeof vi.fn<[], void>>
-    onCancel: ReturnType<typeof vi.fn<[], void>>
-    onShowHelp: ReturnType<typeof vi.fn<[], void>>
-  }
+  let callbacks: CallbackMap
 
   beforeEach(() => {
     callbacks = {
-      onPlayPause: vi.fn<[], void>(),
-      onLockUnlock: vi.fn<[sectionIdx: number], void>(),
-      onRegenerate: vi.fn<[sectionIdx: number], void>(),
-      onNavigateUp: vi.fn<[], void>(),
-      onNavigateDown: vi.fn<[], void>(),
-      onCancel: vi.fn<[], void>(),
-      onShowHelp: vi.fn<[], void>(),
+      onPlayPause: vi.fn(() => undefined),
+      onLockUnlock: vi.fn((_: number) => undefined),
+      onRegenerate: vi.fn((_: number) => undefined),
+      onNavigateUp: vi.fn(() => undefined),
+      onNavigateDown: vi.fn(() => undefined),
+      onCancel: vi.fn(() => undefined),
+      onShowHelp: vi.fn(() => undefined),
     }
   })
 
