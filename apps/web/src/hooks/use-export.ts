@@ -28,13 +28,17 @@ export function useExport({ projectId, takeId, planId }: UseExportOptions) {
   })
 
   const handleJobEvent = useCallback(
-    (event: { stage: string; data?: { downloadUrls?: Record<string, string | string[]> } }) => {
+    (event: {
+      stage: string
+      data?: { downloadUrls?: { master?: string; stems?: string[] }; error?: string }
+    }) => {
       if (event.stage === 'completed') {
         // Parse download URLs from job completion data
-        if (event.data?.downloadUrls) {
+        const downloadUrls = event.data?.downloadUrls
+        if (downloadUrls) {
           setState((prev) => ({
             ...prev,
-            downloadUrls: event.data.downloadUrls,
+            downloadUrls,
             isComplete: true,
             isLoading: false,
           }))
@@ -48,9 +52,10 @@ export function useExport({ projectId, takeId, planId }: UseExportOptions) {
       }
 
       if (event.stage === 'failed') {
+        const errorMsg = event.data?.error || 'Unknown error'
         setState((prev) => ({
           ...prev,
-          error: new Error(`Export failed: ${event.data?.error || 'Unknown error'}`),
+          error: new Error(`Export failed: ${errorMsg}`),
           isLoading: false,
         }))
       }
