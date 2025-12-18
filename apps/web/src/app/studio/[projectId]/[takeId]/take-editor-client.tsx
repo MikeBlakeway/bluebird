@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { Button, Card, CardBody, CardFooter, CardHeader } from '@heroui/react'
 import { AlertTriangle, Pause, Play, StopCircle } from 'lucide-react'
 import { SectionCard, type Section as SectionMeta } from '@/components/SectionCard'
+import { JobTimeline } from '@/components/timeline/JobTimeline'
 import { useABComparison } from '@/hooks/use-ab-comparison'
 import { useAudioEngine } from '@/hooks/use-audio-engine'
 import { useJobEvents } from '@/hooks/use-job-events'
@@ -41,8 +42,6 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
 
   const [versionBAvailability, setVersionBAvailability] = useState<Set<number>>(new Set())
   const [activeJob, setActiveJob] = useState<ActiveJob | null>(null)
-  const [jobEvent, setJobEvent] = useState<JobEvent | null>(null)
-  const [jobError, setJobError] = useState<Error | null>(null)
   const pendingSectionRef = useRef<number | null>(null)
 
   const { isLocked, toggleLock } = useSectionLock({
@@ -93,7 +92,6 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
 
   const handleJobEvent = useCallback(
     (event: JobEvent) => {
-      setJobEvent(event)
       if (!activeJob) return
 
       if (event.stage === 'completed') {
@@ -113,7 +111,6 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
 
   useJobEvents(activeJob?.jobId ?? null, {
     onEvent: handleJobEvent,
-    onError: (error) => setJobError(error),
   })
 
   const handleSelectVersion = useCallback(
@@ -126,7 +123,7 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
   const handleRegenerateSection = useCallback(
     async (sectionIdx: number) => {
       if (!resolvedPlanId) {
-        setJobError(new Error('Plan ID missing; add ?planId=... to enable regeneration'))
+        console.error('Cannot regenerate section: Plan ID missing. Add ?planId=... to the URL.')
         return
       }
 
@@ -277,28 +274,7 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
           </CardFooter>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Job progress</h2>
-          </CardHeader>
-          <CardBody className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex items-center justify-between">
-              <span>Active job:</span>
-              <span className="text-foreground">{activeJob?.jobId ?? 'None'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Last stage:</span>
-              <span className="text-foreground">{jobEvent?.stage ?? '—'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Progress:</span>
-              <span className="text-foreground">
-                {jobEvent ? Math.round(jobEvent.progress * 100) : 0}%
-              </span>
-            </div>
-            {jobError && <span className="text-red-500">{jobError.message}</span>}
-          </CardBody>
-        </Card>
+        <JobTimeline jobId={activeJob?.jobId ?? null} showHeader compact={false} />
       </div>
     </div>
   )
