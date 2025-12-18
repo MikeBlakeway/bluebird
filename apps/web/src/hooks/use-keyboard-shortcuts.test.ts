@@ -8,24 +8,24 @@ import { useKeyboardShortcuts } from './use-keyboard-shortcuts'
 
 describe('useKeyboardShortcuts', () => {
   let callbacks: {
-    onPlayPause: ReturnType<typeof vi.fn>
-    onLockUnlock: ReturnType<typeof vi.fn>
-    onRegenerate: ReturnType<typeof vi.fn>
-    onNavigateUp: ReturnType<typeof vi.fn>
-    onNavigateDown: ReturnType<typeof vi.fn>
-    onCancel: ReturnType<typeof vi.fn>
-    onShowHelp: ReturnType<typeof vi.fn>
+    onPlayPause: ReturnType<typeof vi.fn<[], void>>
+    onLockUnlock: ReturnType<typeof vi.fn<[sectionIdx: number], void>>
+    onRegenerate: ReturnType<typeof vi.fn<[sectionIdx: number], void>>
+    onNavigateUp: ReturnType<typeof vi.fn<[], void>>
+    onNavigateDown: ReturnType<typeof vi.fn<[], void>>
+    onCancel: ReturnType<typeof vi.fn<[], void>>
+    onShowHelp: ReturnType<typeof vi.fn<[], void>>
   }
 
   beforeEach(() => {
     callbacks = {
-      onPlayPause: vi.fn(),
-      onLockUnlock: vi.fn(),
-      onRegenerate: vi.fn(),
-      onNavigateUp: vi.fn(),
-      onNavigateDown: vi.fn(),
-      onCancel: vi.fn(),
-      onShowHelp: vi.fn(),
+      onPlayPause: vi.fn<[], void>(),
+      onLockUnlock: vi.fn<[sectionIdx: number], void>(),
+      onRegenerate: vi.fn<[sectionIdx: number], void>(),
+      onNavigateUp: vi.fn<[], void>(),
+      onNavigateDown: vi.fn<[], void>(),
+      onCancel: vi.fn<[], void>(),
+      onShowHelp: vi.fn<[], void>(),
     }
   })
 
