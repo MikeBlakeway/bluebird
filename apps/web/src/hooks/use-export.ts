@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { toast } from 'react-toastify'
 import { useJobEvents } from './use-job-events'
 
 export interface ExportState {
@@ -42,12 +43,21 @@ export function useExport({ projectId, takeId, planId }: UseExportOptions) {
             isComplete: true,
             isLoading: false,
           }))
+          // Show success toast
+          toast.success('Export complete! Download links ready. 🎵', {
+            autoClose: 5000,
+            position: 'bottom-right',
+          })
         } else {
           setState((prev) => ({
             ...prev,
             isComplete: true,
             isLoading: false,
           }))
+          toast.success('Export complete! 🎵', {
+            autoClose: 4000,
+            position: 'bottom-right',
+          })
         }
       }
 
@@ -58,6 +68,11 @@ export function useExport({ projectId, takeId, planId }: UseExportOptions) {
           error: new Error(`Export failed: ${errorMsg}`),
           isLoading: false,
         }))
+        // Show error toast
+        toast.error(`Export failed: ${errorMsg}`, {
+          autoClose: 5000,
+          position: 'bottom-right',
+        })
       }
     },
     []
@@ -132,6 +147,12 @@ export function useExport({ projectId, takeId, planId }: UseExportOptions) {
           error: error instanceof Error ? error : new Error('Export failed'),
           isLoading: false,
         }))
+        // Show error toast
+        const errorMsg = error instanceof Error ? error.message : 'Export failed'
+        toast.error(`Error starting export: ${errorMsg}`, {
+          autoClose: 5000,
+          position: 'bottom-right',
+        })
       }
     },
     [projectId, takeId, planId]

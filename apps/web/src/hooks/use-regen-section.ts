@@ -3,6 +3,7 @@
  *
  * Manages section regeneration state and API calls.
  * Provides methods to regenerate individual sections and track loading state.
+ * Emits toast notifications on success/error.
  *
  * Example:
  * ```tsx
@@ -20,6 +21,7 @@
  */
 
 import { useState, useCallback } from 'react'
+import { toast } from 'react-toastify'
 import { useClient } from './use-client'
 import type { RenderSectionRequest } from '@bluebird/types'
 
@@ -69,12 +71,24 @@ export function useRegenSection(options: UseRegenSectionOptions): UseRegenSectio
           options.onSuccess(response.jobId)
         }
 
+        // Emit success toast
+        toast.success(`Regenerating section ${sectionIdx + 1}...`, {
+          autoClose: 3000,
+          position: 'bottom-right',
+        })
+
         // Don't clear regeneratingSection here - let SSE 'completed' event do it
         // This ensures the loading state persists until the job finishes
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err))
         setError(error)
         setRegeneratingSection(null) // Clear on error
+
+        // Emit error toast
+        toast.error(`Failed to regenerate section: ${error.message}`, {
+          autoClose: 5000,
+          position: 'bottom-right',
+        })
 
         if (options.onError) {
           options.onError(error)

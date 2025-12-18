@@ -3,7 +3,10 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Button, Card, CardBody, CardFooter, CardHeader, useDisclosure } from '@heroui/react'
 import { AlertTriangle, Download, Pause, Play, StopCircle } from 'lucide-react'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import { SectionCard, type Section as SectionMeta } from '@/components/SectionCard'
+import { SkeletonSection } from '@/components/SkeletonSection'
 import { ExportModal } from '@/components/export/ExportModal'
 import { JobTimeline } from '@/components/timeline/JobTimeline'
 import { useABComparison } from '@/hooks/use-ab-comparison'
@@ -102,11 +105,21 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
         void setSectionVersion(activeJob.sectionIdx, 'B')
         clearRegenerating()
         setActiveJob(null)
+        // Show success toast
+        toast.success(`Section ${activeJob.sectionIdx + 1} regenerated! 🎉`, {
+          autoClose: 4000,
+          position: 'bottom-right',
+        })
       }
 
       if (event.stage === 'failed') {
         clearRegenerating()
         setActiveJob(null)
+        // Show error toast
+        toast.error(`Failed to regenerate section. Please try again.`, {
+          autoClose: 5000,
+          position: 'bottom-right',
+        })
       }
     },
     [activeJob, clearRegenerating, setSectionVersion]
@@ -200,22 +213,26 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
             </div>
           </CardHeader>
           <CardBody className="grid gap-4 md:grid-cols-2">
-            {sections.map((section, idx) => (
-              <SectionCard
-                key={section.name}
-                sectionIdx={idx}
-                section={section}
-                isLocked={isLocked(idx)}
-                onToggleLock={toggleLock}
-                onRegenerate={resolvedPlanId ? handleRegenerateSection : undefined}
-                isRegenerating={isRegenerating(idx)}
-                canRegenerate={Boolean(resolvedPlanId)}
-                activeVersion={getSectionVersion(idx)}
-                isVersionBAvailable={versionBAvailability.has(idx)}
-                onSelectVersion={handleSelectVersion}
-                onFocusSection={setFocusedSectionIdx}
-              />
-            ))}
+            {sections.map((section, idx) =>
+              isRegenerating(idx) ? (
+                <SkeletonSection key={`skeleton-${section.name}`} />
+              ) : (
+                <SectionCard
+                  key={section.name}
+                  sectionIdx={idx}
+                  section={section}
+                  isLocked={isLocked(idx)}
+                  onToggleLock={toggleLock}
+                  onRegenerate={resolvedPlanId ? handleRegenerateSection : undefined}
+                  isRegenerating={isRegenerating(idx)}
+                  canRegenerate={Boolean(resolvedPlanId)}
+                  activeVersion={getSectionVersion(idx)}
+                  isVersionBAvailable={versionBAvailability.has(idx)}
+                  onSelectVersion={handleSelectVersion}
+                  onFocusSection={setFocusedSectionIdx}
+                />
+              )
+            )}
           </CardBody>
         </Card>
 
@@ -293,6 +310,18 @@ export default function TakeEditorClient({ projectId, takeId, planId }: TakeEdit
           projectId={projectId}
           takeId={takeId}
           planId={resolvedPlanId}
+        />
+
+        <ToastContainer
+          position="bottom-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={true}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
         />
       </div>
     </div>
