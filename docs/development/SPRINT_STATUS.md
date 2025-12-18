@@ -58,19 +58,27 @@
 **Sprint Goal:**
 Complete frontend workspace UI (deferred from Sprint 1) + add section-level regeneration, local WebAudio preview/mixing, and A/B comparison capabilities.
 
-**Progress:** Core frontend foundations merged; section regeneration work pending.
+**Progress:** 9 of 15 tasks complete (60%); section regeneration + A/B comparison + optimistic UI fully functional
 
 **Completed Tasks:**
 
 - ✅ Task 2.1: Next.js workspace setup (apps/web with App Router, Tailwind, routing)
 - ✅ Task 2.2: shadcn/ui components (shared UI package)
+- ✅ Task 2.3: API client hardening (Idempotency-Key + Zod validation)
 - ✅ Task 2.4: SSE client with reconnection + hook
+- ✅ Task 2.6: Export Modal (job timeline, download links, error handling)
+- ✅ Task 2.9: Section Lock/Unlock (per-section state, lock icon, prevent regen of locked sections)
+- ✅ Task 2.10: Per-Section Regeneration (music + vocals synthesis per section)
+- ✅ Task 2.11: A/B Comparison (WebAudio local comparison, no GPU cost)
+- ✅ Task 2.12: Optimistic UI Updates (toast notifications, skeleton loaders, state management)
 
-**In Progress:**
+**In Progress/Pending:**
 
-- Task 2.3: API client hardening (Idempotency-Key + Zod validation) pending merge to `develop`
 - Task 2.5: WebAudio preview engine follow-ups (A/B, waveform, pre-roll)
-- Next up: Task 2.6 lyrics input + controls
+- Task 2.8: E2E tests with Playwright (signup → lyrics → preview → export)
+- Task 2.13: Keyboard Shortcuts (space=play/pause, L=lock, R=regen)
+- Task 2.14: Integration Testing (full workflow validation)
+- Task 2.15: Performance Validation (TTFP measurements, GPU cost)
 
 **Scope Breakdown:**
 

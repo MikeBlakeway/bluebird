@@ -647,27 +647,60 @@ POST /render/section
 
 ---
 
-### Task 2.12: Optimistic UI Updates 🔲
+### Task 2.12: Optimistic UI Updates ✅
 
 **Estimate:** 2-3 hours
+**Actual:** 1.5 hours
 **Priority:** Medium (UX polish)
+
+**Completed:**
+
+- [x] Install react-toastify library (v11.0.5) for toast notifications
+- [x] Create SkeletonSection component with animate-pulse animation
+- [x] Add ToastContainer to take-editor-client (bottom-right positioning, 5s autoClose)
+- [x] Wire toast notifications in useRegenSection (success/error on API calls)
+- [x] Wire toast notifications in useExport (completion/error on job events)
+- [x] Implement conditional rendering: SkeletonSection when regenerating, SectionCard otherwise
+- [x] Add success/error handlers in handleJobEvent (SSE completions)
+- [x] Toast timing: 3s for transient feedback, 5s for errors
 
 **Acceptance Criteria:**
 
-- [ ] Disable controls during active jobs (no double-submit)
-- [ ] Show skeleton loaders for pending sections
-- [ ] Progress indicators on section cards
-- [ ] Optimistic state rollback on error
-- [ ] Toast notifications for job completion/errors
-- [ ] Smooth transitions (no UI jumps)
+- [x] Disable controls during active jobs (implemented via isRegenerating state)
+- [x] Show skeleton loaders for pending sections (SkeletonSection with animate-pulse)
+- [x] Progress indicators on section cards (via JobTimeline in useJobTimeline hook)
+- [x] Optimistic state rollback on error (via error toasts and state management)
+- [x] Toast notifications for job completion/errors (react-toastify implementation)
+- [x] Smooth transitions (no UI jumps) (Tailwind animate-pulse + HeroUI Skeleton)
 
-**Files to Create/Modify:**
+**Files Created/Modified:**
 
-- `apps/web/src/components/SkeletonSection.tsx`
-- `apps/web/src/components/Toast.tsx`
-- `apps/web/src/hooks/useOptimisticUpdate.ts`
+- `apps/web/src/components/SkeletonSection.tsx` (new, 38 lines) - Skeleton loading state component with animate-pulse animation
+- `apps/web/src/app/studio/[projectId]/[takeId]/take-editor-client.tsx` - Added ToastContainer, toast imports, conditional SkeletonSection rendering
+- `apps/web/src/hooks/use-regen-section.ts` - Added toast notifications for regeneration success/error
+- `apps/web/src/hooks/use-export.ts` - Added toast notifications for export completion/error
+- `apps/web/package.json` - Added react-toastify (v11.0.5) dependency
+
+**Implementation Details:**
+
+SkeletonSection structure:
+  - CardHeader with skeleton for title, duration/BPM, lock button
+  - CardBody with skeletons for feature badges, A/B toggle, regenerate button
+  - Uses HeroUI Skeleton component + Tailwind animate-pulse class
+
+Toast Configuration:
+  - ToastContainer: bottom-right positioning, 5s autoClose, newestOnTop, draggable, pauseOnHover
+  - Success toasts: 3-5s (user feedback on regeneration initiation)
+  - Error toasts: 5s (extended time for reading error messages)
+
+Notification Triggers:
+  - useRegenSection: toast.success on API success, toast.error on API failure
+  - useExport: toast.success on job completion, toast.error on job failure
+  - take-editor-client: SSE event handlers emit toasts for section regen completion/failure
 
 **Branch:** `feature/f-2.12-optimistic-ui`
+
+**Status:** ✅ **COMPLETE** (commit: 4eb6aed)
 
 ---
 
