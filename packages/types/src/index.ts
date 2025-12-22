@@ -131,6 +131,40 @@ export const RemixFeaturesSchema = z.object({
 })
 export type RemixFeatures = z.infer<typeof RemixFeaturesSchema>
 
+/** Request to upload reference audio for remix feature extraction. */
+const UploadReferenceAudioRequestSchemaInternal = z.object({
+  projectId: ProjectIdSchema,
+  planId: JobIdSchema,
+  fileName: z.string().min(1),
+  fileSize: z.number().int().min(1).max(10485760), // 10MB max
+  mimeType: z.string().regex(/^audio\//),
+  durationSec: z.number().min(1).max(30),
+})
+export type UploadReferenceAudioRequest = z.infer<typeof UploadReferenceAudioRequestSchemaInternal>
+export const UploadReferenceAudioRequestSchema: z.ZodType<
+  UploadReferenceAudioRequest,
+  z.ZodTypeDef,
+  unknown
+> = UploadReferenceAudioRequestSchemaInternal
+
+/** Response to reference upload providing presigned URL and feature extraction status. */
+const UploadReferenceAudioResponseSchemaInternal = z.object({
+  uploadUrl: z.string().url(),
+  referenceKey: z.string(),
+  expiresAt: z.string().datetime(),
+  features: RemixFeaturesSchema.optional(), // Populated after extraction completes
+  status: z.enum(['pending', 'processing', 'completed', 'failed']),
+  message: z.string().optional(),
+})
+export type UploadReferenceAudioResponse = z.infer<
+  typeof UploadReferenceAudioResponseSchemaInternal
+>
+export const UploadReferenceAudioResponseSchema: z.ZodType<
+  UploadReferenceAudioResponse,
+  z.ZodTypeDef,
+  unknown
+> = UploadReferenceAudioResponseSchemaInternal
+
 // ============================================================================
 // Similarity Checking
 // ============================================================================
@@ -157,11 +191,41 @@ const SimilarityReportSchemaInternal = z.object({
   verdict: SimilarityVerdictSchema,
   reason: z.string(),
   recommendations: z.array(z.string()).optional(),
+  eightBarCloneDetected: z.boolean().default(false),
+  budgetUsed: z.number().min(0).max(1).optional(),
   checkedAt: z.string().datetime(),
 })
 export type SimilarityReport = z.infer<typeof SimilarityReportSchemaInternal>
 export const SimilarityReportSchema: z.ZodType<SimilarityReport, z.ZodTypeDef, unknown> =
   SimilarityReportSchemaInternal
+
+/** Request to check similarity between generated melody and reference. */
+const CheckSimilarityRequestSchemaInternal = z.object({
+  planId: JobIdSchema,
+  takeId: TakeIdSchema,
+  referenceKey: z.string().optional(),
+  budgetThreshold: z.number().min(0).max(1).default(0.48), // Default from agent instructions
+})
+export type CheckSimilarityRequest = z.infer<typeof CheckSimilarityRequestSchemaInternal>
+export const CheckSimilarityRequestSchema: z.ZodType<
+  CheckSimilarityRequest,
+  z.ZodTypeDef,
+  unknown
+> = CheckSimilarityRequestSchemaInternal
+
+/** Response to similarity check request including report and export eligibility. */
+const CheckSimilarityResponseSchemaInternal = z.object({
+  jobId: JobIdSchema,
+  report: SimilarityReportSchema,
+  canExport: z.boolean(),
+  message: z.string().optional(),
+})
+export type CheckSimilarityResponse = z.infer<typeof CheckSimilarityResponseSchemaInternal>
+export const CheckSimilarityResponseSchema: z.ZodType<
+  CheckSimilarityResponse,
+  z.ZodTypeDef,
+  unknown
+> = CheckSimilarityResponseSchemaInternal
 
 // ============================================================================
 // Export & Delivery
@@ -182,23 +246,53 @@ export const ExportBundleSchema = z.object({
     sampleRate: z.number().int(),
     bitDepth: z.number().int(),
     key: z.string(), // S3 path
+    url: z.string().url(), // Presigned download URL
   }),
   stems: z.array(
     z.object({
       name: z.string(),
       format: ExportFormatSchema,
       key: z.string(),
+      url: z.string().url(),
     })
   ),
   metadata: z.object({
     title: z.string(),
     artist: z.string().optional(),
     duration: z.number(),
+    bpm: z.number().optional(),
+    key: z.string().optional(),
   }),
   similarityReport: SimilarityReportSchema.optional(),
+  cueSheet: z.string().optional(), // BWF markers in CUE format
   createdAt: z.string().datetime(),
 })
 export type ExportBundle = z.infer<typeof ExportBundleSchema>
+
+/** Request to export final mastered bundle (master + stems + metadata). */
+const ExportFinalRequestSchemaInternal = z.object({
+  planId: JobIdSchema,
+  takeId: TakeIdSchema,
+  format: ExportFormatSchema.default('wav'),
+  includeStems: z.boolean().default(false),
+  sampleRate: z.number().int().default(48000),
+  bitDepth: z.number().int().default(24),
+  requireSimilarityCheck: z.boolean().default(true),
+})
+export type ExportFinalRequest = z.infer<typeof ExportFinalRequestSchemaInternal>
+export const ExportFinalRequestSchema: z.ZodType<ExportFinalRequest, z.ZodTypeDef, unknown> =
+  ExportFinalRequestSchemaInternal
+
+/** Response to export final request providing download URLs and bundle metadata. */
+const ExportFinalResponseSchemaInternal = z.object({
+  jobId: JobIdSchema,
+  bundle: ExportBundleSchema,
+  expiresAt: z.string().datetime(),
+  message: z.string().optional(),
+})
+export type ExportFinalResponse = z.infer<typeof ExportFinalResponseSchemaInternal>
+export const ExportFinalResponseSchema: z.ZodType<ExportFinalResponse, z.ZodTypeDef, unknown> =
+  ExportFinalResponseSchemaInternal
 
 // ============================================================================
 // Job Events (SSE)
@@ -228,9 +322,120 @@ const JobEventSchemaInternal = z.object({
   timestamp: z.string().datetime(),
   duration: z.number().optional(), // milliseconds
   error: z.string().optional(),
+  // Additional context attributes for OTEL and debugging
+  runId: z.string().optional(),
+  planId: JobIdSchema.optional(),
+  sectionId: z.string().optional(),
+  seed: z.number().int().optional(),
 })
 export type JobEvent = z.infer<typeof JobEventSchemaInternal>
 export const JobEventSchema: z.ZodType<JobEvent, z.ZodTypeDef, unknown> = JobEventSchemaInternal
+
+// ============================================================================
+// Pod-Facing DTOs (Inference Services)
+// ============================================================================
+
+/** Single melody note event used by pods for synthesis and F0 generation. */
+export const MelodyNoteSchema = z.object({
+  startTime: z.number().min(0), // seconds
+  duration: z.number().min(0.05), // seconds
+  pitch: z.number().int().min(0).max(127), // MIDI note number
+  velocity: z.number().int().min(1).max(127).default(80),
+  syllable: z.string().optional(),
+})
+export type MelodyNote = z.infer<typeof MelodyNoteSchema>
+
+/** Complete melody sequence for a section or full song. */
+export const MelodySequenceSchema = z.object({
+  notes: z.array(MelodyNoteSchema),
+  bpm: z.number().int().min(60).max(200),
+  key: z.string(),
+  timeSignature: z.string().default('4/4'),
+  durationSeconds: z.number().min(0),
+})
+export type MelodySequence = z.infer<typeof MelodySequenceSchema>
+
+/** Request to melody pod for procedural melody generation. */
+const GenerateMelodyRequestSchemaInternal = z.object({
+  projectId: ProjectIdSchema,
+  planId: JobIdSchema,
+  sectionIndex: z.number().int().min(0),
+  arrangement: ArrangementSpecSchema,
+  lyrics: z.array(z.string()),
+  remixFeatures: RemixFeaturesSchema.optional(),
+  seed: z.number().int(),
+})
+export type GenerateMelodyRequest = z.infer<typeof GenerateMelodyRequestSchemaInternal>
+export const GenerateMelodyRequestSchema: z.ZodType<GenerateMelodyRequest, z.ZodTypeDef, unknown> =
+  GenerateMelodyRequestSchemaInternal
+
+/** Response from melody pod containing sequence and F0 contour. */
+const GenerateMelodyResponseSchemaInternal = z.object({
+  sequence: MelodySequenceSchema,
+  f0Contour: z.array(z.number()), // Hz per frame, aligned to audio hop
+  sampleRate: z.number().int().default(48000),
+  hopLength: z.number().int().default(512),
+})
+export type GenerateMelodyResponse = z.infer<typeof GenerateMelodyResponseSchemaInternal>
+export const GenerateMelodyResponseSchema: z.ZodType<
+  GenerateMelodyResponse,
+  z.ZodTypeDef,
+  unknown
+> = GenerateMelodyResponseSchemaInternal
+
+/** Request to analyzer pod for reference audio feature extraction. */
+const AnalyzeReferenceRequestSchemaInternal = z.object({
+  projectId: ProjectIdSchema,
+  referenceKey: z.string(), // S3 path to uploaded audio
+  maxDurationSec: z.number().min(1).max(30).default(30),
+})
+export type AnalyzeReferenceRequest = z.infer<typeof AnalyzeReferenceRequestSchemaInternal>
+export const AnalyzeReferenceRequestSchema: z.ZodType<
+  AnalyzeReferenceRequest,
+  z.ZodTypeDef,
+  unknown
+> = AnalyzeReferenceRequestSchemaInternal
+
+/** Response from analyzer pod with extracted features. */
+const AnalyzeReferenceResponseSchemaInternal = z.object({
+  features: RemixFeaturesSchema,
+  durationSec: z.number(),
+  sampleRate: z.number().int(),
+})
+export type AnalyzeReferenceResponse = z.infer<typeof AnalyzeReferenceResponseSchemaInternal>
+export const AnalyzeReferenceResponseSchema: z.ZodType<
+  AnalyzeReferenceResponse,
+  z.ZodTypeDef,
+  unknown
+> = AnalyzeReferenceResponseSchemaInternal
+
+/** Request to similarity pod for melody/rhythm comparison. */
+const CompareSimilarityRequestSchemaInternal = z.object({
+  generatedKey: z.string(), // S3 path to generated audio/MIDI
+  referenceKey: z.string(), // S3 path to reference features
+  budgetThreshold: z.number().min(0).max(1).default(0.48),
+})
+export type CompareSimilarityRequest = z.infer<typeof CompareSimilarityRequestSchemaInternal>
+export const CompareSimilarityRequestSchema: z.ZodType<
+  CompareSimilarityRequest,
+  z.ZodTypeDef,
+  unknown
+> = CompareSimilarityRequestSchemaInternal
+
+/** Response from similarity pod with detailed comparison report. */
+const CompareSimilarityResponseSchemaInternal = z.object({
+  scores: SimilarityScoreSchema,
+  verdict: SimilarityVerdictSchema,
+  eightBarCloneDetected: z.boolean(),
+  recommendations: z.array(z.string()),
+  reason: z.string(),
+})
+export type CompareSimilarityResponse = z.infer<typeof CompareSimilarityResponseSchemaInternal>
+export const CompareSimilarityResponseSchema: z.ZodType<
+  CompareSimilarityResponse,
+  z.ZodTypeDef,
+  unknown
+> = CompareSimilarityResponseSchemaInternal
 
 // ============================================================================
 // Authentication & User
@@ -416,19 +621,6 @@ export const UploadReferenceRequestSchema: z.ZodType<
   unknown
 > = UploadReferenceRequestSchemaInternal
 
-/** Request to run similarity check for a plan (server-side features). */
-const CheckSimilaritySimpleRequestSchemaInternal = z.object({
-  planId: JobIdSchema,
-})
-export type CheckSimilaritySimpleRequest = z.infer<
-  typeof CheckSimilaritySimpleRequestSchemaInternal
->
-export const CheckSimilaritySimpleRequestSchema: z.ZodType<
-  CheckSimilaritySimpleRequest,
-  z.ZodTypeDef,
-  unknown
-> = CheckSimilaritySimpleRequestSchemaInternal
-
 /** Request to export a take (master/stems) after preview approval. */
 const ExportTakeRequestSchemaInternal = z.object({
   planId: JobIdSchema,
@@ -449,25 +641,6 @@ const JobResponseSchemaInternal = z.object({
 export type JobResponse = z.infer<typeof JobResponseSchemaInternal>
 export const JobResponseSchema: z.ZodType<JobResponse, z.ZodTypeDef, unknown> =
   JobResponseSchemaInternal
-
-/** Client-submitted similarity check payload using locally extracted features. */
-export const CheckSimilarityRequestSchema = z.object({
-  jobId: JobIdSchema,
-  referenceKey: z.string(),
-  melody: z.array(z.number()),
-  rhythm: z.array(z.number()),
-})
-export type CheckSimilarityRequest = z.infer<typeof CheckSimilarityRequestSchema>
-
-/** Final export request specifying output format and fidelity. */
-export const ExportRequestSchema = z.object({
-  jobId: JobIdSchema,
-  format: ExportFormatSchema,
-  includeStemsTar: z.boolean().default(false),
-  sampleRate: z.number().int().default(48000),
-  bitDepth: z.number().int().default(24),
-})
-export type ExportRequest = z.infer<typeof ExportRequestSchema>
 
 /** Request to produce final mastered mix with LUFS/TP targets. */
 const MixFinalRequestSchemaInternal = z.object({

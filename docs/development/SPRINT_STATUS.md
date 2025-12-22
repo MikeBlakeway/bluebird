@@ -1,7 +1,7 @@
 # Sprint Status
 
 **Date:** December 2025
-**Status:** Sprint 2 In Progress
+**Status:** Sprint 2 Complete; Sprint 3 Planning
 
 ---
 
@@ -21,11 +21,11 @@
 
 ---
 
-### Sprint 1: Backend Preview Pipeline ✅ BACKEND COMPLETE
+### Sprint 1: Backend Preview Pipeline ✅ COMPLETE
 
-**Target Ship:** v0.2.0 (targeting: February 2025)
+**Shipped:** v0.2.0 (January 2025)
 
-**Completed (Backend - Tasks 1.1-1.5):**
+**Completed (Backend):**
 
 - Music synthesis worker with S3 storage
 - Voice synthesis worker with S3 storage
@@ -36,29 +36,16 @@
 
 **Quality:** 127 tests passing, 60%+ coverage, 0 TypeScript/ESLint errors
 
-**Deferred to Sprint 2 (Frontend - Tasks 2.1-2.8):**
-
-- Next.js workspace UI
-- WebAudio preview engine
-- SSE client with reconnection
-- API client package
-- Core UI components
-- Lyrics input + controls
-- Job timeline visualization
-- E2E tests (Playwright)
-
-**Why Deferred:** Focus on backend quality and DevOps infrastructure before building frontend. See [SPRINT_1_SCOPE_CHANGE.md](SPRINT_1_SCOPE_CHANGE.md) for full rationale.
-
 ---
 
-### Sprint 2: Frontend + Section Regeneration 🔄 IN PROGRESS
+### Sprint 2: Frontend + Section Regeneration ✅ COMPLETE
 
-**Duration:** 2 weeks (December 2024 - January 2025)
+**Shipped:** v0.3.0 (December 2025)
 
 **Sprint Goal:**
 Complete frontend workspace UI (deferred from Sprint 1) + add section-level regeneration, local WebAudio preview/mixing, and A/B comparison capabilities.
 
-**Progress:** 15 of 15 tasks complete (100%); all sprint 2 goals achieved - frontend foundation, section regeneration, A/B comparison, optimistic UI, testing, and performance validation complete
+**Progress:** 15 of 15 tasks complete (100%); all sprint 2 goals achieved
 
 **Completed Tasks:**
 
@@ -78,26 +65,96 @@ Complete frontend workspace UI (deferred from Sprint 1) + add section-level rege
 - ✅ Task 2.14: Integration Testing (SSE flow, regen, WebAudio, export API integration)
 - ✅ Task 2.15: Performance Validation (TTFP, section regen, WebAudio, bundle size, Lighthouse)
 
-**Sprint 2 Complete!** All 15 tasks finished. Ready for release v0.3.0.
+**Key Achievements:**
 
-**Scope Breakdown:**
+- Frontend workspace operational (lyrics → preview flow working)
+- Per-section regeneration: ≤20s P50
+- WebAudio A/B comparison: instant, no GPU cost
+- Keyboard shortcuts: Space, L, R, arrows, ?
+- Optimistic UI with toast feedback
+- Test coverage: ≥70% across frontend modules
 
-**From Sprint 1 (Deferred):**
+---
 
-1. Next.js App Router setup + routing
-2. WebAudio preview engine with transport controls
-3. SSE client (EventSource with reconnection)
-4. API client package (@bluebird/client with fetch wrapper)
-5. shadcn/ui components + Tailwind integration
-6. Lyrics input UI + genre/artist selection
-7. Job timeline visualization
-8. E2E test foundation (Playwright)
+### Sprint 3: Real Model Integration & Advanced Features 🔄 PLANNING
 
-**New for Sprint 2:** 9. Section-level lock/unlock controls 10. Regenerate single section (music + vocals) 11. A/B comparison UI (WebAudio only, no GPU) 12. Optimistic UI updates during jobs 13. Keyboard shortcuts (space=play/pause, L=lock section, R=regen)
+**Target:** v0.4.0 (January–February 2026)
+
+**Duration:** 3–4 weeks
+
+**Sprint Goal:**
+Replace placeholder stubs with real synthesis models (music/voice), implement reference-guided remix (similarity-guarded), add export gating with similarity verdict, and achieve production-ready performance targets.
+
+**Inference Strategy (Refined Dec 22):**
+
+To support solo developer + zero-cost MVP:
+
+- **Separate `bluebird-infer` repo** (Python, FastAPI, Poetry)
+- **Music:** Procedural synthesis (drums/bass/guitar, <2s per section)
+- **Voice:** Coqui TTS (open-source, multi-speaker, <5s per section)
+- **Features:** librosa (key/BPM/contour/IOI extraction)
+- **Similarity:** Pure logic (n-gram Jaccard, DTW, hard rules, no model)
+- **Cost:** Zero (all open-source, no API bills)
+- **Determinism:** Seed-based for reproducibility + caching
+
+**Key Features:**
+
+1. **Inference Repo Setup** (E3.0: Poetry, Docker, shared libs)
+2. **Feature Extraction Pod** (E3.1: librosa-based analyzer)
+3. **Music & Voice Synthesis** (E3.2–E3.3: procedural + Coqui TTS)
+4. **API Worker Integration** (E3.4: music/voice workers in Node)
+5. **Reference Upload & Remix** (E3.5–E3.6: ≤30s reference, remix endpoint)
+6. **Similarity Checking & Export Gating** (E3.7–E3.8: verdict logic, hard rules)
+7. **Performance Measurement** (E3.9: TTFP validation with real models)
+8. **Integration Testing & Documentation** (E3.10–E3.11: contract tests, user guide)
 
 **Success Metrics:**
 
-- Frontend workspace operational (lyrics → preview flow working)
+- Music/voice synthesis working with open-source models
+- TTFP P50 ≤45s (with real procedural + Coqui models)
+- Section regen P50 ≤20s
+- Similarity checker with golden fixtures
+- Export gating enforced
+- Test coverage ≥70%
+
+**Status:** Detailed plan in [sprint_plan_s_3.md](sprint_plan_s_3.md)
+
+---
+
+### Roadmap (Future)
+
+| Sprint | Version | Focus                    | Status      |
+| ------ | ------- | ------------------------ | ----------- |
+| S0     | v0.1.0  | Foundation & Auth        | ✅ Complete |
+| S1     | v0.2.0  | Backend Preview Pipeline | ✅ Complete |
+| S2     | v0.3.0  | Frontend + Section Regen | ✅ Complete |
+| S3     | v0.4.0  | Real Models + Remix      | 🔄 Planning |
+| S4     | v0.5.0  | Duets, Era FX, Pro Tier  | ⏳ Planned  |
+| S5+    | v1.0.0  | MVP Completion, DAW-lite | ⏳ Backlog  |
+
+---
+
+## Next Steps (End of Sprint 2 → Sprint 3)
+
+1. Review Sprint 3 detailed plan: [sprint_plan_s_3.md](sprint_plan_s_3.md)
+2. Confirm pod availability (music, voice, feature extraction, similarity)
+3. Set up feature flags for gradual rollout (remix, export gating)
+4. Coordinate with inference pod team on API contracts
+5. Plan golden fixtures for similarity testing
+6. Begin Week 1 tasks (music + voice integration) immediately after Sprint 2 release
+
+---
+
+## Performance Baselines (Updated)
+
+| Metric               | Sprint 1 | Sprint 2 | Sprint 3 Target | Notes                |
+| -------------------- | -------- | -------- | --------------- | -------------------- |
+| TTFP P50 (full song) | 42s      | 42s      | ≤45s            | With real models     |
+| Section Regen P50    | N/A      | ≤20s     | ≤20s            | Locked sections only |
+| WebAudio Preview     | N/A      | Instant  | Instant         | Local, no GPU        |
+| GPU Cost/Preview     | N/A      | N/A      | ≤$0.40          | For 30s preview      |
+| Test Coverage        | 60%+     | 70%+     | 70%+            | Core modules         |
+
 - Per-section regen P50 ≤20s
 - WebAudio A/B comparison works offline
 - UI responsive during renders (optimistic updates)

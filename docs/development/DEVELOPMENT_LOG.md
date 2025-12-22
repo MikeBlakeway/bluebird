@@ -2,20 +2,20 @@
 
 **Purpose:** Track architectural decisions, completed work, lessons learned, and integration patterns. Updated after each sprint or major milestone.
 
-**Last Updated:** December 2024 (Post-Sprint 1, Pre-Sprint 2)
+**Last Updated:** December 2025 (Post-Sprint 2, Planning Sprint 3)
 
 ---
 
 ## Quick Status
 
-| Sprint   | Status               | Version          | Key Deliverables                                  |
-| -------- | -------------------- | ---------------- | ------------------------------------------------- |
-| Sprint 0 | ✅ Complete          | v0.1.0           | Foundation, auth, planning endpoints, SSE, CLI    |
-| Sprint 1 | ✅ Backend Complete  | v0.2.0 (pending) | Music/voice/mix/export workers, integration tests |
-| Sprint 1 | ⏭️ Frontend Deferred | -                | Next.js, WebAudio, workspace UI → Sprint 2        |
-| Sprint 2 | ⏳ Ready             | v0.3.0 (planned) | Frontend + section regeneration                   |
+| Sprint   | Status      | Version          | Key Deliverables                                  |
+| -------- | ----------- | ---------------- | ------------------------------------------------- |
+| Sprint 0 | ✅ Complete | v0.1.0           | Foundation, auth, planning endpoints, SSE, CLI    |
+| Sprint 1 | ✅ Complete | v0.2.0           | Music/voice/mix/export workers, integration tests |
+| Sprint 2 | ✅ Complete | v0.3.0           | Frontend UI, section regen, A/B compare, E2E      |
+| Sprint 3 | 🔄 Planning | v0.4.0 (planned) | Real models, remix, similarity gating             |
 
-**Current Focus:** Transition to Sprint 2 (frontend + section-level features)
+**Current Focus:** Sprint 3 Planning (real model integration + advanced features)
 
 ---
 
@@ -455,6 +455,63 @@ Key implementation details:
 - Chose GitFlow over trunk-based to match sprint cadence
 - Each sprint ends with merge to `main` and version tag
 - `develop` is always shippable (staging validates before production)
+
+---
+
+---
+
+## Sprint 3 Planning Decision: Zero-Cost MVP with Open-Source Models (Dec 22, 2025)
+
+**Context:**
+
+After Sprint 2 completion, planning began for Sprint 3 (real model integration). Key constraint: solo developer, no budget for API calls.
+
+**Decision:**
+
+Pursue **zero-cost MVP** approach using open-source models + procedural synthesis:
+
+- **Music Synthesis:** Procedural (Python, <2s per section, deterministic seeding)
+- **Voice Synthesis:** Coqui TTS (open-source, multi-speaker, <5s per section)
+- **Feature Extraction:** librosa (industry-standard, key/BPM/contour/IOI)
+- **Similarity Checking:** Pure logic (n-gram Jaccard, DTW, hard rules)
+- **Cost:** Zero (all tools are open-source; no GPU bills)
+
+**Rationale:**
+
+1. **Solo developer constraint:** Building custom ML models from scratch is infeasible in realistic timeline
+2. **Learning over perfection:** Launch with best-effort models, gather user feedback, optimize later
+3. **Full control:** Open-source avoids vendor lock-in, API dependency, and cost creep
+4. **Reproducibility:** Seed-based determinism enables caching and debugging
+5. **Fast iteration:** Procedural synth + TTS can prototype features in weeks, not months
+
+**Alternatives Evaluated:**
+
+1. **Third-party APIs (Suno, ElevenLabs):** Easy but expensive ($0.1–$1 per preview), short-term risk
+2. **Open-source models only:** Safe but voice quality trade-off; less control over synthesis
+3. **Hybrid (chosen):** Procedural music (fast, deterministic) + Coqui TTS (good quality, open-source)
+
+**Action Items:**
+
+- Create separate `bluebird-infer` repo (Python/FastAPI)
+- Implement E3.0 (repo setup, Poetry, Docker, shared libs)
+- Implement E3.1 (analyzer pod with librosa)
+- Implement E3.2–E3.3 (music + voice pods)
+- Integrate with API workers
+- Validate TTFP with real models
+
+**Next Steps:**
+
+1. Set up `bluebird-infer` GitHub repo
+2. Begin E3.0 (shared libs, Docker, Poetry env)
+3. Prioritize E3.1 (analyzer) to unblock remix feature
+4. Measure TTFP early; identify bottlenecks
+
+**Impact:**
+
+- Sprint 3 timeline: 3–4 weeks (realistic for solo dev + open-source tools)
+- TTFP target: ≤45s P50 (achievable with procedural <2s + Coqui <5s + existing workers)
+- Cost: $0 (no API bills; can scale to users without cost creep)
+- Quality: Good enough for MVP; user feedback drives future improvements
 
 ---
 
