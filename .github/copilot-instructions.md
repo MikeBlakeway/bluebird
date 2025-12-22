@@ -807,7 +807,85 @@ Agents enhance but never override core project standards documented in this file
 
 ---
 
-## 17) Status
+## 17) Documentation & Knowledge Base
 
-- Pre‑implementation; use stubs for Music/Voice until real models are integrated.
-- Development memory begins in Sprint 0.
+### Project Documentation
+
+**Essential References** (consult for context and decisions):
+
+1. **Project Vision & Scope**
+   - [VISION.md](docs/project/VISION.md) - Product vision, brand, strategic goals
+   - [OVERVIEW.md](docs/project/OVERVIEW.md) - High-level system architecture
+   - [FEATURES.MD](docs/project/FEATURES.MD) - Feature list with F-IDs and acceptance criteria
+
+2. **Requirements & Specifications**
+   - [requirements/Method.md](docs/project/requirements/Method.md) - API endpoints, request/response specs
+   - [requirements/Non-Functional-Requirements.md](docs/project/requirements/Non-Functional-Requirements.md) - SLOs, performance targets, cost budgets
+   - [requirements/UI-Requirements.md](docs/project/requirements/UI-Requirements.md) - UI/UX specifications, component library
+   - [requirements/Scope.md](docs/project/requirements/Scope.md) - What's in/out for MVP
+
+3. **Sprint Planning & Progress**
+   - [sprints/sprint_plan_s_0_s_1.md](docs/project/sprints/sprint_plan_s_0_s_1.md) - Sprint 0–1 goals and tasks
+   - [development/SPRINT_STATUS.md](docs/development/SPRINT_STATUS.md) - Current sprint progress (15/15 tasks = 100%)
+   - [development/DEVELOPMENT_LOG.md](docs/development/DEVELOPMENT_LOG.md) - Sprint-by-sprint record of completed work
+
+### Development Guides
+
+**Essential for Implementation**:
+
+1. **Type Safety & Code Quality**
+   - [development/TYPE_SAFETY_AUDIT.md](docs/development/TYPE_SAFETY_AUDIT.md) - Type safety review and rules
+   - [development/TYPE_COERCION_AUDIT.md](docs/development/TYPE_COERCION_AUDIT.md) - Audit of unsafe type coercions (all justified)
+   - § 5.0 (above) covers type safety in detail
+
+2. **Git Workflow & Branching**
+   - [development/BRANCHING_STRATEGY.md](docs/development/BRANCHING_STRATEGY.md) - Sprint-based git workflow, release process, commands
+   - § 14 (above) references this for branch naming and workflow
+
+3. **Performance & Optimization**
+   - [development/PERFORMANCE_REPORT.md](docs/development/PERFORMANCE_REPORT.md) - Sprint 2 performance validation (TTFP 42s, all targets met)
+   - [development/TTFP_BASELINE.md](docs/development/TTFP_BASELINE.md) - TTFP measurement methodology and baseline
+
+4. **Testing & Quality**
+   - [apps/api/TESTING.md](apps/api/TESTING.md) - Test patterns and strategies (API-specific)
+   - § 7 (Testing Patterns above) covers unit/integration/E2E/audio testing
+
+5. **Frontend Best Practices**
+   - [development/NEXTJS_BEST_PRACTICES.md](docs/development/NEXTJS_BEST_PRACTICES.md) - Next.js App Router patterns, SSR/SSG decisions
+   - [development/NEXTUI_MIGRATION.md](docs/development/NEXTUI_MIGRATION.md) - HeroUI component library setup and usage
+
+6. **Configuration & Setup**
+   - [development/ESLINT_PRETTIER.md](docs/development/ESLINT_PRETTIER.md) - Linting and formatting configuration
+   - [development/TYPESCRIPT_SETUP.md](docs/development/TYPESCRIPT_SETUP.md) - TypeScript strict mode, tsconfig
+   - [development/CI_CD_GUIDE.md](docs/development/CI_CD_GUIDE.md) - GitHub Actions, CI/CD pipeline setup
+
+7. **Deployment & Operations**
+   - [development/DEPLOYMENT_CHECKLIST.md](docs/development/DEPLOYMENT_CHECKLIST.md) - Pre-release checklist and verification steps
+   - [ops/backup-and-restore.md](docs/ops/backup-and-restore.md) - Database backup and recovery procedures
+
+### Release Documentation
+
+**For Release Planning**:
+
+- [releases/v0.2.0.md](docs/releases/v0.2.0.md) - Sprint 1 release notes (preview vertical slice)
+- [releases/v0.3.0.md](docs/releases/v0.3.0.md) - Sprint 2 release notes (remix, similarity, keyboard shortcuts)
+
+### When to Consult Documentation
+
+**Use these reference materials when:**
+
+- **Designing new endpoints**: Check [Method.md](docs/project/requirements/Method.md) for existing endpoint patterns
+- **Setting performance budgets**: Consult [Non-Functional-Requirements.md](docs/project/requirements/Non-Functional-Requirements.md) and [PERFORMANCE_REPORT.md](docs/development/PERFORMANCE_REPORT.md)
+- **Making architectural decisions**: Review [OVERVIEW.md](docs/project/OVERVIEW.md) and [BRANCHING_STRATEGY.md](docs/development/BRANCHING_STRATEGY.md)
+- **Creating new tests**: Reference [apps/api/TESTING.md](apps/api/TESTING.md) and § 7 above
+- **Deploying to production**: Use [DEPLOYMENT_CHECKLIST.md](docs/development/DEPLOYMENT_CHECKLIST.md)
+- **Cutting a release**: Follow [BRANCHING_STRATEGY.md](docs/development/BRANCHING_STRATEGY.md) § Release Workflow
+
+---
+
+## 18) Status
+
+- **Current Sprint:** Sprint 2 Complete (15/15 tasks)
+- **Current Version:** v0.3.0 (ready to release to main)
+- **Next Sprint:** Sprint 3 (real model integration, advanced features)
+- **Development memory:** See [DEVELOPMENT_LOG.md](docs/development/DEVELOPMENT_LOG.md) for sprint-by-sprint record

@@ -302,25 +302,7 @@ export class AudioEngine {
     track.sourceNode = source
 
     const targetGain = this.computeEffectiveGain(track, hasSoloedTracks)
-    const gainParam = track.gainNode.gain as unknown as {
-      setValueAtTime?: (value: number, startTime: number) => void
-      linearRampToValueAtTime?: (value: number, endTime: number) => void
-      value: number
-    }
-
-    if (
-      typeof gainParam.setValueAtTime === 'function' &&
-      typeof gainParam.linearRampToValueAtTime === 'function'
-    ) {
-      gainParam.setValueAtTime(0, now)
-      if (rampDuration <= 0) {
-        gainParam.setValueAtTime(targetGain, now)
-      } else {
-        gainParam.linearRampToValueAtTime(targetGain, now + rampDuration)
-      }
-    } else {
-      gainParam.value = targetGain
-    }
+    this.applyGainRamp(track.gainNode.gain, targetGain, now, rampDuration)
 
     const offset = Math.min(startOffset, Math.max(versionState.buffer.duration - 0.001, 0))
     source.start(0, offset)
@@ -366,25 +348,7 @@ export class AudioEngine {
       track.sourceNode = source
 
       const targetGain = this.computeEffectiveGain(track, hasSoloedTracks)
-      const gainParam = track.gainNode.gain as unknown as {
-        setValueAtTime?: (value: number, startTime: number) => void
-        linearRampToValueAtTime?: (value: number, endTime: number) => void
-        value: number
-      }
-
-      if (
-        typeof gainParam.setValueAtTime === 'function' &&
-        typeof gainParam.linearRampToValueAtTime === 'function'
-      ) {
-        gainParam.setValueAtTime(0, now)
-        if (rampDuration <= 0) {
-          gainParam.setValueAtTime(targetGain, now)
-        } else {
-          gainParam.linearRampToValueAtTime(targetGain, now + rampDuration)
-        }
-      } else {
-        gainParam.value = targetGain
-      }
+      this.applyGainRamp(track.gainNode.gain, targetGain, now, rampDuration)
 
       const offset = Math.min(startOffset, Math.max(versionState.buffer.duration - 0.001, 0))
       source.start(0, offset)
@@ -605,6 +569,29 @@ export class AudioEngine {
     const sampleRate = this.audioContext?.sampleRate ?? this.config.sampleRate ?? 48000
     const preRollSamples = this.config.preRollSamples ?? 512
     return Math.max(0, preRollSamples) / sampleRate
+  }
+
+  private applyGainRamp(
+    gainParam: AudioParam,
+    targetGain: number,
+    startTime: number,
+    rampDuration: number
+  ): void {
+    const supportsRamp =
+      typeof gainParam.setValueAtTime === 'function' &&
+      typeof gainParam.linearRampToValueAtTime === 'function'
+
+    if (supportsRamp) {
+      gainParam.setValueAtTime(0, startTime)
+      if (rampDuration <= 0) {
+        gainParam.setValueAtTime(targetGain, startTime)
+      } else {
+        gainParam.linearRampToValueAtTime(targetGain, startTime + rampDuration)
+      }
+      return
+    }
+
+    gainParam.value = targetGain
   }
 
   private stopAllSources(): void {

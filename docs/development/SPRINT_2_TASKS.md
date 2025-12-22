@@ -62,7 +62,7 @@
 - Bundle size: ~102 kB First Load JS
 - 5 routes: /, /studio/new, /studio/[projectId], /studio/[projectId]/[takeId], /\_not-found
 - Build time: ~2.5s
-- Dev server: http://localhost:3000
+- Dev server: <http://localhost:3000>
 
 **Branch:** `feature/f-2.1-nextjs-setup`
 
@@ -1053,7 +1053,3 @@ pnpm --filter web build
 ---
 
 **Status:** 🔄 **IN PROGRESS** (started: 13 December 2024)
-
-```
-
-```

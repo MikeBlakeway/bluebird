@@ -133,8 +133,8 @@ Complete frontend workspace UI (deferred from Sprint 1) + add section-level rege
 
 **Deployment:**
 
-- Staging: `develop` push → https://staging.bluebird.app
-- Production: `main` push → https://bluebird.app
+- Staging: `develop` push → <https://staging.bluebird.app>
+- Production: `main` push → <https://bluebird.app>
 
 ---
 
@@ -259,10 +259,9 @@ git checkout -b feature/f-2.1-nextjs-setup
 
 **Sprint Documentation:**
 
-- [Sprint 0 Complete](SPRINT_0_COMPLETE.md)
-- [Sprint 1 Complete (Backend)](SPRINT_1_COMPLETE.md)
-- [Sprint 1 Scope Change](SPRINT_1_SCOPE_CHANGE.md)
 - [Sprint 2 Plan](../project/sprints/sprint_plan_s_2.md)
+- [Release Notes - v0.3.0](../releases/v0.3.0.md)
+- [Release Notes - v0.2.0](../releases/v0.2.0.md)
 
 **DevOps:**
 
