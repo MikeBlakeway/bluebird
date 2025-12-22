@@ -4,15 +4,15 @@ import ComponentCreator from '@docusaurus/ComponentCreator'
 export default [
   {
     path: '/docs',
-    component: ComponentCreator('/docs', 'db4'),
+    component: ComponentCreator('/docs', 'b3a'),
     routes: [
       {
         path: '/docs',
-        component: ComponentCreator('/docs', '98f'),
+        component: ComponentCreator('/docs', '3bb'),
         routes: [
           {
             path: '/docs',
-            component: ComponentCreator('/docs', '157'),
+            component: ComponentCreator('/docs', '38b'),
             routes: [
               {
                 path: '/docs/',
@@ -33,8 +33,26 @@ export default [
                 sidebar: 'docs',
               },
               {
+                path: '/docs/development/branching-strategy',
+                component: ComponentCreator('/docs/development/branching-strategy', 'ae3'),
+                exact: true,
+                sidebar: 'docs',
+              },
+              {
+                path: '/docs/development/ci-cd',
+                component: ComponentCreator('/docs/development/ci-cd', 'dbf'),
+                exact: true,
+                sidebar: 'docs',
+              },
+              {
                 path: '/docs/development/getting-started',
                 component: ComponentCreator('/docs/development/getting-started', 'bd2'),
+                exact: true,
+                sidebar: 'docs',
+              },
+              {
+                path: '/docs/development/performance',
+                component: ComponentCreator('/docs/development/performance', '169'),
                 exact: true,
                 sidebar: 'docs',
               },

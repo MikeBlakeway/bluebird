@@ -56,6 +56,27 @@
               "label": "Getting Started",
               "docId": "development/getting-started",
               "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/branching-strategy",
+              "label": "Branching Strategy",
+              "docId": "development/branching-strategy",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/ci-cd",
+              "label": "CI/CD Pipeline",
+              "docId": "development/ci-cd",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/performance",
+              "label": "Performance & Optimization",
+              "docId": "development/performance",
+              "unlisted": false
             }
           ],
           "collapsed": true,
@@ -103,13 +124,31 @@
       "architecture/overview": {
         "id": "architecture/overview",
         "title": "Architecture Overview",
-        "description": "Bluebird's architecture is designed for scalability, type safety, and performance.",
+        "description": "Bluebird is a distributed AI music composition platform with clear separation of concerns across frontend, API orchestrator, and stateless inference pods.",
+        "sidebar": "docs"
+      },
+      "development/branching-strategy": {
+        "id": "development/branching-strategy",
+        "title": "Branching Strategy",
+        "description": "Purpose: Define a sprint-based branching workflow that integrates with CI/CD and ensures stable releases.",
+        "sidebar": "docs"
+      },
+      "development/ci-cd": {
+        "id": "development/ci-cd",
+        "title": "CI/CD Pipeline",
+        "description": "Comprehensive guide to Bluebird's CI/CD infrastructure and deployment strategies.",
         "sidebar": "docs"
       },
       "development/getting-started": {
         "id": "development/getting-started",
         "title": "Getting Started",
         "description": "Prerequisites",
+        "sidebar": "docs"
+      },
+      "development/performance": {
+        "id": "development/performance",
+        "title": "Performance & Optimization",
+        "description": "Performance targets, baselines, and optimization strategies for Bluebird.",
         "sidebar": "docs"
       },
       "intro": {

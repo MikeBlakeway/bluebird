@@ -21,8 +21,23 @@
               "sidebar": "docs"
             },
             {
+              "id": "development/branching-strategy",
+              "path": "/docs/development/branching-strategy",
+              "sidebar": "docs"
+            },
+            {
+              "id": "development/ci-cd",
+              "path": "/docs/development/ci-cd",
+              "sidebar": "docs"
+            },
+            {
               "id": "development/getting-started",
               "path": "/docs/development/getting-started",
+              "sidebar": "docs"
+            },
+            {
+              "id": "development/performance",
+              "path": "/docs/development/performance",
               "sidebar": "docs"
             },
             {

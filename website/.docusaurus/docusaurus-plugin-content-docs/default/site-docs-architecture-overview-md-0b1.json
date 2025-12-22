@@ -1,7 +1,7 @@
 {
   "id": "architecture/overview",
   "title": "Architecture Overview",
-  "description": "Bluebird's architecture is designed for scalability, type safety, and performance.",
+  "description": "Bluebird is a distributed AI music composition platform with clear separation of concerns across frontend, API orchestrator, and stateless inference pods.",
   "source": "@site/docs/architecture/overview.md",
   "sourceDirName": "architecture",
   "slug": "/architecture/overview",
@@ -17,8 +17,8 @@
   },
   "sidebar": "docs",
   "previous": {
-    "title": "Getting Started",
-    "permalink": "/docs/development/getting-started"
+    "title": "Performance & Optimization",
+    "permalink": "/docs/development/performance"
   },
   "next": {
     "title": "Overview",

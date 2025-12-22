@@ -37,6 +37,21 @@ const sidebars: SidebarsConfig = {
           id: 'development/getting-started',
           label: 'Getting Started',
         },
+        {
+          type: 'doc',
+          id: 'development/branching-strategy',
+          label: 'Branching Strategy',
+        },
+        {
+          type: 'doc',
+          id: 'development/ci-cd',
+          label: 'CI/CD Pipeline',
+        },
+        {
+          type: 'doc',
+          id: 'development/performance',
+          label: 'Performance & Optimization',
+        },
       ],
     },
     {

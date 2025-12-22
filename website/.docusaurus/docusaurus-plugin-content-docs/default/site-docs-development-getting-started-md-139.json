@@ -21,7 +21,7 @@
     "permalink": "/docs/project/features"
   },
   "next": {
-    "title": "Overview",
-    "permalink": "/docs/architecture/overview"
+    "title": "Branching Strategy",
+    "permalink": "/docs/development/branching-strategy"
   }
 }

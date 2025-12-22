@@ -1,0 +1,27 @@
+{
+  "id": "development/performance",
+  "title": "Performance & Optimization",
+  "description": "Performance targets, baselines, and optimization strategies for Bluebird.",
+  "source": "@site/docs/development/performance.md",
+  "sourceDirName": "development",
+  "slug": "/development/performance",
+  "permalink": "/docs/development/performance",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/performance.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "CI/CD Pipeline",
+    "permalink": "/docs/development/ci-cd"
+  },
+  "next": {
+    "title": "Overview",
+    "permalink": "/docs/architecture/overview"
+  }
+}

@@ -4,7 +4,64 @@ sidebar_position: 1
 
 # Architecture Overview
 
-Bluebird's architecture is designed for **scalability, type safety, and performance**.
+Bluebird is a distributed AI music composition platform with clear separation of concerns across frontend, API orchestrator, and stateless inference pods.
+
+## System Design
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Web Frontend (Next.js)                 │
+│                    apps/web (React 18 + TS)                 │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                        HTTPS / REST / SSE
+                               │
+┌──────────────────────────────▼──────────────────────────────┐
+│                   API Orchestrator (Fastify)                │
+│              apps/api (Node.js + TypeScript)                │
+│  - Routes, Queue Manager, Job Scheduler                      │
+└──────────────┬───────────────────────────────┬──────────────┘
+               │                               │
+        HTTP POST (jobs)             HTTP GET (results)
+               │                               │
+┌──────────────▼──────────────┐  ┌────────────▼────────────────┐
+│   Pod Network (Python)      │  │   Data Stores               │
+│   (FastAPI Services)        │  │                             │
+│  Analyzer, Planner, Melody, │  │  - PostgreSQL (metadata)    │
+│  Music, Voice, Similarity,  │  │  - Redis (cache/sessions)   │
+│  Mix, Exporter              │  │  - MinIO/S3 (audio/files)   │
+│  (stateless, containerized) │  │                             │
+└─────────────────────────────┘  └─────────────────────────────┘
+```
+
+## Key Components
+
+### Frontend (Web)
+
+- **Framework**: Next.js 14+ with App Router
+- **Styling**: Tailwind CSS + HeroUI components
+- **Real-time**: SSE for job status, WebAudio for preview
+- **Features**: Auth, project management, mixing, export
+
+### Backend API
+
+- **Framework**: Fastify v4 (Node.js + TypeScript)
+- **Database**: Prisma ORM + PostgreSQL
+- **Job Queue**: BullMQ with Redis
+- **Features**: REST endpoints, SSE stream, idempotency, Zod validation
+
+### Inference Pods
+
+- **Language**: Python 3.10+ FastAPI
+- **Stateless**: All state via S3, HTTP coordination
+- **Audio I/O**: WAV file handling via S3
+- **Pods**: Analyzer, Planner, Melody, Music, Voice, Similarity, Mix, Exporter
+
+### Data Layer
+
+- **PostgreSQL**: User accounts, projects, takes, jobs
+- **Redis**: Sessions, job queue, cache
+- **MinIO/S3**: Audio stems, features, reference audio
 
 ## Key Principles
 

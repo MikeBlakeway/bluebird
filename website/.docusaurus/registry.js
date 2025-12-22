@@ -27,6 +27,11 @@ export default {
     '@theme/DocItem',
     require.resolveWeak('@theme/DocItem'),
   ],
+  '18207a21': [
+    () => import(/* webpackChunkName: "18207a21" */ '@site/docs/development/ci-cd.md'),
+    '@site/docs/development/ci-cd.md',
+    require.resolveWeak('@site/docs/development/ci-cd.md'),
+  ],
   '5e95c892': [
     () => import(/* webpackChunkName: "5e95c892" */ '@theme/DocsRoot'),
     '@theme/DocsRoot',
@@ -65,9 +70,19 @@ export default {
     '@site/docs/project/overview.md',
     require.resolveWeak('@site/docs/project/overview.md'),
   ],
+  bf75f4d4: [
+    () => import(/* webpackChunkName: "bf75f4d4" */ '@site/docs/development/performance.md'),
+    '@site/docs/development/performance.md',
+    require.resolveWeak('@site/docs/development/performance.md'),
+  ],
   dc73708d: [
     () => import(/* webpackChunkName: "dc73708d" */ '@site/docs/project/features.md'),
     '@site/docs/project/features.md',
     require.resolveWeak('@site/docs/project/features.md'),
+  ],
+  f477f303: [
+    () => import(/* webpackChunkName: "f477f303" */ '@site/docs/development/branching-strategy.md'),
+    '@site/docs/development/branching-strategy.md',
+    require.resolveWeak('@site/docs/development/branching-strategy.md'),
   ],
 }
