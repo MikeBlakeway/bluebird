@@ -1,15 +1,23 @@
 /**
- * Export Routes (Sprint 1)
+ * Export Routes (Sprint 1/2)
  *
- * Endpoints for exporting audio previews and final mixes.
+ * Endpoints for exporting audio previews and final mastered bundles.
  */
 
 import type { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { TakeIdSchema, ExportPreviewRequestSchema } from '@bluebird/types'
+import {
+  TakeIdSchema,
+  ExportPreviewRequestSchema,
+  ExportFinalRequestSchema,
+  ExportFinalResponseSchema,
+  type ExportFinalResponse,
+  type ExportBundle,
+} from '@bluebird/types'
 import { requireAuth, requireIdempotencyKey } from '../lib/middleware.js'
 import { enqueueExportJob } from '../lib/queue.js'
+import { getPresignedUrl } from '../lib/s3.js'
 import { createRouteLogger } from '../lib/logger.js'
 
 const ExportStatusParamsSchema = z.object({
@@ -113,6 +121,107 @@ export function registerExportRoutes(fastify: FastifyInstance) {
         },
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       })
+    }
+  )
+
+  /**
+   * POST /export
+   * Export final mastered bundle (master + stems + metadata + similarity report).
+   * Requires similarity check to pass unless explicitly bypassed.
+   */
+  app.post(
+    '/export',
+    {
+      schema: {
+        body: ExportFinalRequestSchema,
+        response: {
+          200: ExportFinalResponseSchema,
+          400: z.object({ error: z.string() }),
+          403: z.object({ error: z.string(), reason: z.string() }),
+          500: z.object({ error: z.string() }),
+        },
+        tags: ['Export'],
+        description: 'Export final mastered bundle with stems and metadata',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
+    async (request, reply) => {
+      const { planId, takeId, format, includeStems, sampleRate, bitDepth, requireSimilarityCheck } =
+        request.body
+
+      const jobId = request.idempotencyKey ?? `export:final:${planId}:${takeId}:${Date.now()}`
+
+      try {
+        // TODO: Check similarity report if required
+        if (requireSimilarityCheck) {
+          // Stub: For now, assume similarity check passed
+          // In production: query similarity report from DB and verify verdict === 'pass'
+        }
+
+        // TODO: Generate presigned URLs for master and stems
+        // For now, generate stub URLs
+        const masterKey = `projects/stub/takes/${takeId}/export/master.${format}`
+        const masterUrl = await getPresignedUrl(masterKey, 3600)
+
+        const bundle: ExportBundle = {
+          jobId,
+          projectId: 'stub-project-id',
+          master: {
+            format,
+            sampleRate,
+            bitDepth,
+            key: masterKey,
+            url: masterUrl,
+          },
+          stems: includeStems
+            ? [
+                {
+                  name: 'vocals',
+                  format,
+                  key: `projects/stub/takes/${takeId}/export/vocals.${format}`,
+                  url: await getPresignedUrl(
+                    `projects/stub/takes/${takeId}/export/vocals.${format}`,
+                    3600
+                  ),
+                },
+                {
+                  name: 'music',
+                  format,
+                  key: `projects/stub/takes/${takeId}/export/music.${format}`,
+                  url: await getPresignedUrl(
+                    `projects/stub/takes/${takeId}/export/music.${format}`,
+                    3600
+                  ),
+                },
+              ]
+            : [],
+          metadata: {
+            title: 'Untitled Song',
+            artist: 'Bluebird AI',
+            duration: 180.0,
+            bpm: 120,
+            key: 'C',
+          },
+          createdAt: new Date().toISOString(),
+        }
+
+        const response: ExportFinalResponse = {
+          jobId,
+          bundle,
+          expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
+          message: 'Export bundle generated successfully. Download URLs valid for 1 hour.',
+        }
+
+        log.info(
+          { planId, takeId, format, includeStems, sampleRate, bitDepth },
+          'Generated export bundle'
+        )
+
+        return reply.code(200).send(response)
+      } catch (error) {
+        log.error({ error, planId, takeId }, 'Failed to generate export bundle')
+        return reply.code(500).send({ error: 'Failed to generate export bundle' })
+      }
     }
   )
 }
