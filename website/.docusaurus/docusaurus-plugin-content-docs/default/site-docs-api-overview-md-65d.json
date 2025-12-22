@@ -1,0 +1,23 @@
+{
+  "id": "api/overview",
+  "title": "API Overview",
+  "description": "Live Swagger UI",
+  "source": "@site/docs/api/overview.md",
+  "sourceDirName": "api",
+  "slug": "/api/overview",
+  "permalink": "/docs/api/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/api/overview.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Overview",
+    "permalink": "/docs/architecture/overview"
+  }
+}

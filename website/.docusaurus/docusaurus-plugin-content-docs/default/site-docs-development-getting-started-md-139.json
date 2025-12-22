@@ -1,0 +1,27 @@
+{
+  "id": "development/getting-started",
+  "title": "Getting Started",
+  "description": "Prerequisites",
+  "source": "@site/docs/development/getting-started.md",
+  "sourceDirName": "development",
+  "slug": "/development/getting-started",
+  "permalink": "/docs/development/getting-started",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/getting-started.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Features",
+    "permalink": "/docs/project/features"
+  },
+  "next": {
+    "title": "Overview",
+    "permalink": "/docs/architecture/overview"
+  }
+}

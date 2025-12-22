@@ -1,0 +1,27 @@
+{
+  "id": "project/features",
+  "title": "Features",
+  "description": "Current Features (MVP)",
+  "source": "@site/docs/project/features.md",
+  "sourceDirName": "project",
+  "slug": "/project/features",
+  "permalink": "/docs/project/features",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/project/features.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Overview",
+    "permalink": "/docs/project/overview"
+  },
+  "next": {
+    "title": "Getting Started",
+    "permalink": "/docs/development/getting-started"
+  }
+}
