@@ -6,9 +6,10 @@ let server: FastifyInstance | undefined
 
 beforeAll(async () => {
   try {
-    server = await createServer()
+    const instance = await createServer()
+    server = instance
     // Use random available port for tests to avoid conflicts
-    await server.listen({ port: 0, host: '127.0.0.1' })
+    await instance.listen({ port: 0, host: '127.0.0.1' })
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Failed to create server:', error)
@@ -30,6 +31,9 @@ describe('Auth Routes', () => {
       url: '/auth/magic-link',
       payload: {
         email: 'test@example.com',
+      },
+      headers: {
+        'Idempotency-Key': 'test-idempotency-auth',
       },
     })
 
@@ -72,6 +76,9 @@ describe('Project Routes', () => {
         name: 'Test Project',
         lyrics: 'This is a test project with lyrics that are long enough',
         genre: 'Pop',
+      },
+      headers: {
+        'Idempotency-Key': 'test-idempotency-project',
       },
     })
 

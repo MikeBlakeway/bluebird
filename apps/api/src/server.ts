@@ -1,4 +1,11 @@
-import Fastify from 'fastify'
+import Fastify, { type FastifyBaseLogger } from 'fastify'
+import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUi from '@fastify/swagger-ui'
+import {
+  validatorCompiler,
+  serializerCompiler,
+  jsonSchemaTransform,
+} from 'fastify-type-provider-zod'
 import fastifyCookie from '@fastify/cookie'
 import cors from '@fastify/cors'
 import rateLimit from '@fastify/rate-limit'
@@ -20,13 +27,19 @@ const HOST = process.env.BLUEBIRD_HOST || '0.0.0.0'
 const ENV = process.env.BLUEBIRD_ENV || 'development'
 
 export async function createServer() {
+  // Fastify expects `FastifyBaseLogger`; our pino instance is structurally compatible.
+  const fastifyLogger = logger as unknown as FastifyBaseLogger
+
   const fastify = Fastify({
-    logger: logger as any,
+    loggerInstance: fastifyLogger,
     bodyLimit: 1024 * 1024, // 1MB global limit
     disableRequestLogging: false,
     requestIdHeader: 'x-request-id',
     requestIdLogLabel: 'reqId',
   })
+
+  fastify.setValidatorCompiler(validatorCompiler)
+  fastify.setSerializerCompiler(serializerCompiler)
 
   // Security: CORS protection
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
@@ -54,6 +67,43 @@ export async function createServer() {
       includeSubDomains: true,
       preload: true,
     },
+  })
+
+  // Documentation: Swagger / OpenAPI
+  await fastify.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: 'Bluebird API',
+        description: 'AI music composition platform API',
+        version: '0.1.0',
+      },
+      servers: [
+        {
+          url: `http://${HOST}:${PORT}`,
+          description: 'Development Server',
+        },
+      ],
+      components: {
+        securitySchemes: {
+          cookieAuth: {
+            type: 'apiKey',
+            in: 'cookie',
+            name: 'token',
+          },
+        },
+      },
+    },
+    transform: jsonSchemaTransform,
+  })
+
+  await fastify.register(fastifySwaggerUi, {
+    routePrefix: '/documentation',
+    uiConfig: {
+      docExpansion: 'list',
+      deepLinking: false,
+    },
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
   })
 
   // Security: Rate limiting (global)

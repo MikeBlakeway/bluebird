@@ -1,5 +1,7 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import { AnalyzeRequestSchema } from '@bluebird/types'
+import { FastifyInstance, FastifyReply } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { z } from 'zod'
+import { AnalyzeRequestSchema, ArrangementSpecSchema } from '@bluebird/types'
 import { planArrangement } from '../lib/planner.js'
 import {
   analyzeLyrics,
@@ -7,13 +9,10 @@ import {
   estimateTempo,
   extractSeedPhrase,
 } from '../lib/analyzer.js'
+import { requireAuth, requireIdempotencyKey, type AuthenticatedRequest } from '../lib/middleware.js'
+import { createRouteLogger } from '../lib/logger.js'
 
-interface AuthenticatedRequest extends FastifyRequest {
-  user?: {
-    userId: string
-    email: string
-  }
-}
+const log = createRouteLogger('/plan/arrangement', 'POST')
 
 /**
  * POST /plan/arrangement
@@ -23,17 +22,17 @@ export async function planArrangementHandler(
   request: AuthenticatedRequest,
   reply: FastifyReply
 ): Promise<void> {
-  // Require auth
   if (!request.user) {
     return reply.code(401).send({ error: 'Unauthorized' })
   }
 
   const parsed = AnalyzeRequestSchema.safeParse(request.body)
   if (!parsed.success) {
-    return reply.code(400).send({ error: 'Invalid request', details: parsed.error })
+    return reply.code(400).send({ error: 'Invalid request', details: parsed.error.format() })
   }
 
   const { projectId, lyrics } = parsed.data
+  const jobId = request.idempotencyKey ?? `plan:${projectId}:${Date.now()}`
 
   try {
     // Analyze lyrics
@@ -55,14 +54,11 @@ export async function planArrangementHandler(
       analyzedAt: new Date().toISOString(),
     }
 
-    // Generate arrangement (stub jobId for now - will be replaced in orchestrator)
-    const stubJobId = `job-${Date.now()}`
-    const arrangement = planArrangement(analysisResult, stubJobId)
+    const arrangement = planArrangement(analysisResult, jobId)
 
     return reply.code(200).send(arrangement)
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('[PLANNER ERROR]', error)
+    log.error({ error, projectId }, 'Failed to plan arrangement')
     return reply.code(400).send({
       message: error instanceof Error ? error.message : 'Failed to plan arrangement',
     })
@@ -70,6 +66,38 @@ export async function planArrangementHandler(
 }
 
 export function registerPlannerRoutes(fastify: FastifyInstance) {
-  fastify.post('/plan/arrangement', planArrangementHandler)
-  fastify.post('/plan/vocals', planArrangementHandler) // Alias
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
+
+  app.post(
+    '/plan/arrangement',
+    {
+      schema: {
+        body: AnalyzeRequestSchema,
+        response: {
+          200: ArrangementSpecSchema,
+          400: z.object({ message: z.string() }),
+        },
+        tags: ['Planner'],
+        description: 'Generate song arrangement from lyrics',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
+    planArrangementHandler
+  )
+  app.post(
+    '/plan/vocals',
+    {
+      schema: {
+        body: AnalyzeRequestSchema,
+        response: {
+          200: ArrangementSpecSchema,
+          400: z.object({ message: z.string() }),
+        },
+        tags: ['Planner'],
+        description: 'Generate song arrangement from lyrics (alias)',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
+    planArrangementHandler
+  ) // Alias
 }

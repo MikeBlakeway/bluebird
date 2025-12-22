@@ -24,7 +24,7 @@ export function createJobEventSubscriber(jobId: JobId) {
         try {
           const parsed = JobEventSchema.parse(JSON.parse(payload))
           onEvent(parsed)
-        } catch (err) {
+        } catch (_err) {
           // ignore malformed messages to keep stream alive
         }
       }

@@ -32,6 +32,9 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 
+# Next.js
+apps/web/next-env.d.ts
+
 # Prisma
 prisma/migrations/*.sql
 !prisma/migrations/migration_lock.toml

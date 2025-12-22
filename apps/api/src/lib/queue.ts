@@ -17,6 +17,7 @@ export const QUEUE_NAMES = {
   MIX: 'mix',
   CHECK: 'check',
   EXPORT: 'export',
+  SECTION: 'section',
 } as const
 
 // Priority levels (higher = more urgent)
@@ -77,6 +78,14 @@ export interface ExportJobData {
   isPro?: boolean
 }
 
+export interface SectionJobData {
+  projectId: ProjectId
+  planId: JobId
+  sectionId: string
+  regen: boolean
+  isPro?: boolean
+}
+
 // Get shared Redis connection
 const redisConnection = getQueueConnection()
 
@@ -104,6 +113,7 @@ export const musicQueue = new Queue<MusicJobData>(QUEUE_NAMES.SYNTH, defaultQueu
 export const voiceQueue = new Queue<VoiceJobData>(QUEUE_NAMES.VOCAL, defaultQueueOptions)
 export const mixQueue = new Queue<MixJobData>(QUEUE_NAMES.MIX, defaultQueueOptions)
 export const exportQueue = new Queue<ExportJobData>(QUEUE_NAMES.EXPORT, defaultQueueOptions)
+export const sectionQueue = new Queue<SectionJobData>(QUEUE_NAMES.SECTION, defaultQueueOptions)
 
 /**
  * Enqueue a song planning job.
@@ -167,6 +177,18 @@ export async function enqueueExportJob(data: ExportJobData): Promise<void> {
 }
 
 /**
+ * Enqueue a section regeneration job.
+ */
+export async function enqueueSectionJob(data: SectionJobData): Promise<string> {
+  const jobId = `${data.projectId}:section-regen:${data.sectionId}:${Date.now()}`
+  await sectionQueue.add('regenerate-section', data, {
+    jobId,
+    priority: data.isPro ? PRIORITY.PRO : PRIORITY.STANDARD,
+  })
+  return jobId
+}
+
+/**
  * Get job status by ID.
  */
 export async function getJobStatus(jobId: JobId): Promise<{
@@ -176,7 +198,15 @@ export async function getJobStatus(jobId: JobId): Promise<{
   failedReason?: string
 } | null> {
   // Try all queues to find the job
-  const queues = [planQueue, analyzeQueue, musicQueue, voiceQueue, mixQueue, exportQueue]
+  const queues = [
+    planQueue,
+    analyzeQueue,
+    musicQueue,
+    voiceQueue,
+    mixQueue,
+    exportQueue,
+    sectionQueue,
+  ]
 
   for (const queue of queues) {
     const job = await queue.getJob(jobId)
@@ -205,6 +235,7 @@ export async function closeQueues(): Promise<void> {
     voiceQueue.close(),
     mixQueue.close(),
     exportQueue.close(),
+    sectionQueue.close(),
   ]
 
   // Note: Redis connection is shared and managed by redis.ts

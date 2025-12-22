@@ -1,13 +1,18 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { z } from 'zod'
 import {
   MagicLinkRequestSchema,
   VerifyMagicLinkRequestSchema,
+  MagicLinkResponseSchema,
+  AuthResponseSchema,
   type AuthResponse,
   type MagicLinkResponse,
 } from '@bluebird/types'
 import { generateMagicLink, verifyMagicLink } from '../lib/auth.js'
 import { generateToken } from '../lib/jwt.js'
 import { createRouteLogger } from '../lib/logger.js'
+import { requireAuth, requireIdempotencyKey } from '../lib/middleware.js'
 
 const log = createRouteLogger('/auth', 'POST')
 
@@ -66,7 +71,7 @@ export async function verifyMagicLinkHandler(request: FastifyRequest, reply: Fas
     const isProduction = process.env.NODE_ENV === 'production'
     reply.setCookie('auth_token', jwtToken, {
       httpOnly: true,
-      secure: true, // Always use secure flag (requires HTTPS)
+      secure: isProduction, // Avoid breaking local dev; enforced in prod
       sameSite: 'strict', // Stricter CSRF protection
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/',
@@ -119,6 +124,8 @@ export async function logoutHandler(_request: FastifyRequest, reply: FastifyRepl
 }
 
 export function registerAuthRoutes(fastify: FastifyInstance) {
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
+
   // Stricter rate limiting for authentication endpoints
   const authRateLimit = {
     config: {
@@ -129,8 +136,66 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     },
   }
 
-  fastify.post('/auth/magic-link', authRateLimit, magicLinkHandler)
-  fastify.post('/auth/verify', authRateLimit, verifyMagicLinkHandler)
-  fastify.get('/auth/me', getCurrentUserHandler)
-  fastify.post('/auth/logout', logoutHandler)
+  app.post(
+    '/auth/magic-link',
+    {
+      schema: {
+        body: MagicLinkRequestSchema,
+        response: {
+          200: MagicLinkResponseSchema,
+          400: z.object({ success: z.boolean(), message: z.string() }),
+        },
+        tags: ['Auth'],
+        description: 'Request a magic link to sign in',
+      },
+      ...authRateLimit,
+      preHandler: [requireIdempotencyKey],
+    },
+    magicLinkHandler
+  )
+  app.post(
+    '/auth/verify',
+    {
+      schema: {
+        body: VerifyMagicLinkRequestSchema,
+        response: {
+          200: AuthResponseSchema,
+          400: z.object({ success: z.boolean(), message: z.string() }),
+        },
+        tags: ['Auth'],
+        description: 'Verify magic link token',
+      },
+      ...authRateLimit,
+      preHandler: [requireIdempotencyKey],
+    },
+    verifyMagicLinkHandler
+  )
+  app.get(
+    '/auth/me',
+    {
+      schema: {
+        response: {
+          200: z.object({ id: z.string(), email: z.string() }),
+          401: z.object({ message: z.string() }),
+        },
+        tags: ['Auth'],
+        description: 'Get current user',
+      },
+    },
+    getCurrentUserHandler
+  )
+  app.post(
+    '/auth/logout',
+    {
+      schema: {
+        response: {
+          200: z.object({ success: z.boolean(), message: z.string() }),
+        },
+        tags: ['Auth'],
+        description: 'Logout user',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
+    logoutHandler
+  )
 }

@@ -10,6 +10,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TakeStatus {
+  pending
+  planned
+  processing
+  completed
+  failed
+}
+
 model User {
   id        String     @id @default(cuid())
   email     String     @unique
@@ -18,8 +26,6 @@ model User {
   updatedAt DateTime   @updatedAt
   projects  Project[]
   magicLink MagicLink?
-
-  @@index([email])
 }
 
 model MagicLink {
@@ -29,9 +35,6 @@ model MagicLink {
   expiresAt DateTime
   used      Boolean   @default(false)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([token])
-  @@index([userId])
 }
 
 model Project {
@@ -52,13 +55,13 @@ model Take {
   id        String    @id @default(cuid())
   projectId String
   jobId     String    @unique
-  status    String    @default("pending") // pending, processing, completed, failed
+  status    TakeStatus @default(pending)
   plan      Json?     // ArrangementSpec
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
-  @@index([jobId])
+  @@index([jobId, projectId])
   @@index([status])
 }

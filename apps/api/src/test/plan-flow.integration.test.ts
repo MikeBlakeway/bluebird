@@ -46,7 +46,7 @@ Making music divine`
           Bucket: 'bluebird',
         })
       )
-    } catch (error) {
+    } catch (_error) {
       // Bucket may already exist, ignore error
     }
 

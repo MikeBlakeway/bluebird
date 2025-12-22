@@ -2,6 +2,21 @@
 
 **Purpose:** Track architectural decisions, completed work, lessons learned, and integration patterns. Updated after each sprint or major milestone.
 
+**Last Updated:** December 2024 (Post-Sprint 1, Pre-Sprint 2)
+
+---
+
+## Quick Status
+
+| Sprint   | Status               | Version          | Key Deliverables                                  |
+| -------- | -------------------- | ---------------- | ------------------------------------------------- |
+| Sprint 0 | ✅ Complete          | v0.1.0           | Foundation, auth, planning endpoints, SSE, CLI    |
+| Sprint 1 | ✅ Backend Complete  | v0.2.0 (pending) | Music/voice/mix/export workers, integration tests |
+| Sprint 1 | ⏭️ Frontend Deferred | -                | Next.js, WebAudio, workspace UI → Sprint 2        |
+| Sprint 2 | ⏳ Ready             | v0.3.0 (planned) | Frontend + section regeneration                   |
+
+**Current Focus:** Transition to Sprint 2 (frontend + section-level features)
+
 ---
 
 ## Sprint 0: Foundation & Auth (Planned: Dec 26 – Jan 6)
@@ -372,6 +387,77 @@ Key implementation details:
 
 ---
 
+## Sprint 1 Scope Change: Backend Focus (December 2024)
+
+**Decision:** Defer frontend work to Sprint 2 to ensure solid backend foundation
+
+**What Changed:**
+
+- **Completed:** Backend workers (music, voice, mix, export) + integration tests (Tasks 1.1-1.5)
+- **Deferred:** Frontend workspace UI, WebAudio, SSE client, E2E tests (Tasks 2.1-2.8)
+
+**Why:**
+
+1. Backend workers needed comprehensive testing before frontend integration
+2. Integration tests revealed patterns that informed worker design
+3. DevOps infrastructure (branching, CI/CD) established before multi-developer work
+4. Avoided frontend rework from backend contract changes
+
+**Impact on Sprint 2:**
+
+- Sprint 2 now includes deferred Sprint 1 frontend work PLUS new section regeneration features
+- Combined scope fits within 2-week sprint estimate
+- Frontend benefits from stable, tested backend contracts
+
+**Lessons Learned:**
+
+- Separate backend/frontend into different sprints when possible
+- Integration tests should come before frontend implementation
+- Document scope changes immediately for project transparency
+
+**See:** [SPRINT_1_SCOPE_CHANGE.md](SPRINT_1_SCOPE_CHANGE.md) for full rationale
+
+---
+
+## DevOps Infrastructure (December 2024)
+
+**Branching Strategy:** Sprint-based GitFlow
+
+- `main`: production releases (tagged v0.X.0)
+- `develop`: sprint integration (auto-deploy to staging)
+- `feature/f-X.Y-description`: feature branches
+- `release/vX.Y.Z`: release stabilization
+
+**CI/CD Pipeline:** GitHub Actions with tiered testing
+
+- All branches: lint, typecheck, unit, integration, contract tests
+- `develop`: + E2E tests + deploy staging
+- `release/*`, `main`: + security scans + deploy production
+
+**Versioning Strategy:**
+
+- Each sprint = minor version (Sprint 0: v0.1.0, Sprint 1: v0.2.0, Sprint 2: v0.3.0)
+- Hotfixes = patch version (v0.2.0 → v0.2.1)
+
+**Deployment:**
+
+- Staging: `develop` push → https://staging.bluebird.app
+- Production: `main` push → https://bluebird.app
+
+**Documentation:**
+
+- [BRANCHING_STRATEGY.md](BRANCHING_STRATEGY.md)
+- [CI_CD_GUIDE.md](CI_CD_GUIDE.md)
+- [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)
+
+**Architectural Decision:**
+
+- Chose GitFlow over trunk-based to match sprint cadence
+- Each sprint ends with merge to `main` and version tag
+- `develop` is always shippable (staging validates before production)
+
+---
+
 ## Known Issues & Workarounds
 
 ### Issue Template
@@ -384,7 +470,25 @@ Key implementation details:
 **Resolution:** [Once fixed]
 ```
 
-(Add discovered issues here)
+### Current Issues
+
+**Title:** GitHub Actions Environments Not Created
+**Status:** Open (documented)
+**Sprint Identified:** DevOps Infrastructure (December 2024)
+**Workaround:** Environment blocks commented out in `.github/workflows/ci.yml`
+**Resolution:** Manually create staging/production environments in GitHub repo settings, then uncomment blocks
+
+**Title:** E2E Tests Not Implemented
+**Status:** Open (planned for Sprint 2)
+**Sprint Identified:** Sprint 1
+**Workaround:** Manual testing + integration tests cover backend workflows
+**Resolution:** Playwright E2E suite in Sprint 2 (Task 2.8)
+
+**Title:** Dockerfiles Missing
+**Status:** Open (planned for Sprint 2)
+**Sprint Identified:** DevOps Infrastructure
+**Workaround:** Deployment jobs use placeholder echo commands
+**Resolution:** Create Dockerfiles for apps/api and apps/web in Sprint 2
 
 ---
 

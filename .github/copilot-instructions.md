@@ -605,7 +605,209 @@ LOCATION
 
 ---
 
-## 14) Status
+## 14) Git Workflow & Branching Strategy
+
+**CRITICAL**: Follow the sprint-based branching workflow documented in [docs/development/BRANCHING_STRATEGY.md](../docs/development/BRANCHING_STRATEGY.md).
+
+### Quick Rules for AI Agents
+
+**Creating Branches**
+
+- ALWAYS base feature branches on develop (not main)
+- Use naming: feature/f-X.Y-description (e.g., feature/f-1.1-music-worker)
+- Use naming: bugfix/123-description for bug fixes
+- Use naming: hotfix/vX.Y.Z-description for production bugs (base on main)
+
+**Creating Pull Requests**
+
+- Target develop for features and bugfixes
+- Target main ONLY for releases and hotfixes
+- Use conventional commit format in PR title (feat(scope): description)
+- Link to sprint tasks or feature IDs in description
+
+**Merging Code**
+
+- NEVER commit directly to main or develop
+- ALWAYS create PR even for small changes
+- Wait for CI to pass before merging
+- Delete feature branches after merge
+
+**Sprint Workflow**
+
+- Sprint start: Create feature branches from latest develop
+- During sprint: Merge completed features to develop via PR
+- Sprint end: Create release/vX.Y.Z from develop
+- After release: Merge release to main, tag, merge back to develop
+
+**Version Strategy**
+
+- Each sprint = minor version bump (v0.1.0 → v0.2.0)
+- Hotfixes = patch version bump (v0.2.0 → v0.2.1)
+- Sprint 0: v0.1.0, Sprint 1: v0.2.0, Sprint 2: v0.3.0, etc.
+
+**CI/CD Integration**
+
+- develop deploys to staging environment
+- main deploys to production environment
+- All PRs must pass: unit tests, integration tests, linting, type checks
+- Release branches also run: E2E tests, performance tests, security scans
+
+**Reference**: See [BRANCHING_STRATEGY.md](../docs/development/BRANCHING_STRATEGY.md) for full workflow, commands, and decision trees.
+
+---
+
+## 15) Quality Gates (CRITICAL - Must Follow)
+
+### Before Considering a Task Complete
+
+**ALWAYS run the following checks in this order:**
+
+1. **Type Check**: `pnpm typecheck` (or `tsc --noEmit` in package directory)
+   - Must show 0 errors
+   - Fix all type errors before proceeding
+   - Never use `as any` without eslint-disable comment in production code
+
+2. **Lint Check**: `pnpm lint` (or `eslint src`)
+   - Must show 0 errors and 0 warnings
+   - Auto-fix with `pnpm lint --fix` where possible
+   - Follow project ESLint rules strictly
+
+3. **Tests**: `pnpm test` (or `vitest run`)
+   - All tests must pass
+   - Maintain or improve test coverage
+   - Write tests for new features
+
+4. **Build**: `pnpm build`
+   - Must complete successfully
+   - Check bundle size if applicable
+   - Verify no build warnings
+
+### Before Attempting to Commit
+
+Run the complete quality gate sequence:
+
+```bash
+pnpm typecheck && pnpm lint && pnpm test && pnpm build
+```
+
+**If ANY check fails:**
+
+- Stop and fix the issues
+- DO NOT proceed to commit
+- Re-run checks after fixes
+- Update commit message to reflect fixes if needed
+
+### Exception Handling
+
+- **Test files**: `as any` allowed with `// eslint-disable-next-line @typescript-eslint/no-explicit-any` comment
+- **Type assertions**: Only use when absolutely necessary and document why
+- **Lint warnings**: Must be fixed or explicitly disabled with justification
+
+### Quality Gate Enforcement
+
+- Add **Quality Metrics** section to commit messages showing all checks passed
+- Example: ✅ Tests: 13/13 passing, ✅ TypeScript: 0 errors, ✅ ESLint: 0 errors
+- Never skip quality gates to "save time" - tech debt compounds quickly
+
+---
+
+## 16) Specialized Agent Expertise
+
+Bluebird has specialized agent personas available in `.claude/agents/` that provide domain-specific expertise. When working on specific types of tasks, adopt the relevant agent's perspective and apply their specialized knowledge.
+
+### Available Agents & When to Invoke Their Expertise
+
+**API & Backend Development:**
+
+- **`api-designer`**: When designing new endpoints, API contracts, or OpenAPI specs
+- **`backend-engineer`**: For Fastify routes, BullMQ workers, database operations, S3 integration
+- **`database-administrator`**: For schema design, migrations, query optimization, indexing
+- **`database-optimizer`**: For performance tuning, query analysis, caching strategies
+
+**Frontend & UI:**
+
+- **`frontend-developer`**: For React components, state management, client-side logic
+- **`nextjs-developer`**: For Next.js App Router patterns, SSR, routing, middleware
+- **`react-specialist`**: For advanced React patterns, hooks, performance optimization
+- **`ui-designer`**: For component design, accessibility, responsive layouts
+- **`ux-researcher`**: For user flows, interaction patterns, usability considerations
+
+**Language & Type Safety:**
+
+- **`typescript-pro`**: For advanced TypeScript patterns, type safety, generics, utility types
+- **Invoke for**: Complex type definitions, Zod schemas, generic constraints, type-level programming
+
+**Quality & Security:**
+
+- **`code-reviewer`**: Before finalizing implementations, for code quality assessment
+- **`security-auditor`**: For auth flows, input validation, S3 presigned URLs, JWT handling
+- **`qa-expert`**: For test strategies, coverage analysis, edge case identification
+- **`performance-engineer`**: For TTFP optimization, bundle size, caching, resource usage
+
+**Infrastructure & Operations:**
+
+- **`devops-engineer`**: For Docker, CI/CD pipelines, deployment automation
+- **`deployment-engineer`**: For production deployments, rollback strategies, zero-downtime releases
+
+**Architecture & Planning:**
+
+- **`architect-reviewer`**: For architectural decisions, system design, integration patterns
+- **`product-manager`**: For feature scope, acceptance criteria, user stories
+- **`project-manager`**: For sprint planning, task breakdown, dependency management
+- **`business-analyst`**: For requirements analysis, domain modeling, workflow design
+
+**Documentation & Communication:**
+
+- **`technical-writer`**: For documentation, READMEs, API docs, inline comments
+- **`api-documenter`**: For OpenAPI specs, endpoint documentation, request/response examples
+
+**Specialized Tasks:**
+
+- **`debugger`**: For troubleshooting production issues, analyzing logs, root cause analysis
+- **`prompt-engineer`**: For AI model interactions, prompt optimization (future ML features)
+
+### How to Invoke Agent Expertise
+
+**In Chat Prompts:**
+
+```
+"From the perspective of @api-designer: Design a new endpoint for uploading remix reference audio"
+"As @security-auditor: Review this JWT validation logic for vulnerabilities"
+"@typescript-pro: Refactor this type to use discriminated unions instead of optional fields"
+```
+
+**In Code Comments (for inline completions):**
+
+```typescript
+// @backend-engineer: Implement BullMQ worker for vocal synthesis queue
+// @typescript-pro: Create a generic type for job payloads with status tracking
+// @security-auditor: Add input validation and rate limiting
+```
+
+**Context Switching:**
+When working on multi-faceted tasks, invoke multiple agents sequentially:
+
+1. **@architect-reviewer**: Review overall design approach
+2. **@api-designer**: Design the endpoint contract
+3. **@backend-engineer**: Implement the route and worker
+4. **@typescript-pro**: Ensure type safety throughout
+5. **@security-auditor**: Validate security measures
+6. **@code-reviewer**: Final quality check before PR
+
+### Agent Integration with Existing Standards
+
+All agent expertise must align with:
+
+- § 5.0 Type Safety rules (Zod validation, no unsafe casts)
+- § 13 Commit Message Standards (plain text, conventional commits)
+- § 14 Git Workflow (feature branches, PR reviews)
+- § 15 Quality Gates (typecheck, lint, test, build)
+
+Agents enhance but never override core project standards documented in this file.
+
+---
+
+## 17) Status
 
 - Pre‑implementation; use stubs for Music/Voice until real models are integrated.
 - Development memory begins in Sprint 0.

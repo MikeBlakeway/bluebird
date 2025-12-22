@@ -5,46 +5,55 @@
  */
 
 import type { FastifyInstance } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ProjectIdSchema, JobIdSchema } from '@bluebird/types'
-import { requireAuth } from '../lib/middleware.js'
+import { MixFinalRequestSchema } from '@bluebird/types'
+import { requireAuth, requireIdempotencyKey } from '../lib/middleware.js'
 import { enqueueMixJob } from '../lib/queue.js'
 
-const MixFinalRequestSchema = z.object({
-  projectId: ProjectIdSchema,
-  jobId: JobIdSchema,
-  takeId: z.string().min(1),
-  targetLUFS: z.number().min(-24).max(-6).default(-14),
-  truePeakLimit: z.number().min(-2).max(0).default(-1),
-})
-
 export function registerMixRoutes(fastify: FastifyInstance) {
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
+
   /**
    * POST /mix/final
    * Mix all stems and apply mastering (LUFS normalization, limiting)
    */
-  fastify.post('/mix/final', { preHandler: requireAuth }, async (request, reply) => {
-    const parsed = MixFinalRequestSchema.safeParse(request.body)
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid request', details: parsed.error })
+  app.post(
+    '/mix/final',
+    {
+      schema: {
+        body: MixFinalRequestSchema,
+        response: {
+          200: z.object({
+            jobId: z.string(),
+            status: z.literal('queued'),
+            message: z.string(),
+          }),
+          400: z.object({ error: z.string() }),
+        },
+        tags: ['Mix'],
+        description: 'Mix final track',
+      },
+      preHandler: [requireAuth, requireIdempotencyKey],
+    },
+    async (request, reply) => {
+      const { projectId, jobId, takeId, targetLUFS, truePeakLimit } = request.body
+
+      // Enqueue mix job
+      await enqueueMixJob({
+        projectId,
+        jobId,
+        takeId,
+        targetLUFS,
+        truePeakLimit,
+        isPro: false, // TODO: Check user tier
+      })
+
+      return reply.code(200).send({
+        jobId,
+        status: 'queued' as const,
+        message: `Mix job queued for take ${takeId}`,
+      })
     }
-
-    const { projectId, jobId, takeId, targetLUFS, truePeakLimit } = parsed.data
-
-    // Enqueue mix job
-    await enqueueMixJob({
-      projectId,
-      jobId,
-      takeId,
-      targetLUFS,
-      truePeakLimit,
-      isPro: false, // TODO: Check user tier
-    })
-
-    return reply.code(200).send({
-      jobId,
-      status: 'queued' as const,
-      message: `Mix job queued for take ${takeId}`,
-    })
-  })
+  )
 }
