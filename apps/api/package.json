@@ -16,6 +16,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "format": "prettier --write src",
+    "swagger:export": "node --import tsx ./src/export-openapi.ts",
+    "swagger:export:write": "node --import tsx ./src/export-openapi.ts > ../web/public/openapi.json",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
