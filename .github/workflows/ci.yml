@@ -120,6 +120,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     name: Build Documentation
+    permissions:
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
