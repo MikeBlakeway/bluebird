@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@lhci/cli": "^0.14.0",
+    "@next/eslint-plugin-next": "^16.1.0",
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^8.49.0",
     "@typescript-eslint/parser": "^8.49.0",

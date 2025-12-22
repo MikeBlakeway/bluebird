@@ -4,7 +4,6 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/strict",
-    "next/core-web-vitals",
     "plugin:prettier/recommended"
   ],
   "parser": "@typescript-eslint/parser",
@@ -12,7 +11,12 @@
     "sourceType": "module",
     "ecmaVersion": 2020
   },
-  "plugins": ["@typescript-eslint", "prettier"],
+  "plugins": ["@typescript-eslint", "prettier", "@next/next"],
+  "settings": {
+    "next": {
+      "rootDir": "apps/web"
+    }
+  },
   "env": {
     "node": true,
     "es2020": true,
@@ -35,7 +39,10 @@
       }
     ],
     "no-var": "error",
-    "prettier/prettier": "warn"
+    "prettier/prettier": "warn",
+    "@next/next/no-html-link-for-pages": "error",
+    "@next/next/no-img-element": "error",
+    "@next/next/no-sync-scripts": "error"
   },
   "overrides": [
     {
