@@ -189,7 +189,6 @@ jobs:
             const comment = buildSuccess
               ? `✅ Documentation builds successfully\n\n**Build Stats:**\n- Duration: ${durationSec}s\n- Docs: ${docsCount} files\n- Size: ${buildSize}\n- Artifact: Available in workflow (30-day retention)`
               : '❌ Documentation build failed - see logs for details';
-              : '❌ Documentation build failed - see logs for details';
             try {
               github.rest.issues.createComment({
                 issue_number: context.issue.number,
