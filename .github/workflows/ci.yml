@@ -59,7 +59,86 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.0.0
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Setup Next.js build cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            apps/web/.next/cache
+          key: ${{ runner.os }}-nextjs-cache-${{ hashFiles('apps/web/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-cache-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm -F api run db:generate
+
+      - name: Apply database migrations
+        run: pnpm -F api run db:migrate:deploy
+        env:
+          DATABASE_URL: postgresql://bluebird:bluebird_test@localhost:5432/bluebird_test
+
+      - name: Build packages
+        run: pnpm --filter "./packages/*" run build
+
+      - name: Type check
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Project checks (format/lint/type/doc)
+        run: pnpm run check
+
+      - name: Unit tests
+        run: pnpm run test -- --run
+        env:
+          DATABASE_URL: postgresql://bluebird:bluebird_test@localhost:5432/bluebird_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test_secret_abcdefghijklmnopqrstuvwxyz123456
+          NODE_ENV: test
+
+      - name: Build
+        run: pnpm run build
+        env:
+          NODE_ENV: test
+
+  docs-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: Build Documentation
+    permissions:
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -83,35 +162,52 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma Client
-        run: pnpm -F api run db:generate
+      - name: Build documentation site
+        id: docs-build
+        run: |
+          START_TIME=$(date +%s%N)
+          pnpm run docs:build:site
+          END_TIME=$(date +%s%N)
+          DURATION_MS=$(( (END_TIME - START_TIME) / 1000000 ))
+          echo "duration_ms=$DURATION_MS" >> $GITHUB_OUTPUT
+          DOCS_COUNT=$(find website/docs -name "*.md" | wc -l)
+          echo "docs_count=$DOCS_COUNT" >> $GITHUB_OUTPUT
+          BUILD_SIZE=$(du -sh website/build/ | cut -f1)
+          echo "build_size=$BUILD_SIZE" >> $GITHUB_OUTPUT
 
-      - name: Apply database migrations
-        run: pnpm -F api run db:migrate:deploy
-        env:
-          DATABASE_URL: postgresql://bluebird:bluebird_test@localhost:5432/bluebird_test
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: documentation-build
+          path: website/build/
+          retention-days: 30
 
-      - name: Build packages
-        run: pnpm --filter "./packages/*" run build
+      - name: Comment on PR with build result
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const buildSuccess = '${{ job.status }}' === 'success';
+            const durationMs = '${{ steps.docs-build.outputs.duration_ms }}';
+            const durationSec = (parseInt(durationMs) / 1000).toFixed(1);
+            const docsCount = '${{ steps.docs-build.outputs.docs_count }}';
+            const buildSize = '${{ steps.docs-build.outputs.build_size }}';
 
-      - name: Type check
-        run: pnpm run typecheck
-
-      - name: Lint
-        run: pnpm run lint
-
-      - name: Unit tests
-        run: pnpm run test -- --run
-        env:
-          DATABASE_URL: postgresql://bluebird:bluebird_test@localhost:5432/bluebird_test
-          REDIS_URL: redis://localhost:6379
-          JWT_SECRET: test_secret_abcdefghijklmnopqrstuvwxyz123456
-          NODE_ENV: test
-
-      - name: Build
-        run: pnpm run build
-        env:
-          NODE_ENV: test
+            const comment = buildSuccess
+              ? `✅ Documentation builds successfully\n\n**Build Stats:**\n- Duration: ${durationSec}s\n- Docs: ${docsCount} files\n- Size: ${buildSize}\n- Artifact: Available in workflow (30-day retention)`
+              : '❌ Documentation build failed - see logs for details';
+            try {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.log('Note: Could not post comment on PR (permission issue). Documentation build status is available in workflow logs.');
+            }
 
   contract-tests:
     runs-on: ubuntu-latest
@@ -123,7 +219,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -185,7 +281,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -263,7 +359,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -329,7 +425,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -373,7 +469,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -440,14 +536,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs:
-      [
-        lint-and-test,
-        integration-tests,
-        contract-tests,
-        e2e-tests,
-        security-scan,
-      ]
+    needs: [lint-and-test, integration-tests, contract-tests, e2e-tests, security-scan]
     # Uncomment after creating 'production' environment in GitHub Settings → Environments
     # environment:
     #   name: production
@@ -459,7 +548,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2

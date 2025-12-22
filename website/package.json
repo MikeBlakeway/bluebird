@@ -1,0 +1,30 @@
+{
+  "name": "@bluebird/website",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "docs:dev": "docusaurus start",
+    "docs:build": "docusaurus build",
+    "docs:serve": "docusaurus serve",
+    "docs:clear": "docusaurus clear",
+    "docs:write-translations": "docusaurus write-translations",
+    "docs:write-heading-ids": "docusaurus write-heading-ids"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.1.0",
+    "@docusaurus/preset-classic": "^3.1.0",
+    "@docusaurus/plugin-ideal-image": "^3.1.0",
+    "@mdx-js/react": "^3.0.0",
+    "clsx": "^2.1.0",
+    "prism-react-renderer": "^2.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@docusaurus/types": "^3.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

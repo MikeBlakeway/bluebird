@@ -1,0 +1,27 @@
+{
+  "id": "architecture/overview",
+  "title": "Architecture Overview",
+  "description": "Bluebird is a distributed AI music composition platform with clear separation of concerns across frontend, API orchestrator, and stateless inference pods.",
+  "source": "@site/docs/architecture/overview.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/overview",
+  "permalink": "/docs/architecture/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/architecture/overview.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Architecture",
+    "permalink": "/docs/architecture"
+  },
+  "next": {
+    "title": "API Reference",
+    "permalink": "/docs/api"
+  }
+}
