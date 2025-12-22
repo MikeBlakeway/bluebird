@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD024 MD036 -->
+
 # TypeScript Type Safety Audit Report
 
 **Date:** 2025-12-14
@@ -155,7 +157,7 @@ export type JobStage = z.infer<typeof JobStageSchema>
 **Severity:** CRITICAL
 **Impact:** Bypasses runtime validation, breaks type safety guarantees
 
-#### Locations:
+#### Locations
 
 1. **[apps/api/src/routes/projects.ts:100](apps/api/src/routes/projects.ts#L100)**
 
@@ -176,11 +178,12 @@ export type JobStage = z.infer<typeof JobStageSchema>
    ```
 
 4. **[apps/api/src/routes/export.ts:57](apps/api/src/routes/export.ts#L57)**
+
    ```typescript
    const { takeId } = request.params as { takeId: string }
    ```
 
-#### Why This is Wrong:
+#### Why This is Wrong
 
 Per § 5.0:
 

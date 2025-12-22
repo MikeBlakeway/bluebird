@@ -23,12 +23,17 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "typecheck": "pnpm -r run typecheck",
-    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck",
+    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run docs:check",
+    "postinstall": "simple-git-hooks",
     "backup:db": "bash ./scripts/backup-db.sh",
     "db:migrate": "pnpm -F api run db:migrate",
     "db:studio": "pnpm -F api run db:studio",
     "cli": "pnpm -F api run cli",
-    "demo": "node --import tsx ./scripts/demo.ts"
+    "demo": "node --import tsx ./scripts/demo.ts",
+    "docs:typedoc": "typedoc",
+    "docs:check": "typedoc --treatWarningsAsErrors",
+    "docs:typedoc:watch": "typedoc --watch",
+    "docs:build": "pnpm run docs:typedoc"
   },
   "devDependencies": {
     "@lhci/cli": "^0.14.0",
@@ -40,15 +45,24 @@
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.1.0",
     "tsx": "^4.7.0",
-    "vitest": "^1.0.0"
+    "typedoc": "^0.28.15",
+    "typedoc-plugin-markdown": "^4.9.0",
+    "postcss": "^8.4.0",
+    "vitest": "^1.0.0",
+    "simple-git-hooks": "^2.13.1"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^3.0.4"
   },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm run format:check",
+    "pre-push": "pnpm run check"
+  },
   "pnpm": {
     "overrides": {
       "zod": "3.24.1",
-      "zod-to-json-schema": "3.24.1"
+      "zod-to-json-schema": "3.24.1",
+      "@opentelemetry/api": "1.7.0"
     }
   }
 }
