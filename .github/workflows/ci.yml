@@ -116,6 +116,68 @@ jobs:
         env:
           NODE_ENV: test
 
+  docs-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: Build Documentation
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.0.0
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build documentation site
+        run: pnpm run docs:build:site
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: documentation-build
+          path: website/build/
+          retention-days: 30
+
+      - name: Comment on PR with build result
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const buildSuccess = ${{ job.status == 'success' }};
+            const comment = buildSuccess
+              ? '✅ Documentation builds successfully'
+              : '❌ Documentation build failed - see logs for details';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
   contract-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10
