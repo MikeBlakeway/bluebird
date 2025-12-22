@@ -17,8 +17,8 @@
   },
   "sidebar": "docs",
   "previous": {
-    "title": "Features",
-    "permalink": "/docs/project/features"
+    "title": "Development",
+    "permalink": "/docs/development"
   },
   "next": {
     "title": "Branching Strategy",

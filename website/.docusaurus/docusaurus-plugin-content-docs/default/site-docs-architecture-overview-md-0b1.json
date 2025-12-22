@@ -17,11 +17,11 @@
   },
   "sidebar": "docs",
   "previous": {
-    "title": "Performance & Optimization",
-    "permalink": "/docs/development/performance"
+    "title": "Architecture",
+    "permalink": "/docs/architecture"
   },
   "next": {
-    "title": "Overview",
-    "permalink": "/docs/api/overview"
+    "title": "API Reference",
+    "permalink": "/docs/api"
   }
 }

@@ -159,6 +159,6 @@ k6 run tests/performance/load-test.js
 
 ## Related Documentation
 
-- [TTFP_BASELINE.md](../../docs/development/TTFP_BASELINE.md): Detailed baseline methodology
-- [PERFORMANCE_REPORT.md](../../docs/development/PERFORMANCE_REPORT.md): Sprint 2 validation results
-- [Non-Functional-Requirements.md](../../docs/project/requirements/Non-Functional-Requirements.md): Full SLO spec
+- TTFP Baseline (repo): https://github.com/MikeBlakeway/bluebird/blob/develop/docs/development/TTFP_BASELINE.md
+- Performance Report (repo): https://github.com/MikeBlakeway/bluebird/blob/develop/docs/development/PERFORMANCE_REPORT.md
+- Non-Functional Requirements: /docs/project/requirements#non-functional

@@ -120,6 +120,4 @@ pnpm -F api run swagger:export > openapi.json
 
 ## See Also
 
-- **[Swagger UI Setup](/docs/api/swagger)** — Configuration details
-- **[TypeScript Client](/docs/api/typescript/client)** — SDK for fetching
-- **[Endpoints](/docs/api/endpoints)** — Detailed endpoint documentation
+- GitHub repository: https://github.com/MikeBlakeway/bluebird

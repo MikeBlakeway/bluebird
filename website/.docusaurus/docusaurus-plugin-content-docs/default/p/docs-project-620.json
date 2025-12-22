@@ -1,0 +1,12 @@
+{
+  "categoryGeneratedIndex": {
+    "title": "Project",
+    "slug": "/project",
+    "permalink": "/docs/project",
+    "sidebar": "docs",
+    "navigation": {
+      "previous": { "title": "Introduction", "permalink": "/docs/intro" },
+      "next": { "title": "Vision", "permalink": "/docs/project/vision" }
+    }
+  }
+}

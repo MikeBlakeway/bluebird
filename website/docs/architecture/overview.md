@@ -116,6 +116,6 @@ Bluebird is a distributed AI music composition platform with clear separation of
 
 ## See Also
 
-- [Monorepo Structure](/docs/architecture/monorepo)
+- [Architecture Overview](/docs/architecture/overview)
 - [Database Schema](https://github.com/MikeBlakeway/bluebird/tree/develop/apps/api/prisma)
 - [API Endpoints](/docs/api/overview)

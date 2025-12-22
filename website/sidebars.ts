@@ -10,6 +10,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Project',
+      link: { type: 'generated-index', slug: '/project', title: 'Project' },
       items: [
         {
           type: 'doc',
@@ -26,11 +27,17 @@ const sidebars: SidebarsConfig = {
           id: 'project/features',
           label: 'Features',
         },
+        {
+          type: 'doc',
+          id: 'project/requirements',
+          label: 'Requirements & Specifications',
+        },
       ],
     },
     {
       type: 'category',
       label: 'Development',
+      link: { type: 'generated-index', slug: '/development', title: 'Development' },
       items: [
         {
           type: 'doc',
@@ -52,11 +59,27 @@ const sidebars: SidebarsConfig = {
           id: 'development/performance',
           label: 'Performance & Optimization',
         },
+        {
+          type: 'doc',
+          id: 'development/typescript',
+          label: 'TypeScript Configuration',
+        },
+        {
+          type: 'doc',
+          id: 'development/nextjs',
+          label: 'Next.js Best Practices',
+        },
+        {
+          type: 'doc',
+          id: 'development/deployment',
+          label: 'Deployment Checklist',
+        },
       ],
     },
     {
       type: 'category',
       label: 'Architecture',
+      link: { type: 'generated-index', slug: '/architecture', title: 'Architecture' },
       items: [
         {
           type: 'doc',
@@ -68,6 +91,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'API Reference',
+      link: { type: 'generated-index', slug: '/api', title: 'API Reference' },
       items: [
         {
           type: 'doc',

@@ -141,6 +141,6 @@ pnpm test --coverage
 
 ## References
 
-- Full guide: [CI_CD_GUIDE.md](../../docs/development/CI_CD_GUIDE.md) (in repo)
+- Full guide in repo: https://github.com/MikeBlakeway/bluebird/blob/develop/docs/development/CI_CD_GUIDE.md
 - GitHub Actions: See `.github/workflows/` directory
-- Deployment checklist: [DEPLOYMENT_CHECKLIST.md](../../docs/development/DEPLOYMENT_CHECKLIST.md)
+- Deployment checklist: /docs/development/deployment

@@ -12,7 +12,7 @@
       "docs": [
         {
           "type": "link",
-          "href": "/docs/",
+          "href": "/docs/intro",
           "label": "Introduction",
           "docId": "intro",
           "unlisted": false
@@ -41,10 +41,18 @@
               "label": "Features",
               "docId": "project/features",
               "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/project/requirements",
+              "label": "Requirements & Specifications",
+              "docId": "project/requirements",
+              "unlisted": false
             }
           ],
           "collapsed": true,
-          "collapsible": true
+          "collapsible": true,
+          "href": "/docs/project"
         },
         {
           "type": "category",
@@ -77,10 +85,32 @@
               "label": "Performance & Optimization",
               "docId": "development/performance",
               "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/typescript",
+              "label": "TypeScript Configuration",
+              "docId": "development/typescript",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/nextjs",
+              "label": "Next.js Best Practices",
+              "docId": "development/nextjs",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/deployment",
+              "label": "Deployment Checklist",
+              "docId": "development/deployment",
+              "unlisted": false
             }
           ],
           "collapsed": true,
-          "collapsible": true
+          "collapsible": true,
+          "href": "/docs/development"
         },
         {
           "type": "category",
@@ -95,7 +125,8 @@
             }
           ],
           "collapsed": true,
-          "collapsible": true
+          "collapsible": true,
+          "href": "/docs/architecture"
         },
         {
           "type": "category",
@@ -110,7 +141,8 @@
             }
           ],
           "collapsed": true,
-          "collapsible": true
+          "collapsible": true,
+          "href": "/docs/api"
         }
       ]
     },
@@ -139,16 +171,34 @@
         "description": "Comprehensive guide to Bluebird's CI/CD infrastructure and deployment strategies.",
         "sidebar": "docs"
       },
+      "development/deployment": {
+        "id": "development/deployment",
+        "title": "Deployment Checklist",
+        "description": "Pre-deployment and post-deployment verification procedures for staging and production releases. Use this checklist before deploying to any environment.",
+        "sidebar": "docs"
+      },
       "development/getting-started": {
         "id": "development/getting-started",
         "title": "Getting Started",
         "description": "Prerequisites",
         "sidebar": "docs"
       },
+      "development/nextjs": {
+        "id": "development/nextjs",
+        "title": "Next.js Best Practices",
+        "description": "Production-ready Next.js 15+ patterns and configurations for Bluebird's web application. All changes follow Vercel's official documentation and optimization checklist.",
+        "sidebar": "docs"
+      },
       "development/performance": {
         "id": "development/performance",
         "title": "Performance & Optimization",
         "description": "Performance targets, baselines, and optimization strategies for Bluebird.",
+        "sidebar": "docs"
+      },
+      "development/typescript": {
+        "id": "development/typescript",
+        "title": "TypeScript Configuration & Build",
+        "description": "Complete guide to TypeScript setup, configuration, and best practices in the Bluebird monorepo using Project References for optimal incremental builds.",
         "sidebar": "docs"
       },
       "intro": {
@@ -167,6 +217,12 @@
         "id": "project/overview",
         "title": "System Overview",
         "description": "High-Level Architecture",
+        "sidebar": "docs"
+      },
+      "project/requirements": {
+        "id": "project/requirements",
+        "title": "Requirements & Specifications",
+        "description": "Comprehensive breakdown of Bluebird's functional and non-functional requirements, scope priorities, and technical specifications for the music composition platform.",
         "sidebar": "docs"
       },
       "project/vision": {

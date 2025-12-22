@@ -1,5 +1,4 @@
 ---
-slug: /
 ---
 
 # Welcome to Bluebird
@@ -31,9 +30,7 @@ Bluebird is an **AI music composition platform** that generates original music f
 
 ### 💻 TypeScript API Docs
 
-- [@bluebird/types](/docs/api/typescript/types) — Core DTOs and Zod schemas
-- [@bluebird/client](/docs/api/typescript/client) — API client SDK
-- [@bluebird/telemetry](/docs/api/typescript/telemetry) — Telemetry helpers
+TypeDoc API docs will be integrated here in a future sprint.
 
 ## Getting Started
 

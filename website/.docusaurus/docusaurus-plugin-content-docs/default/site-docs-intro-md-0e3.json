@@ -4,19 +4,17 @@
   "description": "Bluebird is an AI music composition platform that generates original music from lyrics.",
   "source": "@site/docs/intro.md",
   "sourceDirName": ".",
-  "slug": "/",
-  "permalink": "/docs/",
+  "slug": "/intro",
+  "permalink": "/docs/intro",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/intro.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {
-    "slug": "/"
-  },
+  "frontMatter": {},
   "sidebar": "docs",
   "next": {
-    "title": "Vision",
-    "permalink": "/docs/project/vision"
+    "title": "Project",
+    "permalink": "/docs/project"
   }
 }

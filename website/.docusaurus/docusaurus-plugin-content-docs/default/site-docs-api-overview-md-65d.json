@@ -17,7 +17,7 @@
   },
   "sidebar": "docs",
   "previous": {
-    "title": "Overview",
-    "permalink": "/docs/architecture/overview"
+    "title": "API Reference",
+    "permalink": "/docs/api"
   }
 }

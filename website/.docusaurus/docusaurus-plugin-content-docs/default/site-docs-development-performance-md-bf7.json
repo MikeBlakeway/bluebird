@@ -21,7 +21,7 @@
     "permalink": "/docs/development/ci-cd"
   },
   "next": {
-    "title": "Overview",
-    "permalink": "/docs/architecture/overview"
+    "title": "TypeScript Configuration",
+    "permalink": "/docs/development/typescript"
   }
 }

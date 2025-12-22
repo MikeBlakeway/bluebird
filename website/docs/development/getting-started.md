@@ -98,7 +98,7 @@ Once running, verify each service:
 - **[Architecture](/docs/architecture/overview)** — Learn about system design
 - **[API Reference](/docs/api/overview)** — Explore endpoints
 - **[Development Guide](/docs/development/branching-strategy)** — Git workflow and standards
-- **[Contributing](/docs/development/contributing)** — How to contribute
+- **Contributing** — https://github.com/MikeBlakeway/bluebird/blob/develop/CONTRIBUTING.md
 
 ## Troubleshooting
 

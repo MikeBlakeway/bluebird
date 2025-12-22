@@ -1,0 +1,27 @@
+{
+  "id": "development/deployment",
+  "title": "Deployment Checklist",
+  "description": "Pre-deployment and post-deployment verification procedures for staging and production releases. Use this checklist before deploying to any environment.",
+  "source": "@site/docs/development/deployment.md",
+  "sourceDirName": "development",
+  "slug": "/development/deployment",
+  "permalink": "/docs/development/deployment",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/deployment.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "sidebar_position": 6
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Next.js Best Practices",
+    "permalink": "/docs/development/nextjs"
+  },
+  "next": {
+    "title": "Architecture",
+    "permalink": "/docs/architecture"
+  }
+}

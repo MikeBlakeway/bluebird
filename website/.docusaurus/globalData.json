@@ -31,8 +31,18 @@
               "sidebar": "docs"
             },
             {
+              "id": "development/deployment",
+              "path": "/docs/development/deployment",
+              "sidebar": "docs"
+            },
+            {
               "id": "development/getting-started",
               "path": "/docs/development/getting-started",
+              "sidebar": "docs"
+            },
+            {
+              "id": "development/nextjs",
+              "path": "/docs/development/nextjs",
               "sidebar": "docs"
             },
             {
@@ -41,8 +51,13 @@
               "sidebar": "docs"
             },
             {
+              "id": "development/typescript",
+              "path": "/docs/development/typescript",
+              "sidebar": "docs"
+            },
+            {
               "id": "intro",
-              "path": "/docs/",
+              "path": "/docs/intro",
               "sidebar": "docs"
             },
             {
@@ -56,8 +71,33 @@
               "sidebar": "docs"
             },
             {
+              "id": "project/requirements",
+              "path": "/docs/project/requirements",
+              "sidebar": "docs"
+            },
+            {
               "id": "project/vision",
               "path": "/docs/project/vision",
+              "sidebar": "docs"
+            },
+            {
+              "id": "/project",
+              "path": "/docs/project",
+              "sidebar": "docs"
+            },
+            {
+              "id": "/development",
+              "path": "/docs/development",
+              "sidebar": "docs"
+            },
+            {
+              "id": "/architecture",
+              "path": "/docs/architecture",
+              "sidebar": "docs"
+            },
+            {
+              "id": "/api",
+              "path": "/docs/api",
               "sidebar": "docs"
             }
           ],
@@ -65,7 +105,7 @@
           "sidebars": {
             "docs": {
               "link": {
-                "path": "/docs/",
+                "path": "/docs/intro",
                 "label": "Introduction"
               }
             }

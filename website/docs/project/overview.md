@@ -64,6 +64,6 @@ Bluebird is built as a **monorepo** with separate concerns:
 
 ## See Also
 
-- [Monorepo Structure](/docs/architecture/monorepo)
+- [Architecture Overview](/docs/architecture/overview)
 - [API Reference](/docs/api/overview)
-- [Development Log](/docs/development) — Sprint progress
+- [Getting Started](/docs/development/getting-started) — Development setup

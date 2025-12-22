@@ -1,0 +1,15 @@
+{
+  "categoryGeneratedIndex": {
+    "title": "Development",
+    "slug": "/development",
+    "permalink": "/docs/development",
+    "sidebar": "docs",
+    "navigation": {
+      "previous": {
+        "title": "Requirements & Specifications",
+        "permalink": "/docs/project/requirements"
+      },
+      "next": { "title": "Getting Started", "permalink": "/docs/development/getting-started" }
+    }
+  }
+}

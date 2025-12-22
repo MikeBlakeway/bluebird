@@ -1,0 +1,27 @@
+{
+  "id": "development/nextjs",
+  "title": "Next.js Best Practices",
+  "description": "Production-ready Next.js 15+ patterns and configurations for Bluebird's web application. All changes follow Vercel's official documentation and optimization checklist.",
+  "source": "@site/docs/development/nextjs.md",
+  "sourceDirName": "development",
+  "slug": "/development/nextjs",
+  "permalink": "/docs/development/nextjs",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/nextjs.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 7,
+  "frontMatter": {
+    "sidebar_position": 7
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "TypeScript Configuration",
+    "permalink": "/docs/development/typescript"
+  },
+  "next": {
+    "title": "Deployment Checklist",
+    "permalink": "/docs/development/deployment"
+  }
+}
