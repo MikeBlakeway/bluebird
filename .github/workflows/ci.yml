@@ -166,17 +166,22 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const buildSuccess = ${{ job.status == 'success' }};
+            const buildSuccess = '${{ job.status }}' === 'success';
             const comment = buildSuccess
               ? '✅ Documentation builds successfully'
               : '❌ Documentation build failed - see logs for details';
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+            try {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.log('Note: Could not post comment on PR (permission issue). Documentation build status is available in workflow logs.');
+            }
 
   contract-tests:
     runs-on: ubuntu-latest
