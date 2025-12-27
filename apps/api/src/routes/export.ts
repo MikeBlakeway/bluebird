@@ -157,7 +157,7 @@ export function registerExportRoutes(fastify: FastifyInstance) {
         if (requireSimilarityCheck) {
           const enforce = process.env.SIMILARITY_ENFORCE === 'true'
           const { getMelodiesForTake } = await import('../lib/melodyStore.js')
-          const melodies = await getMelodiesForTake(planId, takeId)
+          const melodies = await getMelodiesForTake(takeId)
 
           if (melodies) {
             const { checkSimilarityViaPod } = await import('../lib/similarity.js')

@@ -9,7 +9,7 @@ import type {
   AnalyzeRequest,
   AnalysisResult,
   AuthResponse,
-  CheckSimilaritySimpleRequest,
+  CheckSimilarityRequest,
   CreateProjectRequest,
   ExportPreviewRequest,
   ExportTakeRequest,
@@ -35,7 +35,7 @@ import {
   AnalyzeRequestSchema,
   AnalysisResultSchema,
   AuthResponseSchema,
-  CheckSimilaritySimpleRequestSchema,
+  CheckSimilarityRequestSchema,
   CreateProjectRequestSchema,
   ExportPreviewRequestSchema,
   ExportTakeRequestSchema,
@@ -442,7 +442,7 @@ export class BluebirdClient {
    * Check similarity against reference (pre-export gating)
    */
   async checkSimilarity(planId: string): Promise<SimilarityReport> {
-    const parsed = CheckSimilaritySimpleRequestSchema.safeParse({ planId })
+    const parsed = CheckSimilarityRequestSchema.safeParse({ planId })
     if (!parsed.success) {
       throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
     }
@@ -724,7 +724,7 @@ export type {
   AnalyzeRequest,
   AnalysisResult,
   AuthResponse,
-  CheckSimilaritySimpleRequest,
+  CheckSimilarityRequest,
   CreateProjectRequest,
   ExportPreviewRequest,
   ExportTakeRequest,

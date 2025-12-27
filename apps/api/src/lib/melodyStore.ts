@@ -15,10 +15,7 @@ const GeneratedMelodySchema = z.object({
   onsets: z.array(z.number()).optional(),
 })
 
-export async function getMelodiesForTake(
-  planId: string,
-  takeId: string
-): Promise<TakeMelodies | null> {
+export async function getMelodiesForTake(takeId: string): Promise<TakeMelodies | null> {
   // Lookup project for this take
   const take = await prisma.take.findUnique({
     where: { id: takeId },
