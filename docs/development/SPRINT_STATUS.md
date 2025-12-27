@@ -85,7 +85,7 @@ Complete frontend workspace UI (deferred from Sprint 1) + add section-level rege
 **Sprint Goal:**
 Replace placeholder stubs with real synthesis models (music/voice), implement reference-guided remix (similarity-guarded), add export gating with similarity verdict, and achieve production-ready performance targets.
 
-**Progress:** ~55-60% Complete (Infrastructure + 3 of 5 pods operational)
+**Progress:** ~55-60% Complete; Voice Pod is NEXT PRIORITY
 
 **Inference Strategy:**
 
@@ -97,100 +97,56 @@ Replace placeholder stubs with real synthesis models (music/voice), implement re
 - **Cost:** Zero (all open-source, no API bills)
 - **Determinism:** Seed-based for reproducibility + caching ✅
 
-**Completed Work:**
+**Completed Work (as of Dec 27, 2025):**
 
-✅ **E3.0: Inference Repo Setup (100%)**
+✅ **E3.0: Infrastructure Setup**
 
-- Poetry project with shared libraries (bbcore, bbfeatures, bbmelody)
+- Poetry project with bbcore, bbfeatures, bbmelody
 - Docker setup (Dockerfile.base, Dockerfile.analyzer, Dockerfile.melody, Dockerfile.music)
-- docker-compose.pods.yml for local development
-- 64% overall test coverage across libraries
-
-✅ **Shared Libraries:**
-
-- bbcore: S3 client, audio I/O, config, logging
-- bbfeatures: Key detection (32% cov), BPM detection (92% cov), n-gram generation (37% cov)
-- bbmelody: Chord utils (93% cov), melody generator (88% cov), MIDI/F0 utils (97% cov)
+- 64% test coverage across shared libraries
 
 ✅ **E3.1: Analyzer Pod (100%)**
 
-- FastAPI service on port 8001
-- `/analyze/key` - Musical key detection (chroma-based)
-- `/analyze/bpm` - BPM and onset detection (tempogram)
-- Full librosa integration
-- Health check endpoint
+- Key/BPM detection via librosa
+- Pitch contour extraction
+- N-gram generation for similarity
 
 ✅ **E3.2: Music Pod (100%)**
 
-- FastAPI service on port 8002
-- `/synthesize` - Procedural drums/bass/guitar synthesis
-- Perfect grid alignment with seed-based determinism
-- Configurable master volume and stem selection
-- Health check endpoint
+- Procedural drums/bass/guitar synthesis
+- Seed-based determinism
+- Audio quality validated (48kHz/24-bit)
 
 ✅ **E3.3: Melody Pod (100%)**
 
-- FastAPI service on port 8003
-- `/generate-melody` - Syllable-to-melody generation
-- Chord progression support (COMMON_PROGRESSIONS)
-- Optional contour guidance
-- MIDI and F0 curve output
-- Grid quantization support
+- Syllable-to-MIDI conversion
+- Chord progression support
+- F0 curve output for voice synthesis
 
-**Remaining Work (45%):**
+**Remaining Work (45%) — Prioritized:**
 
-⏳ **E3.4: Voice Pod (DiffSinger Integration)**
+⏳ **E3.4: Voice Pod (DiffSinger) — PRIORITY 1**
 
-- FastAPI service on port 8004
-- DiffSinger model loading and inference
-- Phoneme alignment to music grid
+- 5-7 days (highest priority)
+- DiffSinger model integration
+- Phoneme alignment system
 - Multi-speaker support
-- F0 curve input from melody pod
+- Status: Not started
 
-⏳ **E3.5: Similarity Pod**
+⏳ **E3.5: Similarity Pod — PRIORITY 2**
 
-- FastAPI service on port 8005
-- N-gram Jaccard similarity checker
-- DTW rhythm comparison
-- Hard rules for 8-bar+ clones
-- Golden fixtures for validation
-- Export verdict logic (pass/borderline/block)
+- 3-4 days
+- N-gram Jaccard + DTW
+- Hard rules for export gating
+- Status: Not started
 
-⏳ **E3.6: API Worker Integration**
+⏳ **E3.6-E3.10: API Integration, Testing, Performance**
 
-- Update Node.js workers to call Python pods via HTTP
-- Music worker → music pod integration
-- Voice worker → melody pod + voice pod integration
-- Analyzer worker → analyzer pod integration
-- S3-based artifact handoff
-
-⏳ **E3.7: Reference Upload & Remix Endpoints**
-
-- POST /remix/reference/upload (≤30s audio validation)
-- Enqueue feature extraction job
-- Store features in S3, not raw audio (GDPR-safe)
-- POST /remix/melody endpoint with similarity budget control
-
-⏳ **E3.8: Export Gating**
-
-- Similarity check before export
-- Verdict enforcement (block exports if score ≥0.48)
-- User-facing recommendations ("shift key +1", "regen chorus")
-- Export modal updates with gating logic
-
-⏳ **E3.9: Performance Validation**
-
-- Measure TTFP P50 with real models (target: ≤45s)
-- Measure section regen P50 (target: ≤20s)
-- GPU cost tracking (target: ≤$0.40 per 30s preview)
-- Cache hit rate analysis
-
-⏳ **E3.10: Integration Testing**
-
-- End-to-end tests with real pod calls
-- Contract tests for pod API stability
-- Golden fixtures for similarity checking
-- Performance regression tests
+- 5-8 days remaining
+- Node.js workers → Python pods
+- Reference upload & remix endpoints
+- Export gating enforcement
+- Performance validation
 
 **Status:** Detailed plan in [sprint_plan_s_3.md](../project/sprints/sprint_plan_s_3.md)
 
@@ -209,40 +165,89 @@ Replace placeholder stubs with real synthesis models (music/voice), implement re
 
 ---
 
-## Next Steps (Sprint 3 Active Tasks)
+## Next Steps & Critical Path (Sprint 3)
 
-**Priority 1: Voice Pod (DiffSinger)**
+### 🎯 IMMEDIATE (Next 5-7 Days): Voice Pod Development — PRIORITY 1
 
-1. Research DiffSinger OpenVPI fork setup
-2. Create pod skeleton with FastAPI endpoints
-3. Implement phoneme alignment with music grid
-4. Test with melody pod F0 curves
-5. Add multi-speaker support
+**Epic E3.4: DiffSinger Integration**
 
-**Priority 2: Similarity Pod**
+**Day 1: Research & Environment Setup**
 
-1. Implement n-gram Jaccard similarity function
-2. Add DTW rhythm comparison logic
-3. Create hard rule for 8-bar+ clone detection
-4. Build golden fixture test suite
-5. Implement verdict logic (pass/borderline/block thresholds)
+- [ ] Clone OpenVPI DiffSinger fork (research feasibility & licensing)
+- [ ] Verify CUDA/PyTorch compatibility with bluebird-infer environment
+- [ ] Download pre-trained models (identify suitable speaker voices)
+- [ ] Document any licensing restrictions or commercial limitations
 
-**Priority 3: API Integration**
+**Day 2: Pod Structure & Model Loading**
 
-1. Update music-worker.ts to call music pod
-2. Update voice-worker.ts to call melody + voice pods
-3. Update analyzer-worker.ts to call analyzer pod
-4. Test S3 artifact handoff end-to-end
-5. Measure TTFP with real models
+- [ ] Create `bluebird-infer/pods/voice/` directory structure
+- [ ] Implement FastAPI skeleton (`pods/voice/main.py`)
+- [ ] Create `requirements.txt` with DiffSinger + vocoder dependencies
+- [ ] Set up Dockerfile.voice based on Dockerfile.base
+- [ ] Update docker-compose.pods.yml with voice service
+- [ ] Verify pod boots and health check responds
 
-**Priority 4: Reference & Remix**
+**Day 3-4: Core DiffSinger Integration**
 
-1. Implement POST /remix/reference/upload endpoint
-2. Add ≤30s audio validation
-3. Wire analyzer pod for feature extraction
-4. Store features (not raw audio) in S3
-5. Implement POST /remix/melody with similarity budget
-6. Add export gating with similarity verdict
+- [ ] Implement model loader with checkpoint handling
+- [ ] Set up DiffSinger inference pipeline
+- [ ] Integrate NSF-HiFiGAN vocoder (audio generation)
+- [ ] Implement phoneme alignment system (lyrics → phonemes → timings)
+- [ ] Add F0 curve input handling from melody pod
+- [ ] Seed-driven inference for determinism
+- [ ] Validate output audio quality (48kHz, pitch accuracy)
+
+**Day 5: Multi-Speaker & API Finalization**
+
+- [ ] Speaker roster management (≥2 voices)
+- [ ] Implement POST /synthesize endpoint
+- [ ] Add error handling & validation
+- [ ] Integration tests with melody pod
+- [ ] Performance benchmarks (target: ≤8s per 30s section)
+
+**Acceptance Criteria:**
+
+- DiffSinger generates melodic singing (not speech-like) ✅
+- Pitch accuracy within ±20 cents (perceptual threshold)
+- Phoneme alignment ±50ms to music grid
+- Deterministic output (same seed → same audio)
+- ≤8s P50 per section on GPU
+- ≥2 distinct speaker voices
+- Pod README documents API contract & limitations
+
+---
+
+### 📋 FOLLOW-UP (Days 6-9): Similarity Pod — PRIORITY 2
+
+**Epic E3.5: Similarity Checking & Export Gating**
+
+- [ ] Pod skeleton with FastAPI (port 8005)
+- [ ] N-gram Jaccard similarity implementation
+- [ ] DTW rhythm comparison logic
+- [ ] Hard rules for 8-bar+ clone detection
+- [ ] Verdict logic: pass (<0.35) / borderline (0.35–0.48) / block (≥0.48)
+- [ ] POST /check endpoint with recommendations
+- [ ] Golden fixtures for validation
+- [ ] Test coverage ≥70%
+
+---
+
+### 🔗 PARALLEL (Days 10-15): API Integration & Reference Upload
+
+**Priority 3: API Worker Integration**
+
+- [ ] Update music-worker.ts → call music pod via HTTP
+- [ ] Update voice-worker.ts → call melody + voice pods
+- [ ] Update analyzer-worker.ts → call analyzer pod
+- [ ] S3 artifact handoff validation
+
+**Priority 4: Reference Upload & Remix**
+
+- [ ] POST /remix/reference/upload (≤30s audio validation)
+- [ ] Feature extraction job enqueue
+- [ ] Feature caching in S3 (not raw audio)
+- [ ] POST /remix/melody endpoint with similarity budget
+- [ ] Export gating integration (block if verdict=block)
 
 ---
 
