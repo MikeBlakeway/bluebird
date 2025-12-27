@@ -24,6 +24,9 @@ import { registerSimilarityRoutes } from './routes/similarity.js'
 import { authMiddleware } from './lib/middleware.js'
 import { logger } from './lib/logger.js'
 
+// Import workers to boot them
+import './lib/workers/similarity-worker.js'
+
 const PORT = parseInt(process.env.BLUEBIRD_PORT || '4000', 10)
 const HOST = process.env.BLUEBIRD_HOST || '0.0.0.0'
 const ENV = process.env.BLUEBIRD_ENV || 'development'
