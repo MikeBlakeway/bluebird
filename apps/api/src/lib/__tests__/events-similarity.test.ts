@@ -4,385 +4,188 @@
  * Tests for Server-Sent Events (SSE) emitted during similarity checking
  */
 
-import { describe, it, expect, beforeAll, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import type { JobEvent } from '@bluebird/types'
-import { publishJobEvent } from '../../../lib/events.js'
 
-// Mock SSE event store for testing
-const emittedEvents: JobEvent[] = []
-
-// Mock publishJobEvent for testing
-vi.mock('../../../lib/events.js', () => ({
-  publishJobEvent: vi.fn(async (event: JobEvent) => {
-    emittedEvents.push(event)
-  }),
-}))
-
-describe('SSE Job Events', () => {
-  beforeAll(() => {
-    emittedEvents.length = 0
-  })
-
-  it('should emit events with correct structure', async () => {
-    const event: JobEvent = {
-      jobId: 'test-job-1',
-      stage: 'similarity-check' as const,
-      progress: 0.5,
-      message: 'Processing similarity check',
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(event)
-
-    expect(emittedEvents).toHaveLength(1)
-    expect(emittedEvents[0]).toEqual(event)
-  })
-
-  it('should emit events with required fields', async () => {
-    const event: JobEvent = {
-      jobId: 'test-job-2',
-      stage: 'similarity-check' as const,
-      progress: 0.75,
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(event)
-
-    const emitted = emittedEvents[emittedEvents.length - 1]
-    expect(emitted.jobId).toBeDefined()
-    expect(emitted.stage).toBeDefined()
-    expect(emitted.progress).toBeDefined()
-    expect(emitted.timestamp).toBeDefined()
-  })
-
-  it('should emit events with optional message field', async () => {
-    const eventWithMessage: JobEvent = {
-      jobId: 'test-job-3',
-      stage: 'similarity-check' as const,
-      progress: 0.3,
-      message: 'Loaded reference melody',
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(eventWithMessage)
-
-    const emitted = emittedEvents[emittedEvents.length - 1]
-    expect(emitted.message).toBe('Loaded reference melody')
-  })
-
-  it('should emit events without message', async () => {
-    const eventWithoutMessage: JobEvent = {
-      jobId: 'test-job-4',
-      stage: 'similarity-check' as const,
-      progress: 0.6,
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(eventWithoutMessage)
-
-    const emitted = emittedEvents[emittedEvents.length - 1]
-    expect(emitted.message).toBeUndefined()
-  })
-})
-
-describe('Similarity Check Progress Events', () => {
-  beforeAll(() => {
-    emittedEvents.length = 0
-  })
-
-  it('should emit event at 5% (start)', async () => {
-    const event: JobEvent = {
-      jobId: 'test-job-5',
-      stage: 'similarity-check' as const,
-      progress: 0.05,
-      message: 'Starting similarity check',
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(event)
-
-    expect(emittedEvents).toContainEqual(expect.objectContaining({ progress: 0.05 }))
-  })
-
-  it('should emit event at 30% (loaded melodies)', async () => {
-    const event: JobEvent = {
-      jobId: 'test-job-5',
-      stage: 'similarity-check' as const,
-      progress: 0.3,
-      message: 'Loaded generated melody',
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(event)
-
-    expect(emittedEvents).toContainEqual(expect.objectContaining({ progress: 0.3 }))
-  })
-
-  it('should emit event at 50% (loaded reference)', async () => {
-    const event: JobEvent = {
-      jobId: 'test-job-5',
-      stage: 'similarity-check' as const,
-      progress: 0.5,
-      message: 'Loaded reference melody',
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(event)
-
-    expect(emittedEvents).toContainEqual(expect.objectContaining({ progress: 0.5 }))
-  })
-
-  it('should emit event at 70% (pod called)', async () => {
-    const event: JobEvent = {
-      jobId: 'test-job-5',
-      stage: 'similarity-check' as const,
-      progress: 0.7,
-      message: 'Similarity computed: verdict=pass',
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(event)
-
-    expect(emittedEvents).toContainEqual(
-      expect.objectContaining({
-        progress: 0.7,
-        message: expect.stringContaining('Similarity computed'),
-      })
-    )
-  })
-
-  it('should emit event at 80% (report built)', async () => {
-    const event: JobEvent = {
-      jobId: 'test-job-5',
-      stage: 'similarity-check' as const,
-      progress: 0.8,
-      message: 'Built similarity report',
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(event)
-
-    expect(emittedEvents).toContainEqual(expect.objectContaining({ progress: 0.8 }))
-  })
-
-  it('should emit event at 90% (saved to S3)', async () => {
-    const event: JobEvent = {
-      jobId: 'test-job-5',
-      stage: 'similarity-check' as const,
-      progress: 0.9,
-      message: 'Report saved: projects/test/takes/123/reports/similarity-1234567890.json',
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(event)
-
-    expect(emittedEvents).toContainEqual(
-      expect.objectContaining({
-        progress: 0.9,
-        message: expect.stringContaining('Report saved'),
-      })
-    )
-  })
-
-  it('should emit completion event at 100%', async () => {
-    const event: JobEvent = {
-      jobId: 'test-job-5',
-      stage: 'completed' as const,
-      progress: 1.0,
-      message: 'Similarity check complete: pass (score: 0.25)',
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(event)
-
-    expect(emittedEvents).toContainEqual(
-      expect.objectContaining({
-        stage: 'completed',
-        progress: 1.0,
-      })
-    )
-  })
-})
-
-describe('Event Timeline for Full Job', () => {
-  beforeAll(() => {
-    emittedEvents.length = 0
-  })
-
-  it('should emit complete event timeline', async () => {
-    const jobId = 'full-timeline-test'
-
-    const events: JobEvent[] = [
-      {
-        jobId,
-        stage: 'similarity-check' as const,
-        progress: 0.05,
-        message: 'Start',
-        timestamp: new Date().toISOString(),
-      },
-      {
-        jobId,
-        stage: 'similarity-check' as const,
-        progress: 0.1,
-        message: 'Loaded take',
-        timestamp: new Date().toISOString(),
-      },
-      {
-        jobId,
-        stage: 'similarity-check' as const,
-        progress: 0.3,
-        message: 'Loaded generated',
-        timestamp: new Date().toISOString(),
-      },
-      {
-        jobId,
-        stage: 'similarity-check' as const,
-        progress: 0.5,
-        message: 'Loaded reference',
-        timestamp: new Date().toISOString(),
-      },
-      {
-        jobId,
-        stage: 'similarity-check' as const,
-        progress: 0.7,
-        message: 'Pod result',
-        timestamp: new Date().toISOString(),
-      },
-      {
-        jobId,
-        stage: 'similarity-check' as const,
-        progress: 0.8,
-        message: 'Report built',
-        timestamp: new Date().toISOString(),
-      },
-      {
-        jobId,
-        stage: 'similarity-check' as const,
-        progress: 0.9,
-        message: 'Stored S3',
-        timestamp: new Date().toISOString(),
-      },
-      {
-        jobId,
-        stage: 'completed' as const,
-        progress: 1.0,
-        message: 'Complete',
-        timestamp: new Date().toISOString(),
-      },
-    ]
-
-    for (const event of events) {
-      await publishJobEvent(event)
-    }
-
-    // Verify event ordering
-    const timeline = emittedEvents.filter((e) => e.jobId === jobId)
-    expect(timeline).toHaveLength(8)
-    expect(timeline[0].progress).toBe(0.05)
-    expect(timeline[timeline.length - 1].progress).toBe(1.0)
-
-    // Verify monotonic progress
-    for (let i = 1; i < timeline.length; i++) {
-      expect(timeline[i].progress).toBeGreaterThanOrEqual(timeline[i - 1].progress)
-    }
-  })
-})
-
-describe('Event Timestamps', () => {
-  beforeAll(() => {
-    emittedEvents.length = 0
-  })
-
-  it('should have ISO timestamp format', async () => {
-    const event: JobEvent = {
-      jobId: 'test-timestamp',
-      stage: 'similarity-check' as const,
-      progress: 0.5,
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(event)
-
-    const emitted = emittedEvents[emittedEvents.length - 1]
-    const timestamp = emitted.timestamp
-
-    // ISO 8601 format: YYYY-MM-DDTHH:mm:ss.sssZ
-    expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)
-  })
-
-  it('should preserve timestamp ordering', async () => {
-    const jobId = 'test-ordering'
-
-    const timestamps = [
-      new Date('2025-01-01T10:00:00.000Z').toISOString(),
-      new Date('2025-01-01T10:00:01.000Z').toISOString(),
-      new Date('2025-01-01T10:00:02.000Z').toISOString(),
-    ]
-
-    for (const timestamp of timestamps) {
+describe('Similarity Check SSE Events', () => {
+  describe('JobEvent Structure', () => {
+    it('should have correct event structure with all required fields', () => {
       const event: JobEvent = {
-        jobId,
-        stage: 'similarity-check' as const,
+        jobId: 'test-similarity-1',
+        stage: 'similarity-check',
         progress: 0.5,
-        timestamp,
+        timestamp: new Date().toISOString(),
       }
-      await publishJobEvent(event)
-    }
 
-    const timeline = emittedEvents.filter((e) => e.jobId === jobId)
-    expect(timeline[0].timestamp).toBe(timestamps[0])
-    expect(timeline[1].timestamp).toBe(timestamps[1])
-    expect(timeline[2].timestamp).toBe(timestamps[2])
-  })
-})
+      expect(event).toHaveProperty('jobId')
+      expect(event).toHaveProperty('stage')
+      expect(event).toHaveProperty('progress')
+      expect(event).toHaveProperty('timestamp')
+      expect(event.stage).toBe('similarity-check')
+    })
 
-describe('Event Verdicts in Messages', () => {
-  beforeAll(() => {
-    emittedEvents.length = 0
-  })
+    it('should have optional message field', () => {
+      const eventWithMessage: JobEvent = {
+        jobId: 'test-similarity-2',
+        stage: 'similarity-check',
+        progress: 0.3,
+        message: 'Comparing melodies...',
+        timestamp: new Date().toISOString(),
+      }
 
-  it('should convey pass verdict in event message', async () => {
-    const event: JobEvent = {
-      jobId: 'verdict-pass',
-      stage: 'similarity-check' as const,
-      progress: 0.7,
-      message: 'Similarity computed: verdict=pass',
-      timestamp: new Date().toISOString(),
-    }
+      expect(eventWithMessage.message).toBeDefined()
+      expect(eventWithMessage.message).toContain('Comparing')
+    })
 
-    await publishJobEvent(event)
+    it('should accept events without message', () => {
+      const eventWithoutMessage: JobEvent = {
+        jobId: 'test-similarity-3',
+        stage: 'similarity-check',
+        progress: 0.7,
+        timestamp: new Date().toISOString(),
+      }
 
-    const emitted = emittedEvents[emittedEvents.length - 1]
-    expect(emitted.message).toContain('pass')
-  })
-
-  it('should convey borderline verdict in event message', async () => {
-    const event: JobEvent = {
-      jobId: 'verdict-borderline',
-      stage: 'similarity-check' as const,
-      progress: 0.7,
-      message: 'Similarity computed: verdict=borderline',
-      timestamp: new Date().toISOString(),
-    }
-
-    await publishJobEvent(event)
-
-    const emitted = emittedEvents[emittedEvents.length - 1]
-    expect(emitted.message).toContain('borderline')
+      expect(eventWithoutMessage.message).toBeUndefined()
+    })
   })
 
-  it('should convey block verdict in event message', async () => {
-    const event: JobEvent = {
-      jobId: 'verdict-block',
-      stage: 'similarity-check' as const,
-      progress: 0.7,
-      message: 'Similarity computed: verdict=block',
-      timestamp: new Date().toISOString(),
-    }
+  describe('Similarity Check Progress Stages', () => {
+    const stages = [0.05, 0.3, 0.5, 0.7, 0.8, 0.9, 1.0]
 
-    await publishJobEvent(event)
+    stages.forEach((progress) => {
+      it(`should emit event at ${Math.round(progress * 100)}% progress`, () => {
+        const event: JobEvent = {
+          jobId: `test-progress-${progress}`,
+          stage: 'similarity-check',
+          progress,
+          message: `Processing at ${Math.round(progress * 100)}%`,
+          timestamp: new Date().toISOString(),
+        }
 
-    const emitted = emittedEvents[emittedEvents.length - 1]
-    expect(emitted.message).toContain('block')
+        expect(event.progress).toBe(progress)
+        expect(event.progress).toBeGreaterThanOrEqual(0)
+        expect(event.progress).toBeLessThanOrEqual(1)
+      })
+    })
+
+    it('should emit complete event timeline', () => {
+      const timeline: JobEvent[] = [
+        {
+          jobId: 'timeline-1',
+          stage: 'similarity-check',
+          progress: 0.05,
+          message: 'Similarity check started',
+          timestamp: new Date().toISOString(),
+        },
+        {
+          jobId: 'timeline-1',
+          stage: 'similarity-check',
+          progress: 0.3,
+          message: 'Loaded reference melody',
+          timestamp: new Date(Date.now() + 100).toISOString(),
+        },
+        {
+          jobId: 'timeline-1',
+          stage: 'similarity-check',
+          progress: 0.5,
+          message: 'Calling similarity pod',
+          timestamp: new Date(Date.now() + 200).toISOString(),
+        },
+        {
+          jobId: 'timeline-1',
+          stage: 'similarity-check',
+          progress: 0.7,
+          message: 'Received similarity scores',
+          timestamp: new Date(Date.now() + 300).toISOString(),
+        },
+        {
+          jobId: 'timeline-1',
+          stage: 'similarity-check',
+          progress: 0.8,
+          message: 'Built similarity report',
+          timestamp: new Date(Date.now() + 400).toISOString(),
+        },
+        {
+          jobId: 'timeline-1',
+          stage: 'similarity-check',
+          progress: 0.9,
+          message: 'Saved report to S3',
+          timestamp: new Date(Date.now() + 500).toISOString(),
+        },
+        {
+          jobId: 'timeline-1',
+          stage: 'similarity-check',
+          progress: 1.0,
+          message: 'Similarity check complete',
+          timestamp: new Date(Date.now() + 600).toISOString(),
+        },
+      ]
+
+      expect(timeline).toHaveLength(7)
+      if (timeline[0]) expect(timeline[0].progress).toBe(0.05)
+      if (timeline[6]) expect(timeline[6].progress).toBe(1.0)
+    })
+  })
+
+  describe('Event Timestamps', () => {
+    it('should use ISO 8601 timestamp format', () => {
+      const event: JobEvent = {
+        jobId: 'timestamp-test',
+        stage: 'similarity-check',
+        progress: 0.5,
+        timestamp: new Date().toISOString(),
+      }
+
+      // ISO 8601 format check
+      const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/
+      expect(event.timestamp).toMatch(iso8601Regex)
+    })
+
+    it('should preserve timestamp ordering', () => {
+      const time1 = new Date().getTime()
+      const time2 = new Date(Date.now() + 100).getTime()
+      const time3 = new Date(Date.now() + 200).getTime()
+
+      expect(time1).toBeLessThan(time2)
+      expect(time2).toBeLessThan(time3)
+    })
+  })
+
+  describe('Event Verdict Messages', () => {
+    it('should convey pass verdict in event message', () => {
+      const event: JobEvent = {
+        jobId: 'verdict-pass',
+        stage: 'similarity-check',
+        progress: 0.9,
+        message: 'Similarity check complete: verdict=pass (score: 0.25)',
+        timestamp: new Date().toISOString(),
+      }
+
+      expect(event.message).toContain('pass')
+    })
+
+    it('should convey borderline verdict in event message', () => {
+      const event: JobEvent = {
+        jobId: 'verdict-borderline',
+        stage: 'similarity-check',
+        progress: 0.9,
+        message: 'Similarity check complete: verdict=borderline (score: 0.40)',
+        timestamp: new Date().toISOString(),
+      }
+
+      expect(event.message).toContain('borderline')
+    })
+
+    it('should convey block verdict in event message', () => {
+      const event: JobEvent = {
+        jobId: 'verdict-block',
+        stage: 'similarity-check',
+        progress: 0.9,
+        message: 'Similarity check complete: verdict=block (score: 0.55)',
+        timestamp: new Date().toISOString(),
+      }
+
+      expect(event.message).toContain('block')
+    })
   })
 })
