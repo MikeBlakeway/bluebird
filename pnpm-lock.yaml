@@ -137,6 +137,9 @@ importers:
       redis:
         specifier: ^4.6.0
         version: 4.7.1
+      undici:
+        specifier: ^6.19.8
+        version: 6.22.0
       zod:
         specifier: 3.24.1
         version: 3.24.1
@@ -10508,6 +10511,10 @@ packages:
   undici@5.29.0:
     resolution: {integrity: sha512-raqeBD6NQK4SkWhQzeYKd1KmIG6dllBOTt55Rmkt4HtI9mwdWtJljnrXjAFUBLTSN67HWrOIZ3EPF4kjUw80Bg==}
     engines: {node: '>=14.0'}
+
+  undici@6.22.0:
+    resolution: {integrity: sha512-hU/10obOIu62MGYjdskASR3CUAiYaFTtC9Pa6vHyf//mAipSvSQg6od2CnJswq7fvzNS3zJhxoRkgNVaHurWKw==}
+    engines: {node: '>=18.17'}
 
   unicode-canonical-property-names-ecmascript@2.0.1:
     resolution: {integrity: sha512-dA8WbNeb2a6oQzAQ55YlT5vQAWGV9WXOsi3SskE3bcCdM0P4SDd+24zS/OCacdRq5BkdsRj9q3Pg6YyQoxIGqg==}
@@ -24452,6 +24459,8 @@ snapshots:
   undici@5.29.0:
     dependencies:
       '@fastify/busboy': 2.1.1
+
+  undici@6.22.0: {}
 
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 

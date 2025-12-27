@@ -9,7 +9,6 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import {
   TakeIdSchema,
-  ExportPreviewRequestSchema,
   ExportFinalRequestSchema,
   ExportFinalResponseSchema,
   type ExportFinalResponse,
@@ -22,6 +21,14 @@ import { createRouteLogger } from '../lib/logger.js'
 
 const ExportStatusParamsSchema = z.object({
   takeId: TakeIdSchema,
+})
+
+// Unwrapped schemas for Fastify compatibility
+const ExportPreviewRequestBody = z.object({
+  projectId: z.string().cuid2(),
+  takeId: z.string().min(1),
+  format: z.enum(['wav', 'mp3']),
+  includeStems: z.boolean(),
 })
 
 const log = createRouteLogger('/export', 'routes')
@@ -37,7 +44,7 @@ export function registerExportRoutes(fastify: FastifyInstance) {
     '/export/preview',
     {
       schema: {
-        body: ExportPreviewRequestSchema,
+        body: ExportPreviewRequestBody,
         response: {
           200: z.object({
             jobId: z.string(),
@@ -47,8 +54,6 @@ export function registerExportRoutes(fastify: FastifyInstance) {
           400: z.object({ error: z.string() }),
           500: z.object({ error: z.string() }),
         },
-        tags: ['Export'],
-        description: 'Export preview',
       },
       preHandler: [requireAuth, requireIdempotencyKey],
     },
@@ -101,8 +106,6 @@ export function registerExportRoutes(fastify: FastifyInstance) {
           }),
           400: z.object({ error: z.string() }),
         },
-        tags: ['Export'],
-        description: 'Get export status',
       },
       preHandler: [requireAuth],
     },
@@ -140,8 +143,6 @@ export function registerExportRoutes(fastify: FastifyInstance) {
           403: z.object({ error: z.string(), reason: z.string() }),
           500: z.object({ error: z.string() }),
         },
-        tags: ['Export'],
-        description: 'Export final mastered bundle with stems and metadata',
       },
       preHandler: [requireAuth, requireIdempotencyKey],
     },
@@ -152,10 +153,32 @@ export function registerExportRoutes(fastify: FastifyInstance) {
       const jobId = request.idempotencyKey ?? `export:final:${planId}:${takeId}:${Date.now()}`
 
       try {
-        // TODO: Check similarity report if required
+        // Similarity gating
         if (requireSimilarityCheck) {
-          // Stub: For now, assume similarity check passed
-          // In production: query similarity report from DB and verify verdict === 'pass'
+          const enforce = process.env.SIMILARITY_ENFORCE === 'true'
+          const { getMelodiesForTake } = await import('../lib/melodyStore.js')
+          const melodies = await getMelodiesForTake(planId, takeId)
+
+          if (melodies) {
+            const { checkSimilarityViaPod } = await import('../lib/similarity.js')
+            const result = await checkSimilarityViaPod({
+              referenceMelody: melodies.referenceMelody,
+              generatedMelody: melodies.generatedMelody,
+              referenceOnsets: melodies.referenceOnsets,
+              generatedOnsets: melodies.generatedOnsets,
+            })
+
+            if (result.verdict !== 'pass') {
+              return reply.code(403).send({
+                error: 'Export blocked due to similarity',
+                reason: `verdict=${result.verdict}; combined=${result.scores.combined.toFixed(3)}`,
+              })
+            }
+          } else if (enforce) {
+            return reply
+              .code(400)
+              .send({ error: 'Similarity check required but melodies unavailable' })
+          }
         }
 
         // TODO: Generate presigned URLs for master and stems
@@ -165,7 +188,7 @@ export function registerExportRoutes(fastify: FastifyInstance) {
 
         const bundle: ExportBundle = {
           jobId,
-          projectId: 'stub-project-id',
+          projectId: planId, // Use actual planId instead of stub
           master: {
             format,
             sampleRate,
