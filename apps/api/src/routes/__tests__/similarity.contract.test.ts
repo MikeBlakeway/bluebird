@@ -7,8 +7,8 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import type { FastifyInstance } from 'fastify'
-import { createServer } from '../../server.ts'
-import { similarityQueue } from '../../lib/queue.ts'
+import { createServer } from '../../server'
+import { similarityQueue } from '../../lib/queue'
 
 describe('Similarity Route Contracts', () => {
   let fastify: FastifyInstance
