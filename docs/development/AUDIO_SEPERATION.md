@@ -6,12 +6,12 @@
 
 The audio source separation landscape in 2025 centers on three architectures: hybrid transformer (Demucs), band-split transformer (BS-Roformer), and the older U-Net (Spleeter). Your requirements for music/speech isolation, vocal extraction, and 4-stem separation are best served by **Demucs v4** as the primary tool, with **Audio-Separator** wrapping multiple model types for flexibility.
 
-| Model | Vocals SDR | 4-Stem | Min VRAM | Speed (5min) | License |
-|-------|------------|--------|----------|--------------|---------|
-| **Demucs htdemucs_ft** | 8.33 dB | ✓ | 3GB | 40s | MIT |
-| **BS-Roformer (2025)** | **11.89 dB** | ✓ | 8GB | 60-120s | MIT |
-| Spleeter | 5.90 dB | ✓ | 4GB | **3s** | MIT |
-| Open-Unmix | 5.60 dB | ✓ | 4GB | 30s | MIT* |
+| Model                  | Vocals SDR   | 4-Stem | Min VRAM | Speed (5min) | License |
+| ---------------------- | ------------ | ------ | -------- | ------------ | ------- |
+| **Demucs htdemucs_ft** | 8.33 dB      | ✓      | 3GB      | 40s          | MIT     |
+| **BS-Roformer (2025)** | **11.89 dB** | ✓      | 8GB      | 60-120s      | MIT     |
+| Spleeter               | 5.90 dB      | ✓      | 4GB      | **3s**       | MIT     |
+| Open-Unmix             | 5.60 dB      | ✓      | 4GB      | 30s          | MIT\*   |
 
 **Demucs v4** (https://github.com/adefossez/demucs) provides the best balance of quality, speed, and versatility. The htdemucs model handles all your use cases: **4-stem** (vocals, drums, bass, other), **6-stem** (adds piano, guitar), and **2-stem** vocal/instrumental via the `--two-stems=vocals` flag. GPU requirements scale from 3GB VRAM with `--segment 8` to 7GB for default settings. Processing a 5-minute song takes 4-8 seconds on a V100 with htdemucs, or 30-40 seconds with the fine-tuned htdemucs_ft variant that delivers slightly better quality.
 
@@ -31,14 +31,14 @@ vocals, instrumental = separator.separate("audio.mp3")
 
 Speaker diarization tools fall into two categories: those providing **timestamps only** ("Speaker A: 0:00-0:15") versus actual **audio separation** (separate WAV per speaker). Most tools only do the former. **pyannote.audio** uniquely offers both through its speech-separation pipeline.
 
-| Tool | DER (AMI) | Separation | VRAM | License | Speed |
-|------|-----------|------------|------|---------|-------|
-| **pyannote 3.1** | 22.4% | Timestamps | 8GB | MIT | 37x RT |
-| **pyannote community-1** | 17.0% | Timestamps | 8GB | CC-BY-4.0 | 37x RT |
-| **pyannote speech-separation** | — | **Audio** | 16GB | MIT | ~10x RT |
-| SpeechBrain SepFormer | — | **Audio** | 8GB | Apache 2.0 | ~5x RT |
-| NVIDIA NeMo Sortformer | 13-21% | Timestamps | 48GB | Apache 2.0 | 214x RT |
-| DiariZen | **13.9%** | Timestamps | 8GB | **CC-BY-NC** | ~30x RT |
+| Tool                           | DER (AMI) | Separation | VRAM | License      | Speed   |
+| ------------------------------ | --------- | ---------- | ---- | ------------ | ------- |
+| **pyannote 3.1**               | 22.4%     | Timestamps | 8GB  | MIT          | 37x RT  |
+| **pyannote community-1**       | 17.0%     | Timestamps | 8GB  | CC-BY-4.0    | 37x RT  |
+| **pyannote speech-separation** | —         | **Audio**  | 16GB | MIT          | ~10x RT |
+| SpeechBrain SepFormer          | —         | **Audio**  | 8GB  | Apache 2.0   | ~5x RT  |
+| NVIDIA NeMo Sortformer         | 13-21%    | Timestamps | 48GB | Apache 2.0   | 214x RT |
+| DiariZen                       | **13.9%** | Timestamps | 8GB  | **CC-BY-NC** | ~30x RT |
 
 **pyannote/speaker-diarization-3.1** (https://huggingface.co/pyannote/speaker-diarization-3.1) handles standard diarization with **15.3M downloads** and active maintenance. It achieves 11-28% DER across standard benchmarks (VoxConverse: 11.2%, CALLHOME: 26.7%, AMI: 17.0%). Processing runs at **31 seconds per hour of audio** on an H100, or roughly 37x real-time.
 
@@ -62,15 +62,15 @@ for i, speaker in enumerate(diarization.labels()):
 
 All recommended tools are **commercially viable** with careful attention to specific license terms:
 
-| Component | Code License | Model License | Commercial OK |
-|-----------|-------------|---------------|---------------|
-| Demucs | MIT | MIT | ✓ |
-| Audio-Separator | MIT | MIT | ✓ |
-| Spleeter | MIT | MIT | ✓ |
-| pyannote.audio | MIT | MIT + HF conditions | ✓* |
-| SpeechBrain | Apache 2.0 | Apache 2.0 | ✓ |
-| DiariZen | Apache 2.0 | **CC-BY-NC** | ✗ |
-| Open-Unmix (umxl) | MIT | **CC-BY-NC-SA** | ✗ |
+| Component         | Code License | Model License       | Commercial OK |
+| ----------------- | ------------ | ------------------- | ------------- |
+| Demucs            | MIT          | MIT                 | ✓             |
+| Audio-Separator   | MIT          | MIT                 | ✓             |
+| Spleeter          | MIT          | MIT                 | ✓             |
+| pyannote.audio    | MIT          | MIT + HF conditions | ✓\*           |
+| SpeechBrain       | Apache 2.0   | Apache 2.0          | ✓             |
+| DiariZen          | Apache 2.0   | **CC-BY-NC**        | ✗             |
+| Open-Unmix (umxl) | MIT          | **CC-BY-NC-SA**     | ✗             |
 
 **pyannote licensing nuance**: The code and models are MIT-licensed, but accessing models requires a free Hugging Face account and accepting user conditions (primarily data collection for analytics). This isn't a commercial restriction but requires the HF account integration in your deployment.
 
@@ -97,15 +97,15 @@ Single 24GB GPU pod handles both source separation and diarization sequentially.
 Separate pods allow independent scaling and GPU optimization per task:
 
 ```
-┌─────────────┐    ┌────────────────────┐    
+┌─────────────┐    ┌────────────────────┐
 │ Audio Input │───▶│ Source Separation  │ (A10 24GB - Demucs)
-└─────────────┘    │ Pod                │    
-       │          └────────────────────┘    
-       │                                    
-       └──────────▶┌────────────────────┐    
+└─────────────┘    │ Pod                │
+       │          └────────────────────┘
+       │
+       └──────────▶┌────────────────────┐
                    │ Speaker Diarization│ (L4 24GB - pyannote)
-                   │ Pod                │    
-                   └────────────────────┘    
+                   │ Pod                │
+                   └────────────────────┘
 ```
 
 **No unified model exists** that performs both music source separation AND speaker diarization well. These are architecturally different problems (frequency-domain demixing vs. embedding-space clustering). Research prototypes like **PixIT** explore joint training but aren't production-ready.
@@ -133,11 +133,11 @@ CMD ["python", "-u", "/handler.py"]
 
 **GPU selection for Runpod serverless:**
 
-| Workload | GPU | VRAM | Est. Cost | Use Case |
-|----------|-----|------|-----------|----------|
-| Testing | T4 | 16GB | $0.031/min | Development, short files |
-| Production | A10 | 24GB | $0.076/min | Balanced quality/cost |
-| Heavy batch | A100 | 40GB | $0.14/min | Long recordings, parallel jobs |
+| Workload    | GPU  | VRAM | Est. Cost  | Use Case                       |
+| ----------- | ---- | ---- | ---------- | ------------------------------ |
+| Testing     | T4   | 16GB | $0.031/min | Development, short files       |
+| Production  | A10  | 24GB | $0.076/min | Balanced quality/cost          |
+| Heavy batch | A100 | 40GB | $0.14/min  | Long recordings, parallel jobs |
 
 **Critical dependency issue**: pyannote ships with CPU-only onnxruntime by default. Force-reinstall onnxruntime-gpu as shown above or diarization will run on CPU despite having a GPU.
 
@@ -148,21 +148,25 @@ CMD ["python", "-u", "/handler.py"]
 Based on the research, here are realistic complexity estimates:
 
 **Source Separation Pod (Demucs):**
+
 - Implementation: **Low** (2-3 days). Demucs has excellent Python API and documentation
 - Processing: 4-40 seconds per 5-minute song depending on model
 - Memory: Load model once, process sequentially; ~2GB model weight + ~4GB working memory
 
 **Speaker Diarization Pod (pyannote):**
+
 - Implementation: **Medium** (3-5 days). Requires HF token setup, understanding pipeline config
 - Processing: ~31 seconds per hour of audio on H100 (scales with GPU tier)
 - Memory: 4-8GB base; speech-separation pipeline needs 16GB
 
 **Speaker Audio Separation (pyannote speech-separation):**
+
 - Implementation: **Medium-High** (1 week). Less documentation, newer pipeline
 - Processing: Slower than diarization alone (~10x real-time)
 - Memory: 16GB recommended for reliable operation
 
 **Combined Pipeline:**
+
 - Total implementation: **1-2 weeks** for production-ready deployment
 - Total processing: ~2-5 minutes for a 1-hour podcast episode (separation + diarization)
 
@@ -193,6 +197,7 @@ For your MVP with zero API costs on Runpod serverless:
 3. **Phase 3 - Integration** (Week 3): Connect pods through your existing orchestration. For speaker-separated audio from music, chain: audio → Demucs vocals extraction → pyannote speech-separation.
 
 **Key resources:**
+
 - Demucs: https://github.com/adefossez/demucs
 - Audio-Separator: https://github.com/nomadkaraoke/python-audio-separator
 - pyannote.audio: https://github.com/pyannote/pyannote-audio

@@ -36,7 +36,7 @@ export async function registerAnalyzeRoutes(fastify: FastifyInstance) {
       const mode = request.body.mode ?? '4stem'
       const quality = request.body.quality ?? 'balanced'
 
-      const jobId = randomUUID()
+      const jobId = request.body.jobId ?? randomUUID()
 
       logger.info({ jobId, projectId, takeId, mode, quality }, 'Enqueuing separation job')
 
@@ -85,7 +85,7 @@ export async function registerAnalyzeRoutes(fastify: FastifyInstance) {
       const { projectId, takeId, audioUrl, audioKey, minSpeakers, maxSpeakers } = request.body
       const mode = request.body.mode ?? 'timestamps'
 
-      const jobId = randomUUID()
+      const jobId = request.body.jobId ?? randomUUID()
 
       logger.info({ jobId, projectId, takeId, mode }, 'Enqueuing diarization job')
 
@@ -135,7 +135,7 @@ export async function registerAnalyzeRoutes(fastify: FastifyInstance) {
       const { projectId, takeId } = request.body
       const maxDuration = request.body.maxDuration ?? 30
 
-      const jobId = randomUUID()
+      const jobId = request.body.jobId ?? randomUUID()
 
       logger.info({ jobId, projectId, takeId, maxDuration }, 'Enqueuing reference analysis job')
 
