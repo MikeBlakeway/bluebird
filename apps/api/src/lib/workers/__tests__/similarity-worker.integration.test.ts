@@ -137,6 +137,7 @@ describe('Similarity Worker Integration', () => {
     it('should handle job completion events', async () => {
       const completedJobs: string[] = []
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const completeHandler = (job: any) => {
         completedJobs.push(job.id)
       }
@@ -152,6 +153,7 @@ describe('Similarity Worker Integration', () => {
     it('should handle job failure events', async () => {
       const failedJobs: string[] = []
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const failHandler = (job: any) => {
         failedJobs.push(job?.id)
       }
