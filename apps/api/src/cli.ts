@@ -4,11 +4,14 @@
  * Command-line interface for testing and development.
  */
 
+import 'dotenv/config'
+
 import { createId } from '@paralleldrive/cuid2'
 import { Command } from 'commander'
 import { PlanSongRequestSchema } from '@bluebird/types'
 import { enqueuePlanJob } from './lib/queue.js'
 import { createJobEventSubscriber } from './lib/events.js'
+import { uploadToS3, getPresignedUrl } from './lib/s3.js'
 
 const program = new Command()
 
@@ -122,5 +125,29 @@ program
       }
     }
   )
+
+// ---------------------------------------------------------------------------
+// Extra utilities
+// ---------------------------------------------------------------------------
+
+program
+  .command('s3:smoke')
+  .description('Upload a small test object to S3 and print a presigned URL')
+  .option('-k, --key <key>', 'S3 key to use', 'diagnostics/s3-smoke.txt')
+  .action(async (opts: { key: string }) => {
+    try {
+      const key = opts.key
+      const content = `bluebird s3 smoke test at ${new Date().toISOString()}\n`
+      await uploadToS3(key, Buffer.from(content, 'utf-8'), 'text/plain')
+      const url = await getPresignedUrl(key, 300)
+      console.log('✅ Uploaded to S3')
+      console.log(`Key: ${key}`)
+      console.log(`Presigned URL (5m): ${url}`)
+      process.exit(0)
+    } catch (err) {
+      console.error('❌ S3 smoke test failed:', err)
+      process.exit(1)
+    }
+  })
 
 program.parse()
