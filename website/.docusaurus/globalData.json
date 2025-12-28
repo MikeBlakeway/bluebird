@@ -1,0 +1,118 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/docs",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "id": "api/overview",
+              "path": "/docs/api/overview",
+              "sidebar": "docs"
+            },
+            {
+              "id": "architecture/overview",
+              "path": "/docs/architecture/overview",
+              "sidebar": "docs"
+            },
+            {
+              "id": "development/branching-strategy",
+              "path": "/docs/development/branching-strategy",
+              "sidebar": "docs"
+            },
+            {
+              "id": "development/ci-cd",
+              "path": "/docs/development/ci-cd",
+              "sidebar": "docs"
+            },
+            {
+              "id": "development/deployment",
+              "path": "/docs/development/deployment",
+              "sidebar": "docs"
+            },
+            {
+              "id": "development/getting-started",
+              "path": "/docs/development/getting-started",
+              "sidebar": "docs"
+            },
+            {
+              "id": "development/nextjs",
+              "path": "/docs/development/nextjs",
+              "sidebar": "docs"
+            },
+            {
+              "id": "development/performance",
+              "path": "/docs/development/performance",
+              "sidebar": "docs"
+            },
+            {
+              "id": "development/typescript",
+              "path": "/docs/development/typescript",
+              "sidebar": "docs"
+            },
+            {
+              "id": "intro",
+              "path": "/docs/intro",
+              "sidebar": "docs"
+            },
+            {
+              "id": "project/features",
+              "path": "/docs/project/features",
+              "sidebar": "docs"
+            },
+            {
+              "id": "project/overview",
+              "path": "/docs/project/overview",
+              "sidebar": "docs"
+            },
+            {
+              "id": "project/requirements",
+              "path": "/docs/project/requirements",
+              "sidebar": "docs"
+            },
+            {
+              "id": "project/vision",
+              "path": "/docs/project/vision",
+              "sidebar": "docs"
+            },
+            {
+              "id": "/project",
+              "path": "/docs/project",
+              "sidebar": "docs"
+            },
+            {
+              "id": "/development",
+              "path": "/docs/development",
+              "sidebar": "docs"
+            },
+            {
+              "id": "/architecture",
+              "path": "/docs/architecture",
+              "sidebar": "docs"
+            },
+            {
+              "id": "/api",
+              "path": "/docs/api",
+              "sidebar": "docs"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "docs": {
+              "link": {
+                "path": "/docs/intro",
+                "label": "Introduction"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

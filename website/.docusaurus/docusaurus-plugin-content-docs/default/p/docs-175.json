@@ -1,0 +1,236 @@
+{
+  "version": {
+    "pluginId": "default",
+    "version": "current",
+    "label": "Next",
+    "banner": null,
+    "badge": false,
+    "noIndex": false,
+    "className": "docs-version-current",
+    "isLast": true,
+    "docsSidebars": {
+      "docs": [
+        {
+          "type": "link",
+          "href": "/docs/intro",
+          "label": "Introduction",
+          "docId": "intro",
+          "unlisted": false
+        },
+        {
+          "type": "category",
+          "label": "Project",
+          "items": [
+            {
+              "type": "link",
+              "href": "/docs/project/vision",
+              "label": "Vision",
+              "docId": "project/vision",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/project/overview",
+              "label": "Overview",
+              "docId": "project/overview",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/project/features",
+              "label": "Features",
+              "docId": "project/features",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/project/requirements",
+              "label": "Requirements & Specifications",
+              "docId": "project/requirements",
+              "unlisted": false
+            }
+          ],
+          "collapsed": true,
+          "collapsible": true,
+          "href": "/docs/project"
+        },
+        {
+          "type": "category",
+          "label": "Development",
+          "items": [
+            {
+              "type": "link",
+              "href": "/docs/development/getting-started",
+              "label": "Getting Started",
+              "docId": "development/getting-started",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/branching-strategy",
+              "label": "Branching Strategy",
+              "docId": "development/branching-strategy",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/ci-cd",
+              "label": "CI/CD Pipeline",
+              "docId": "development/ci-cd",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/performance",
+              "label": "Performance & Optimization",
+              "docId": "development/performance",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/typescript",
+              "label": "TypeScript Configuration",
+              "docId": "development/typescript",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/nextjs",
+              "label": "Next.js Best Practices",
+              "docId": "development/nextjs",
+              "unlisted": false
+            },
+            {
+              "type": "link",
+              "href": "/docs/development/deployment",
+              "label": "Deployment Checklist",
+              "docId": "development/deployment",
+              "unlisted": false
+            }
+          ],
+          "collapsed": true,
+          "collapsible": true,
+          "href": "/docs/development"
+        },
+        {
+          "type": "category",
+          "label": "Architecture",
+          "items": [
+            {
+              "type": "link",
+              "href": "/docs/architecture/overview",
+              "label": "Overview",
+              "docId": "architecture/overview",
+              "unlisted": false
+            }
+          ],
+          "collapsed": true,
+          "collapsible": true,
+          "href": "/docs/architecture"
+        },
+        {
+          "type": "category",
+          "label": "API Reference",
+          "items": [
+            {
+              "type": "link",
+              "href": "/docs/api/overview",
+              "label": "Overview",
+              "docId": "api/overview",
+              "unlisted": false
+            }
+          ],
+          "collapsed": true,
+          "collapsible": true,
+          "href": "/docs/api"
+        }
+      ]
+    },
+    "docs": {
+      "api/overview": {
+        "id": "api/overview",
+        "title": "API Overview",
+        "description": "Live Swagger UI",
+        "sidebar": "docs"
+      },
+      "architecture/overview": {
+        "id": "architecture/overview",
+        "title": "Architecture Overview",
+        "description": "Bluebird is a distributed AI music composition platform with clear separation of concerns across frontend, API orchestrator, and stateless inference pods.",
+        "sidebar": "docs"
+      },
+      "development/branching-strategy": {
+        "id": "development/branching-strategy",
+        "title": "Branching Strategy",
+        "description": "Purpose: Define a sprint-based branching workflow that integrates with CI/CD and ensures stable releases.",
+        "sidebar": "docs"
+      },
+      "development/ci-cd": {
+        "id": "development/ci-cd",
+        "title": "CI/CD Pipeline",
+        "description": "Comprehensive guide to Bluebird's CI/CD infrastructure and deployment strategies.",
+        "sidebar": "docs"
+      },
+      "development/deployment": {
+        "id": "development/deployment",
+        "title": "Deployment Checklist",
+        "description": "Pre-deployment and post-deployment verification procedures for staging and production releases. Use this checklist before deploying to any environment.",
+        "sidebar": "docs"
+      },
+      "development/getting-started": {
+        "id": "development/getting-started",
+        "title": "Getting Started",
+        "description": "Prerequisites",
+        "sidebar": "docs"
+      },
+      "development/nextjs": {
+        "id": "development/nextjs",
+        "title": "Next.js Best Practices",
+        "description": "Production-ready Next.js 15+ patterns and configurations for Bluebird's web application. All changes follow Vercel's official documentation and optimization checklist.",
+        "sidebar": "docs"
+      },
+      "development/performance": {
+        "id": "development/performance",
+        "title": "Performance & Optimization",
+        "description": "Performance targets, baselines, and optimization strategies for Bluebird.",
+        "sidebar": "docs"
+      },
+      "development/typescript": {
+        "id": "development/typescript",
+        "title": "TypeScript Configuration & Build",
+        "description": "Complete guide to TypeScript setup, configuration, and best practices in the Bluebird monorepo using Project References for optimal incremental builds.",
+        "sidebar": "docs"
+      },
+      "intro": {
+        "id": "intro",
+        "title": "Welcome to Bluebird",
+        "description": "Bluebird is an AI music composition platform that generates original music from lyrics.",
+        "sidebar": "docs"
+      },
+      "project/features": {
+        "id": "project/features",
+        "title": "Features",
+        "description": "Current Features (MVP)",
+        "sidebar": "docs"
+      },
+      "project/overview": {
+        "id": "project/overview",
+        "title": "System Overview",
+        "description": "High-Level Architecture",
+        "sidebar": "docs"
+      },
+      "project/requirements": {
+        "id": "project/requirements",
+        "title": "Requirements & Specifications",
+        "description": "Comprehensive breakdown of Bluebird's functional and non-functional requirements, scope priorities, and technical specifications for the music composition platform.",
+        "sidebar": "docs"
+      },
+      "project/vision": {
+        "id": "project/vision",
+        "title": "Project Vision",
+        "description": "Overview",
+        "sidebar": "docs"
+      }
+    }
+  }
+}

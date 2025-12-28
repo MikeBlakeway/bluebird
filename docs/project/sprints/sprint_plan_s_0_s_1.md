@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD024 MD036 -->
+
 # SPEC-001-Bluebird — Sprint Plan S0–S1
 
 > Default cadence: **2-week sprints**. Environments: **local + staging** until M3, then add prod.

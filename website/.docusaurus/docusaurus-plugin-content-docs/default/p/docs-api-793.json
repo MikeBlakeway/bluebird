@@ -1,0 +1,12 @@
+{
+  "categoryGeneratedIndex": {
+    "title": "API Reference",
+    "slug": "/api",
+    "permalink": "/docs/api",
+    "sidebar": "docs",
+    "navigation": {
+      "previous": { "title": "Overview", "permalink": "/docs/architecture/overview" },
+      "next": { "title": "Overview", "permalink": "/docs/api/overview" }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "project/vision",
+  "title": "Project Vision",
+  "description": "Overview",
+  "source": "@site/docs/project/vision.md",
+  "sourceDirName": "project",
+  "slug": "/project/vision",
+  "permalink": "/docs/project/vision",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/project/vision.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Project",
+    "permalink": "/docs/project"
+  },
+  "next": {
+    "title": "Overview",
+    "permalink": "/docs/project/overview"
+  }
+}

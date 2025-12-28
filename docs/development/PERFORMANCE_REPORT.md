@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD024 MD036 -->
+
 # Performance Validation Report - Sprint 2
 
 **Date:** December 18, 2025
@@ -50,7 +52,7 @@ TTFP is measured from the moment the user clicks "Generate Preview" until the fi
 
 From `docs/development/TTFP_BASELINE.md`:
 
-```
+```bash
 TTFP Breakdown (Local Development):
   - Planning: 12s
   - Music Render: 20s (3 sections × ~6-7s each, parallel where possible)
@@ -176,7 +178,7 @@ Created in `apps/web/tests/performance/webaudio-load.spec.ts`:
 
 From `pnpm build` output:
 
-```
+```bash
 Route (app)                              Size     First Load JS
 ┌ ○ /                                    3.76 kB  427 kB
 ├ ○ /_not-found                          996 B    103 kB

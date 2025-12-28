@@ -1,0 +1,27 @@
+{
+  "id": "development/ci-cd",
+  "title": "CI/CD Pipeline",
+  "description": "Comprehensive guide to Bluebird's CI/CD infrastructure and deployment strategies.",
+  "source": "@site/docs/development/ci-cd.md",
+  "sourceDirName": "development",
+  "slug": "/development/ci-cd",
+  "permalink": "/docs/development/ci-cd",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/ci-cd.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Branching Strategy",
+    "permalink": "/docs/development/branching-strategy"
+  },
+  "next": {
+    "title": "Performance & Optimization",
+    "permalink": "/docs/development/performance"
+  }
+}

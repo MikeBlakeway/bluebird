@@ -1,0 +1,27 @@
+{
+  "id": "development/branching-strategy",
+  "title": "Branching Strategy",
+  "description": "Purpose: Define a sprint-based branching workflow that integrates with CI/CD and ensures stable releases.",
+  "source": "@site/docs/development/branching-strategy.md",
+  "sourceDirName": "development",
+  "slug": "/development/branching-strategy",
+  "permalink": "/docs/development/branching-strategy",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/branching-strategy.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Getting Started",
+    "permalink": "/docs/development/getting-started"
+  },
+  "next": {
+    "title": "CI/CD Pipeline",
+    "permalink": "/docs/development/ci-cd"
+  }
+}

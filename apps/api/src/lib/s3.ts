@@ -44,6 +44,9 @@ export function getS3Paths(projectId: ProjectId, takeId: TakeId) {
       audio: `${base}/reference/ref.wav`,
       features: `${base}/features/remix.json`,
     },
+    features: {
+      melody: `${base}/features/melody.json`,
+    },
     reports: {
       similarity: (timestamp: string) => `${base}/reports/similarity-${timestamp}.json`,
     },

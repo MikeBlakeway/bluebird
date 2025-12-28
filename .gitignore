@@ -16,6 +16,12 @@ build/
 .next/
 out/
 
+# Documentation generated
+docs/api/
+docs-site/.docusaurus/
+docs-site/build/
+docs-site/node_modules/
+
 # IDE & editor
 .vscode/
 .idea/

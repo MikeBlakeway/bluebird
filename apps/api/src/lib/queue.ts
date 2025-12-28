@@ -86,6 +86,15 @@ export interface SectionJobData {
   isPro?: boolean
 }
 
+export interface SimilarityJobData {
+  projectId: ProjectId
+  jobId: JobId
+  takeId: string
+  referenceKey?: string // S3 key for reference melody features
+  budgetThreshold?: number // Max allowed similarity (default: 0.48)
+  isPro?: boolean
+}
+
 // Get shared Redis connection
 const redisConnection = getQueueConnection()
 
@@ -114,6 +123,7 @@ export const voiceQueue = new Queue<VoiceJobData>(QUEUE_NAMES.VOCAL, defaultQueu
 export const mixQueue = new Queue<MixJobData>(QUEUE_NAMES.MIX, defaultQueueOptions)
 export const exportQueue = new Queue<ExportJobData>(QUEUE_NAMES.EXPORT, defaultQueueOptions)
 export const sectionQueue = new Queue<SectionJobData>(QUEUE_NAMES.SECTION, defaultQueueOptions)
+export const similarityQueue = new Queue<SimilarityJobData>(QUEUE_NAMES.CHECK, defaultQueueOptions)
 
 /**
  * Enqueue a song planning job.
@@ -189,6 +199,16 @@ export async function enqueueSectionJob(data: SectionJobData): Promise<string> {
 }
 
 /**
+ * Enqueue a similarity check job.
+ */
+export async function enqueueSimilarityJob(data: SimilarityJobData): Promise<void> {
+  await similarityQueue.add('check-similarity', data, {
+    jobId: data.jobId,
+    priority: data.isPro ? PRIORITY.PRO : PRIORITY.STANDARD,
+  })
+}
+
+/**
  * Get job status by ID.
  */
 export async function getJobStatus(jobId: JobId): Promise<{
@@ -206,6 +226,7 @@ export async function getJobStatus(jobId: JobId): Promise<{
     mixQueue,
     exportQueue,
     sectionQueue,
+    similarityQueue,
   ]
 
   for (const queue of queues) {
@@ -236,6 +257,7 @@ export async function closeQueues(): Promise<void> {
     mixQueue.close(),
     exportQueue.close(),
     sectionQueue.close(),
+    similarityQueue.close(),
   ]
 
   // Note: Redis connection is shared and managed by redis.ts

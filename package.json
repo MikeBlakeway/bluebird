@@ -1,6 +1,6 @@
 {
   "name": "bluebird",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "AI music composition platform",
   "license": "MIT",
   "packageManager": "pnpm@9.0.0",
@@ -23,32 +23,51 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "typecheck": "pnpm -r run typecheck",
-    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck",
+    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run docs:check",
+    "postinstall": "simple-git-hooks",
     "backup:db": "bash ./scripts/backup-db.sh",
     "db:migrate": "pnpm -F api run db:migrate",
     "db:studio": "pnpm -F api run db:studio",
     "cli": "pnpm -F api run cli",
-    "demo": "node --import tsx ./scripts/demo.ts"
+    "demo": "node --import tsx ./scripts/demo.ts",
+    "docs:typedoc": "typedoc",
+    "docs:check": "typedoc --treatWarningsAsErrors",
+    "docs:typedoc:watch": "typedoc --watch",
+    "docs:build": "pnpm run docs:typedoc",
+    "docs:dev": "pnpm -F website run docs:dev",
+    "docs:build:site": "pnpm -F website run docs:build"
   },
   "devDependencies": {
     "@lhci/cli": "^0.14.0",
+    "@next/eslint-plugin-next": "^16.1.0",
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^8.49.0",
     "@typescript-eslint/parser": "^8.49.0",
+    "create-docusaurus": "^3.9.2",
+    "docusaurus-init": "^1.14.7",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "postcss": "^8.4.0",
     "prettier": "^3.1.0",
+    "simple-git-hooks": "^2.13.1",
     "tsx": "^4.7.0",
+    "typedoc": "^0.28.15",
+    "typedoc-plugin-markdown": "^4.9.0",
     "vitest": "^1.0.0"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^3.0.4"
   },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm run format:check",
+    "pre-push": "pnpm run check"
+  },
   "pnpm": {
     "overrides": {
       "zod": "3.24.1",
-      "zod-to-json-schema": "3.24.1"
+      "zod-to-json-schema": "3.24.1",
+      "@opentelemetry/api": "1.7.0"
     }
   }
 }

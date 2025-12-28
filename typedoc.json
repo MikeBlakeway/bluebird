@@ -1,0 +1,30 @@
+{
+  "name": "Bluebird API Documentation",
+  "entryPoints": [
+    "packages/types/src/index.ts",
+    "packages/client/src/index.ts",
+    "packages/telemetry/src/index.ts"
+  ],
+  "out": "docs/api/typescript",
+  "plugin": ["typedoc-plugin-markdown"],
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "excludeExternals": false,
+  "includeVersion": true,
+  "readme": "none",
+  "githubPages": false,
+  "disableSources": false,
+  "sort": ["source-order", "alphabetical"],
+  "categorizeByGroup": true,
+  "searchInComments": true,
+  "cleanOutputDir": true,
+  "commentStyle": "block",
+  "useTsLinkResolution": true,
+  "logLevel": "Info",
+  "treatWarningsAsErrors": true,
+  "requiredToBeDocumented": ["Class", "Interface", "TypeAlias", "Enum", "Function"],
+  "validation": {
+    "notDocumented": true,
+    "invalidLink": true
+  }
+}

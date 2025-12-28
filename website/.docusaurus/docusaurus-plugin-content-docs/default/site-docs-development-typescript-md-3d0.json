@@ -1,0 +1,27 @@
+{
+  "id": "development/typescript",
+  "title": "TypeScript Configuration & Build",
+  "description": "Complete guide to TypeScript setup, configuration, and best practices in the Bluebird monorepo using Project References for optimal incremental builds.",
+  "source": "@site/docs/development/typescript.md",
+  "sourceDirName": "development",
+  "slug": "/development/typescript",
+  "permalink": "/docs/development/typescript",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/typescript.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Performance & Optimization",
+    "permalink": "/docs/development/performance"
+  },
+  "next": {
+    "title": "Next.js Best Practices",
+    "permalink": "/docs/development/nextjs"
+  }
+}

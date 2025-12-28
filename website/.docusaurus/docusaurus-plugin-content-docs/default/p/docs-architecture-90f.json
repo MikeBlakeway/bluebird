@@ -1,0 +1,12 @@
+{
+  "categoryGeneratedIndex": {
+    "title": "Architecture",
+    "slug": "/architecture",
+    "permalink": "/docs/architecture",
+    "sidebar": "docs",
+    "navigation": {
+      "previous": { "title": "Deployment Checklist", "permalink": "/docs/development/deployment" },
+      "next": { "title": "Overview", "permalink": "/docs/architecture/overview" }
+    }
+  }
+}

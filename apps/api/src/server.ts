@@ -19,8 +19,13 @@ import { registerJobRoutes } from './routes/jobs.js'
 import { registerRenderRoutes } from './routes/render.js'
 import { registerMixRoutes } from './routes/mix.js'
 import { registerExportRoutes } from './routes/export.js'
+import { registerRemixRoutes } from './routes/remix.js'
+import { registerSimilarityRoutes } from './routes/similarity.js'
 import { authMiddleware } from './lib/middleware.js'
 import { logger } from './lib/logger.js'
+
+// Import workers to boot them
+import './lib/workers/similarity-worker.js'
 
 const PORT = parseInt(process.env.BLUEBIRD_PORT || '4000', 10)
 const HOST = process.env.BLUEBIRD_HOST || '0.0.0.0'
@@ -136,6 +141,8 @@ export async function createServer() {
   registerRenderRoutes(fastify)
   registerMixRoutes(fastify)
   registerExportRoutes(fastify)
+  registerRemixRoutes(fastify)
+  registerSimilarityRoutes(fastify)
 
   return fastify
 }

@@ -9,7 +9,7 @@ import type {
   AnalyzeRequest,
   AnalysisResult,
   AuthResponse,
-  CheckSimilaritySimpleRequest,
+  CheckSimilarityRequest,
   CreateProjectRequest,
   ExportPreviewRequest,
   ExportTakeRequest,
@@ -35,7 +35,7 @@ import {
   AnalyzeRequestSchema,
   AnalysisResultSchema,
   AuthResponseSchema,
-  CheckSimilaritySimpleRequestSchema,
+  CheckSimilarityRequestSchema,
   CreateProjectRequestSchema,
   ExportPreviewRequestSchema,
   ExportTakeRequestSchema,
@@ -442,7 +442,7 @@ export class BluebirdClient {
    * Check similarity against reference (pre-export gating)
    */
   async checkSimilarity(planId: string): Promise<SimilarityReport> {
-    const parsed = CheckSimilaritySimpleRequestSchema.safeParse({ planId })
+    const parsed = CheckSimilarityRequestSchema.safeParse({ planId })
     if (!parsed.success) {
       throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
     }
@@ -604,6 +604,7 @@ export class BluebirdClient {
     }
   }
 
+  /** @internal Structured logging (honors debug flag and optional logger). */
   private log(entry: ClientLogEntry): void {
     if (!this.debug) return
 
@@ -641,6 +642,7 @@ export class BluebirdClient {
     return this.request('GET', path, { responseSchema })
   }
 
+  /** @internal POST helper with JSON body + validation. */
   private async post<T>(
     path: string,
     body: unknown,
@@ -657,10 +659,12 @@ export class BluebirdClient {
     return this.request('PATCH', path, { body, responseSchema })
   }
 
+  /** @internal DELETE helper returning empty payload. */
   private async delete(path: string): Promise<undefined> {
     return this.request('DELETE', path, { responseSchema: z.undefined() })
   }
 
+  /** @internal Idempotency key generator (UUID preferred, fallback deterministic-ish). */
   private createIdempotencyKey(): string {
     const uuid = globalThis.crypto?.randomUUID?.()
     if (uuid) return uuid
@@ -673,6 +677,7 @@ export class BluebirdClient {
   // Retry Helpers
   // ==========================================================================
 
+  /** @internal Decide if error is retryable (5xx, 429/408, network/abort). */
   private isRetryableError(error: unknown): boolean {
     if (error instanceof BluebirdAPIError) {
       // Retry on 5xx errors and specific 4xx errors
@@ -696,11 +701,13 @@ export class BluebirdClient {
     return false
   }
 
+  /** @internal Exponential backoff helper (caps at 5s). */
   private getBackoffDelay(attempt: number): number {
     // Exponential backoff: 500ms, 1s, 2s
     return Math.min(500 * Math.pow(2, attempt - 1), 5000)
   }
 
+  /** @internal Sleep helper for retry backoff. */
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
@@ -717,7 +724,7 @@ export type {
   AnalyzeRequest,
   AnalysisResult,
   AuthResponse,
-  CheckSimilaritySimpleRequest,
+  CheckSimilarityRequest,
   CreateProjectRequest,
   ExportPreviewRequest,
   ExportTakeRequest,

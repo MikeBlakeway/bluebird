@@ -1,0 +1,471 @@
+{
+  "allContent": {
+    "docusaurus-plugin-content-docs": {
+      "default": {
+        "loadedVersions": [
+          {
+            "versionName": "current",
+            "label": "Next",
+            "banner": null,
+            "badge": false,
+            "noIndex": false,
+            "className": "docs-version-current",
+            "path": "/docs",
+            "tagsPath": "/docs/tags",
+            "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs",
+            "isLast": true,
+            "routePriority": -1,
+            "sidebarFilePath": "/Users/mike.blakeway/Development/personal-projects/bluebird/website/sidebars.ts",
+            "contentPath": "/Users/mike.blakeway/Development/personal-projects/bluebird/website/docs",
+            "docs": [
+              {
+                "id": "api/overview",
+                "title": "API Overview",
+                "description": "Live Swagger UI",
+                "source": "@site/docs/api/overview.md",
+                "sourceDirName": "api",
+                "slug": "/api/overview",
+                "permalink": "/docs/api/overview",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/api/overview.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 1,
+                "frontMatter": { "sidebar_position": 1 },
+                "sidebar": "docs",
+                "previous": { "title": "API Reference", "permalink": "/docs/api" }
+              },
+              {
+                "id": "architecture/overview",
+                "title": "Architecture Overview",
+                "description": "Bluebird is a distributed AI music composition platform with clear separation of concerns across frontend, API orchestrator, and stateless inference pods.",
+                "source": "@site/docs/architecture/overview.md",
+                "sourceDirName": "architecture",
+                "slug": "/architecture/overview",
+                "permalink": "/docs/architecture/overview",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/architecture/overview.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 1,
+                "frontMatter": { "sidebar_position": 1 },
+                "sidebar": "docs",
+                "previous": { "title": "Architecture", "permalink": "/docs/architecture" },
+                "next": { "title": "API Reference", "permalink": "/docs/api" }
+              },
+              {
+                "id": "development/branching-strategy",
+                "title": "Branching Strategy",
+                "description": "Purpose: Define a sprint-based branching workflow that integrates with CI/CD and ensures stable releases.",
+                "source": "@site/docs/development/branching-strategy.md",
+                "sourceDirName": "development",
+                "slug": "/development/branching-strategy",
+                "permalink": "/docs/development/branching-strategy",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/branching-strategy.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 2,
+                "frontMatter": { "sidebar_position": 2 },
+                "sidebar": "docs",
+                "previous": {
+                  "title": "Getting Started",
+                  "permalink": "/docs/development/getting-started"
+                },
+                "next": { "title": "CI/CD Pipeline", "permalink": "/docs/development/ci-cd" }
+              },
+              {
+                "id": "development/ci-cd",
+                "title": "CI/CD Pipeline",
+                "description": "Comprehensive guide to Bluebird's CI/CD infrastructure and deployment strategies.",
+                "source": "@site/docs/development/ci-cd.md",
+                "sourceDirName": "development",
+                "slug": "/development/ci-cd",
+                "permalink": "/docs/development/ci-cd",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/ci-cd.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 3,
+                "frontMatter": { "sidebar_position": 3 },
+                "sidebar": "docs",
+                "previous": {
+                  "title": "Branching Strategy",
+                  "permalink": "/docs/development/branching-strategy"
+                },
+                "next": {
+                  "title": "Performance & Optimization",
+                  "permalink": "/docs/development/performance"
+                }
+              },
+              {
+                "id": "development/deployment",
+                "title": "Deployment Checklist",
+                "description": "Pre-deployment and post-deployment verification procedures for staging and production releases. Use this checklist before deploying to any environment.",
+                "source": "@site/docs/development/deployment.md",
+                "sourceDirName": "development",
+                "slug": "/development/deployment",
+                "permalink": "/docs/development/deployment",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/deployment.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 6,
+                "frontMatter": { "sidebar_position": 6 },
+                "sidebar": "docs",
+                "previous": {
+                  "title": "Next.js Best Practices",
+                  "permalink": "/docs/development/nextjs"
+                },
+                "next": { "title": "Architecture", "permalink": "/docs/architecture" }
+              },
+              {
+                "id": "development/getting-started",
+                "title": "Getting Started",
+                "description": "Prerequisites",
+                "source": "@site/docs/development/getting-started.md",
+                "sourceDirName": "development",
+                "slug": "/development/getting-started",
+                "permalink": "/docs/development/getting-started",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/getting-started.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 1,
+                "frontMatter": { "sidebar_position": 1 },
+                "sidebar": "docs",
+                "previous": { "title": "Development", "permalink": "/docs/development" },
+                "next": {
+                  "title": "Branching Strategy",
+                  "permalink": "/docs/development/branching-strategy"
+                }
+              },
+              {
+                "id": "development/nextjs",
+                "title": "Next.js Best Practices",
+                "description": "Production-ready Next.js 15+ patterns and configurations for Bluebird's web application. All changes follow Vercel's official documentation and optimization checklist.",
+                "source": "@site/docs/development/nextjs.md",
+                "sourceDirName": "development",
+                "slug": "/development/nextjs",
+                "permalink": "/docs/development/nextjs",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/nextjs.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 7,
+                "frontMatter": { "sidebar_position": 7 },
+                "sidebar": "docs",
+                "previous": {
+                  "title": "TypeScript Configuration",
+                  "permalink": "/docs/development/typescript"
+                },
+                "next": {
+                  "title": "Deployment Checklist",
+                  "permalink": "/docs/development/deployment"
+                }
+              },
+              {
+                "id": "development/performance",
+                "title": "Performance & Optimization",
+                "description": "Performance targets, baselines, and optimization strategies for Bluebird.",
+                "source": "@site/docs/development/performance.md",
+                "sourceDirName": "development",
+                "slug": "/development/performance",
+                "permalink": "/docs/development/performance",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/performance.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 4,
+                "frontMatter": { "sidebar_position": 4 },
+                "sidebar": "docs",
+                "previous": { "title": "CI/CD Pipeline", "permalink": "/docs/development/ci-cd" },
+                "next": {
+                  "title": "TypeScript Configuration",
+                  "permalink": "/docs/development/typescript"
+                }
+              },
+              {
+                "id": "development/typescript",
+                "title": "TypeScript Configuration & Build",
+                "description": "Complete guide to TypeScript setup, configuration, and best practices in the Bluebird monorepo using Project References for optimal incremental builds.",
+                "source": "@site/docs/development/typescript.md",
+                "sourceDirName": "development",
+                "slug": "/development/typescript",
+                "permalink": "/docs/development/typescript",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/development/typescript.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 5,
+                "frontMatter": { "sidebar_position": 5 },
+                "sidebar": "docs",
+                "previous": {
+                  "title": "Performance & Optimization",
+                  "permalink": "/docs/development/performance"
+                },
+                "next": {
+                  "title": "Next.js Best Practices",
+                  "permalink": "/docs/development/nextjs"
+                }
+              },
+              {
+                "id": "intro",
+                "title": "Welcome to Bluebird",
+                "description": "Bluebird is an AI music composition platform that generates original music from lyrics.",
+                "source": "@site/docs/intro.md",
+                "sourceDirName": ".",
+                "slug": "/intro",
+                "permalink": "/docs/intro",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/intro.md",
+                "tags": [],
+                "version": "current",
+                "frontMatter": {},
+                "sidebar": "docs",
+                "next": { "title": "Project", "permalink": "/docs/project" }
+              },
+              {
+                "id": "project/features",
+                "title": "Features",
+                "description": "Current Features (MVP)",
+                "source": "@site/docs/project/features.md",
+                "sourceDirName": "project",
+                "slug": "/project/features",
+                "permalink": "/docs/project/features",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/project/features.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 3,
+                "frontMatter": { "sidebar_position": 3 },
+                "sidebar": "docs",
+                "previous": { "title": "Overview", "permalink": "/docs/project/overview" },
+                "next": {
+                  "title": "Requirements & Specifications",
+                  "permalink": "/docs/project/requirements"
+                }
+              },
+              {
+                "id": "project/overview",
+                "title": "System Overview",
+                "description": "High-Level Architecture",
+                "source": "@site/docs/project/overview.md",
+                "sourceDirName": "project",
+                "slug": "/project/overview",
+                "permalink": "/docs/project/overview",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/project/overview.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 2,
+                "frontMatter": { "sidebar_position": 2 },
+                "sidebar": "docs",
+                "previous": { "title": "Vision", "permalink": "/docs/project/vision" },
+                "next": { "title": "Features", "permalink": "/docs/project/features" }
+              },
+              {
+                "id": "project/requirements",
+                "title": "Requirements & Specifications",
+                "description": "Comprehensive breakdown of Bluebird's functional and non-functional requirements, scope priorities, and technical specifications for the music composition platform.",
+                "source": "@site/docs/project/requirements.md",
+                "sourceDirName": "project",
+                "slug": "/project/requirements",
+                "permalink": "/docs/project/requirements",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/project/requirements.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 4,
+                "frontMatter": { "sidebar_position": 4 },
+                "sidebar": "docs",
+                "previous": { "title": "Features", "permalink": "/docs/project/features" },
+                "next": { "title": "Development", "permalink": "/docs/development" }
+              },
+              {
+                "id": "project/vision",
+                "title": "Project Vision",
+                "description": "Overview",
+                "source": "@site/docs/project/vision.md",
+                "sourceDirName": "project",
+                "slug": "/project/vision",
+                "permalink": "/docs/project/vision",
+                "draft": false,
+                "unlisted": false,
+                "editUrl": "https://github.com/MikeBlakeway/bluebird/tree/develop/website/docs/docs/project/vision.md",
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 1,
+                "frontMatter": { "sidebar_position": 1 },
+                "sidebar": "docs",
+                "previous": { "title": "Project", "permalink": "/docs/project" },
+                "next": { "title": "Overview", "permalink": "/docs/project/overview" }
+              }
+            ],
+            "drafts": [],
+            "sidebars": {
+              "docs": [
+                { "type": "doc", "id": "intro", "label": "Introduction", "translatable": true },
+                {
+                  "type": "category",
+                  "label": "Project",
+                  "link": {
+                    "type": "generated-index",
+                    "slug": "/project",
+                    "title": "Project",
+                    "permalink": "/docs/project"
+                  },
+                  "items": [
+                    {
+                      "type": "doc",
+                      "id": "project/vision",
+                      "label": "Vision",
+                      "translatable": true
+                    },
+                    {
+                      "type": "doc",
+                      "id": "project/overview",
+                      "label": "Overview",
+                      "translatable": true
+                    },
+                    {
+                      "type": "doc",
+                      "id": "project/features",
+                      "label": "Features",
+                      "translatable": true
+                    },
+                    {
+                      "type": "doc",
+                      "id": "project/requirements",
+                      "label": "Requirements & Specifications",
+                      "translatable": true
+                    }
+                  ],
+                  "collapsed": true,
+                  "collapsible": true
+                },
+                {
+                  "type": "category",
+                  "label": "Development",
+                  "link": {
+                    "type": "generated-index",
+                    "slug": "/development",
+                    "title": "Development",
+                    "permalink": "/docs/development"
+                  },
+                  "items": [
+                    {
+                      "type": "doc",
+                      "id": "development/getting-started",
+                      "label": "Getting Started",
+                      "translatable": true
+                    },
+                    {
+                      "type": "doc",
+                      "id": "development/branching-strategy",
+                      "label": "Branching Strategy",
+                      "translatable": true
+                    },
+                    {
+                      "type": "doc",
+                      "id": "development/ci-cd",
+                      "label": "CI/CD Pipeline",
+                      "translatable": true
+                    },
+                    {
+                      "type": "doc",
+                      "id": "development/performance",
+                      "label": "Performance & Optimization",
+                      "translatable": true
+                    },
+                    {
+                      "type": "doc",
+                      "id": "development/typescript",
+                      "label": "TypeScript Configuration",
+                      "translatable": true
+                    },
+                    {
+                      "type": "doc",
+                      "id": "development/nextjs",
+                      "label": "Next.js Best Practices",
+                      "translatable": true
+                    },
+                    {
+                      "type": "doc",
+                      "id": "development/deployment",
+                      "label": "Deployment Checklist",
+                      "translatable": true
+                    }
+                  ],
+                  "collapsed": true,
+                  "collapsible": true
+                },
+                {
+                  "type": "category",
+                  "label": "Architecture",
+                  "link": {
+                    "type": "generated-index",
+                    "slug": "/architecture",
+                    "title": "Architecture",
+                    "permalink": "/docs/architecture"
+                  },
+                  "items": [
+                    {
+                      "type": "doc",
+                      "id": "architecture/overview",
+                      "label": "Overview",
+                      "translatable": true
+                    }
+                  ],
+                  "collapsed": true,
+                  "collapsible": true
+                },
+                {
+                  "type": "category",
+                  "label": "API Reference",
+                  "link": {
+                    "type": "generated-index",
+                    "slug": "/api",
+                    "title": "API Reference",
+                    "permalink": "/docs/api"
+                  },
+                  "items": [
+                    {
+                      "type": "doc",
+                      "id": "api/overview",
+                      "label": "Overview",
+                      "translatable": true
+                    }
+                  ],
+                  "collapsed": true,
+                  "collapsible": true
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "docusaurus-plugin-content-pages": {
+      "default": [{ "type": "jsx", "permalink": "/", "source": "@site/src/pages/index.tsx" }]
+    },
+    "docusaurus-plugin-debug": {},
+    "docusaurus-plugin-svgr": {},
+    "docusaurus-theme-classic": {},
+    "docusaurus-bootstrap-plugin": {},
+    "docusaurus-mdx-fallback-plugin": {}
+  }
+}
