@@ -21,6 +21,7 @@ import { registerMixRoutes } from './routes/mix.js'
 import { registerExportRoutes } from './routes/export.js'
 import { registerRemixRoutes } from './routes/remix.js'
 import { registerSimilarityRoutes } from './routes/similarity.js'
+import { registerAnalyzeRoutes } from './routes/analyze.js'
 import { authMiddleware } from './lib/middleware.js'
 import { logger } from './lib/logger.js'
 
@@ -134,6 +135,7 @@ export async function createServer() {
   // Register route modules
   registerAuthRoutes(fastify)
   registerProjectRoutes(fastify)
+  registerAnalyzeRoutes(fastify)
   registerAnalyzerRoutes(fastify)
   registerPlannerRoutes(fastify)
   registerOrchestratorRoutes(fastify)
