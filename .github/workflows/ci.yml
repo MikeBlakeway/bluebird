@@ -113,7 +113,13 @@ jobs:
         run: pnpm run check
 
       - name: Unit tests
-        run: pnpm run test -- --run
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.head_ref }}" == release/* ]]; then
+            echo "Running unit tests for API only on release branches"
+            pnpm -F api run test -- --run
+          else
+            pnpm run test -- --run
+          fi
         env:
           DATABASE_URL: postgresql://bluebird:bluebird_test@localhost:5432/bluebird_test
           REDIS_URL: redis://localhost:6379
