@@ -1,25 +1,10 @@
 import { z } from 'zod'
+import { IdSchema, ProjectIdSchema, JobIdSchema, TakeIdSchema } from './primitives'
 
 // ============================================================================
-// Primitive Types
+// Primitive Types (re-exported from primitives.ts)
 // ============================================================================
-
-/** Unique identifier (CUID2) used across entities. */
-export const IdSchema = z.string().cuid2()
-export type Id = z.infer<typeof IdSchema>
-
-/** Identifier for a project (CUID2). */
-export const ProjectIdSchema = z.string().cuid2()
-export type ProjectId = z.infer<typeof ProjectIdSchema>
-
-// JobId can be custom format like "project:timestamp:seed", not just CUID
-/** Queue/job identifier; may be composite (project:timestamp:seed). */
-export const JobIdSchema = z.string().min(1)
-export type JobId = z.infer<typeof JobIdSchema>
-
-/** Identifier for a generated take (CUID2). */
-export const TakeIdSchema = z.string().cuid2()
-export type TakeId = z.infer<typeof TakeIdSchema>
+export * from './primitives'
 
 // ============================================================================
 // Planning & Arrangement
@@ -664,3 +649,8 @@ const ExportPreviewRequestSchemaInternal = z.object({
 export type ExportPreviewRequest = z.infer<typeof ExportPreviewRequestSchemaInternal>
 export const ExportPreviewRequestSchema: z.ZodType<ExportPreviewRequest, z.ZodTypeDef, unknown> =
   ExportPreviewRequestSchemaInternal
+
+// ============================================================================
+// Module Exports (placed last to avoid circular init issues)
+// ============================================================================
+export * from './analysis'

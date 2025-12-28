@@ -13,6 +13,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { similarityQueue, enqueueSimilarityJob, type SimilarityJobData } from '../../queue'
 import { worker } from '../similarity-worker'
 import type { SimilarityReport } from '@bluebird/types'
+import type { Job } from 'bullmq'
 
 // Mock implementation would go here in real tests
 // For now, we test the structure and enqueue flow
@@ -135,10 +136,10 @@ describe('Similarity Worker Integration', () => {
     })
 
     it('should handle job completion events', async () => {
-      const completedJobs: string[] = []
+      const completedJobs: Array<string | null> = []
 
-      const completeHandler = (job: any) => {
-        completedJobs.push(job.id)
+      const completeHandler = (job: Job, _result: unknown) => {
+        completedJobs.push(job.id ?? null)
       }
 
       worker.on('completed', completeHandler)
@@ -150,10 +151,10 @@ describe('Similarity Worker Integration', () => {
     })
 
     it('should handle job failure events', async () => {
-      const failedJobs: string[] = []
+      const failedJobs: Array<string | null> = []
 
-      const failHandler = (job: any) => {
-        failedJobs.push(job?.id)
+      const failHandler = (job: Job | undefined, _error: Error, _prev: string) => {
+        failedJobs.push(job?.id ?? null)
       }
 
       worker.on('failed', failHandler)

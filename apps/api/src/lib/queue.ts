@@ -95,6 +95,29 @@ export interface SimilarityJobData {
   isPro?: boolean
 }
 
+export interface SeparationJobData {
+  projectId: ProjectId
+  takeId: string
+  jobId: JobId
+  audioUrl?: string
+  audioKey?: string
+  mode?: 'vocals' | '4stem' | '6stem'
+  quality?: 'fast' | 'balanced' | 'best'
+  isPro?: boolean
+}
+
+export interface DiarizationJobData {
+  projectId: ProjectId
+  takeId: string
+  jobId: JobId
+  audioUrl?: string
+  audioKey?: string
+  mode?: 'timestamps' | 'separation'
+  minSpeakers?: number
+  maxSpeakers?: number
+  isPro?: boolean
+}
+
 // Get shared Redis connection
 const redisConnection = getQueueConnection()
 
@@ -117,7 +140,10 @@ const defaultQueueOptions: QueueOptions = {
 
 // Initialize queues
 export const planQueue = new Queue<PlanJobData>(QUEUE_NAMES.PLAN, defaultQueueOptions)
-export const analyzeQueue = new Queue<AnalyzeJobData>(QUEUE_NAMES.ANALYZE, defaultQueueOptions)
+export const analyzeQueue = new Queue<SeparationJobData | DiarizationJobData>(
+  QUEUE_NAMES.ANALYZE,
+  defaultQueueOptions
+)
 export const musicQueue = new Queue<MusicJobData>(QUEUE_NAMES.SYNTH, defaultQueueOptions)
 export const voiceQueue = new Queue<VoiceJobData>(QUEUE_NAMES.VOCAL, defaultQueueOptions)
 export const mixQueue = new Queue<MixJobData>(QUEUE_NAMES.MIX, defaultQueueOptions)
@@ -137,12 +163,22 @@ export async function enqueuePlanJob(data: PlanJobData): Promise<void> {
 }
 
 /**
- * Enqueue a lyrics analysis job.
+ * Enqueue a source separation job (delegates to separation pod).
  */
-export async function enqueueAnalyzeJob(data: AnalyzeJobData): Promise<void> {
-  await analyzeQueue.add('analyze-lyrics', data, {
+export async function enqueueSeparationJob(data: SeparationJobData): Promise<void> {
+  await analyzeQueue.add('separate-audio', data, {
     jobId: data.jobId,
-    priority: PRIORITY.STANDARD,
+    priority: data.isPro ? PRIORITY.PRO : PRIORITY.STANDARD,
+  })
+}
+
+/**
+ * Enqueue a speaker diarization job (delegates to diarization pod).
+ */
+export async function enqueueDiarizationJob(data: DiarizationJobData): Promise<void> {
+  await analyzeQueue.add('diarize-audio', data, {
+    jobId: data.jobId,
+    priority: data.isPro ? PRIORITY.PRO : PRIORITY.STANDARD,
   })
 }
 
