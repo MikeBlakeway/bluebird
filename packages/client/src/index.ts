@@ -441,8 +441,8 @@ export class BluebirdClient {
   /**
    * Check similarity against reference (pre-export gating)
    */
-  async checkSimilarity(planId: string): Promise<SimilarityReport> {
-    const parsed = CheckSimilarityRequestSchema.safeParse({ planId })
+  async checkSimilarity(planId: string, takeId: string): Promise<SimilarityReport> {
+    const parsed = CheckSimilarityRequestSchema.safeParse({ planId, takeId })
     if (!parsed.success) {
       throw new BluebirdAPIError('Invalid request', 400, parsed.error.format())
     }

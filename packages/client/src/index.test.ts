@@ -560,21 +560,23 @@ describe('BluebirdClient', () => {
         verdict: 'pass' as const,
         reason: 'Melody and rhythm scores below threshold',
         checkedAt: new Date().toISOString(),
+        eightBarCloneDetected: false,
       }
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => mockReport,
-      })
+      } as Response)
 
-      const result = await client.checkSimilarity(jobId)
+      const takeId = 'ckwx4qj5l0000qz3z9z9z9z9z' // valid cuid2
+      const result = await client.checkSimilarity(jobId, takeId)
 
       expect(result).toEqual(mockReport)
       expect(mockFetch).toHaveBeenCalledWith(
         'http://test-api.com/check/similarity',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({ planId: jobId }),
+          body: JSON.stringify({ planId: jobId, takeId, budgetThreshold: 0.48 }),
         })
       )
     })
@@ -583,8 +585,8 @@ describe('BluebirdClient', () => {
   describe('Export Methods', () => {
     it('should export preview', async () => {
       const mockResponse = {
-        jobId: 'export-preview-123',
-        status: 'queued',
+        jobId: 'export-preview-job-123',
+        status: 'active' as const,
       }
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -594,7 +596,7 @@ describe('BluebirdClient', () => {
 
       const result = await client.exportPreview({
         projectId,
-        takeId: 'take-123',
+        takeId: 'ckwx4qj5l0000qz3z9z9z9z9z',
         format: 'mp3',
         includeStems: false,
       })
@@ -610,8 +612,8 @@ describe('BluebirdClient', () => {
 
     it('should export take with stems', async () => {
       const mockResponse = {
-        jobId: 'export-job-123',
-        status: 'queued',
+        jobId: 'export-take-job-456',
+        status: 'active' as const,
       }
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -639,8 +641,8 @@ describe('BluebirdClient', () => {
   describe('Mix Methods', () => {
     it('should mix final', async () => {
       const mockResponse = {
-        jobId: 'mix-job-123',
-        status: 'queued',
+        jobId: 'mix-final-job-789',
+        status: 'active' as const,
       }
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -673,24 +675,19 @@ describe('BluebirdClient', () => {
         status: 400,
         statusText: 'Bad Request',
         text: async () => JSON.stringify({ error: 'Invalid input' }),
-      })
+      } as Response)
 
-      try {
-        await client.listProjects()
-      } catch (error) {
-        expect(error).toBeInstanceOf(BluebirdAPIError)
-        expect(error).toHaveProperty('message', 'HTTP 400: Bad Request')
-      }
+      await expect(client.listProjects()).rejects.toThrow('HTTP 400: Bad Request')
     })
 
     it('should include error details in BluebirdAPIError', async () => {
-      const errorDetails = { error: 'Validation failed', fields: ['name'] }
+      const errorDetails = { error: 'Invalid input' }
       mockFetch.mockResolvedValueOnce({
         ok: false,
-        status: 422,
-        statusText: 'Unprocessable Entity',
+        status: 400,
+        statusText: 'Bad Request',
         text: async () => JSON.stringify(errorDetails),
-      })
+      } as Response)
 
       try {
         await client.createProject({
@@ -701,7 +698,7 @@ describe('BluebirdClient', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(BluebirdAPIError)
         if (error instanceof BluebirdAPIError) {
-          expect(error.statusCode).toBe(422)
+          expect(error.statusCode).toBe(400)
           expect(error.details).toEqual(errorDetails)
         }
       }
@@ -716,11 +713,11 @@ describe('BluebirdClient', () => {
           status: 500,
           statusText: 'Internal Server Error',
           text: async () => 'Server error',
-        })
+        } as Response)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => [],
-        })
+        } as Response)
 
       const result = await client.listProjects()
 
@@ -735,11 +732,11 @@ describe('BluebirdClient', () => {
           status: 429,
           statusText: 'Too Many Requests',
           text: async () => 'Rate limited',
-        })
+        } as Response)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => [],
-        })
+        } as Response)
 
       const result = await client.listProjects()
 
@@ -753,7 +750,7 @@ describe('BluebirdClient', () => {
         status: 404,
         statusText: 'Not Found',
         text: async () => 'Not found',
-      })
+      } as Response)
 
       await expect(client.getProject('invalid')).rejects.toThrow(BluebirdAPIError)
       expect(mockFetch).toHaveBeenCalledTimes(1)
@@ -765,10 +762,11 @@ describe('BluebirdClient', () => {
         status: 500,
         statusText: 'Internal Server Error',
         text: async () => 'Server error',
-      })
+      } as Response)
 
       await expect(client.listProjects()).rejects.toThrow(BluebirdAPIError)
-      // Client configured with retries: 2, so initial call + 1 retry = 2 total
+      // Client configured with retries: 2, attempt starts at 1, so: attempt 1 fails → retry → attempt 2 fails → stop
+      // Total: 2 calls (initial + 1 retry)
       expect(mockFetch).toHaveBeenCalledTimes(2)
     })
   })

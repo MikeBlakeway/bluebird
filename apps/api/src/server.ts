@@ -27,6 +27,7 @@ import { logger } from './lib/logger.js'
 
 // Import workers to boot them
 import './lib/workers/similarity-worker.js'
+import './lib/workers/analyze-worker.js'
 
 const PORT = parseInt(process.env.BLUEBIRD_PORT || '4000', 10)
 const HOST = process.env.BLUEBIRD_HOST || '0.0.0.0'
